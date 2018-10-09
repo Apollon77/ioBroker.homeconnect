@@ -1,0 +1,41 @@
+{
+  "name": "iobroker.homeconnect",
+  "version": "0.1.1",
+  "description": "homeconnect",
+  "author": {
+    "name": "dna909",
+    "email": "dna909@googlemail.com"
+  },
+  "contributors": [
+    {
+      "name": "dna909",
+      "email": "dna909@googlemail.com"
+    }
+  ],
+  "homepage": "https://github.com/dna909/ioBroker.homeconnect",
+  "license": "MIT",
+  "keywords": [
+    "ioBroker",
+    "homeconnect",
+    "Smart Home",
+    "home automation"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dna909/ioBroker.homeconnect"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "mocha": "^4.1.0",
+    "chai": "^4.1.2"
+  },
+  "main": "main.js",
+  "scripts": {
+    "test": "node node_modules/mocha/bin/mocha --exit"
+  },
+  "bugs": {
+    "url": "https://github.com/dna909/ioBroker.homeconnect/issues"
+  },
+  "readmeFilename": "README.md"
+}

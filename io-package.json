@@ -1,0 +1,71 @@
+{
+    "common": {
+        "name": "homeconnect",
+        "version": "0.1.1",
+        "news": {
+             "0.0.1": {
+                "en": "initial adapter",
+                "de": "Initiale Version",
+                "ru": "Первоначальный адаптер",
+                "pt": "Versão inicial",
+                "fr": "Version initiale",
+                "nl": "Eerste release"
+            }
+        },
+		"title": "Home Connect",
+        "titleLang": {
+            "en": "Javascript/Node.js based homeconnect",
+            "de": "Javascript / Node.js basierte Vorlagenadapter",
+            "ru": "Адаптер шаблонов на основе Javascript / Node.js",
+            "pt": "Adaptador de modelo baseado em Javascript / Node.js",
+            "nl": "Javascript / Node.js gebaseerde sjabloonadapter",
+            "fr": "Javascript / Node.js basé adaptateur de modèle",
+            "it": "Adattatore modello basato su Javascript / Node.js",
+            "es": "Adaptador de plantilla basado en JavaScript / Node.js"
+        },
+        "desc": {
+            "en": "ioBroker homeconnect",
+            "de": "ioBroker Homeconnect",
+            "ru": "ioBroker Homeconnect как образец",
+            "pt": "Modelo de adaptador para o ioBroker",
+            "fr": "ioBroker adaptateur modèle",
+            "nl": "ioBroker Homeconnect",
+            "it": "Adattatore modello ioBroker",
+            "es": "Adaptador de plantilla ioBroker"
+        },
+        "authors": [
+            "dna909 <dna909@googlemail.com>"
+        ],
+        "docs": {
+            "en": "docs/en/admin.md",
+            "ru": "docs/ru/admin.md",
+            "de": "docs/de/admin.md",
+            "es": "docs/es/admin.md",
+            "it": "docs/it/admin.md",
+            "fr": "docs/fr/admin.md",
+            "nl": "docs/nl/admin.md",
+            "pt": "docs/pt/admin.md"
+        },
+        "platform": "Javascript/Node.js",
+        "mode": "daemon",
+        "icon": "homeconnect.png",
+        "materialize": true,
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/dna909/ioBroker.homeconnect/master/admin/homeconnect.png",
+        "keywords": ["homeconnect", "vis", "GUI", "graphical", "scada"],
+        "readme": "https://github.com/dna909/ioBroker.homeconnect/blob/master/README.md",
+        "loglevel": "info",
+        "type": "general",
+        "license": "MIT",
+        "messagebox": false,
+        "restartAdapters": ["vis"]
+    },
+    "native": {
+        "test1": true,
+        "test2": 42,
+        "mySelect": "auto"
+    },
+    "objects": [
+
+    ]
+}
