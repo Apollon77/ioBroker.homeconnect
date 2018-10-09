@@ -104,6 +104,17 @@ function main() {
         adapter.log.error('Client ID not specified!');
         //return;
     }
+
+	if (!adapter.config.eMail) {
+        adapter.log.error('E-Mail not specified!');
+        //return;
+    }
+
+	if (!adapter.config.password) {
+        adapter.log.error('password not specified!');
+        //return;
+    }
+
     /**
      *
      *      For every state in the system there has to be also an object of type state
