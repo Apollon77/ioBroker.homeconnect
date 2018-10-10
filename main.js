@@ -35,6 +35,8 @@
 
 // you have to require the utils module and call adapter function
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
+const request = require('request')
+const EventEmitter = require('events')
 
 // you have to call the adapter function and pass a options object
 // name has to be set and has to be equal to adapters folder name and main file name excluding extension
