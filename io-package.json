@@ -55,7 +55,7 @@
         "keywords": ["homeconnect", "vis", "GUI", "graphical", "scada"],
         "readme": "https://github.com/dna909/ioBroker.homeconnect/blob/master/README.md",
         "loglevel": "info",
-        "type": "household",
+        "type": "general",
         "license": "MIT",
         "messagebox": false,
         "restartAdapters": ["vis"]
