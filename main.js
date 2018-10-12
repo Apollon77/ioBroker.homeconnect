@@ -110,7 +110,7 @@ function main() {
         //return;
     }
 
-	if (!adapter.config.password) {
+	if (!adapter.config.pwd) {
         adapter.log.error('password not specified!');
         //return;
     }
