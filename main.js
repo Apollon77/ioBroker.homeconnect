@@ -96,11 +96,11 @@ function main() {
 
     // The adapters config (in the instance object everything under the attribute "native") is accessible via
     // adapter.config:
-    adapter.log.info('config test1: '    + adapter.config.test1);
-    adapter.log.info('config test1: '    + adapter.config.test2);
-    adapter.log.info('config mySelect: ' + adapter.config.mySelect);
+    adapter.log.info('config EMail: '    + adapter.config.eMail);
+    adapter.log.info('config Password: '    + adapter.config.pwd);
+    adapter.log.info('config ClientID: ' + adapter.config.clientID);
 
-/**    if (!adapter.config.clientID) {
+    if (!adapter.config.clientID) {
         adapter.log.error('Client ID not specified!');
         //return;
     }
