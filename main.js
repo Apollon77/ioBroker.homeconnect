@@ -100,7 +100,7 @@ function main() {
     adapter.log.info('config test1: '    + adapter.config.test2);
     adapter.log.info('config mySelect: ' + adapter.config.mySelect);
 
-    if (!adapter.config.clientID) {
+/**    if (!adapter.config.clientID) {
         adapter.log.error('Client ID not specified!');
         //return;
     }
