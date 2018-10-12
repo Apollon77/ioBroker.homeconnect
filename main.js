@@ -105,7 +105,7 @@ function main() {
         //return;
     }
 
-	if (!adapter.config.eMail) {
+	if (!adapter.config.email) {
         adapter.log.error('E-Mail not specified!');
         //return;
     }
