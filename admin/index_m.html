@@ -67,6 +67,13 @@
     <!-- you have to put your config page in a div with id adapter-container -->
     <div class="m adapter-container">
         <div class="row">
+
+          <div class="col s12">
+            <ul class="tabs">
+                <li class="tab col s2"><a href="#tab-main"  class="translate active">Main settings</a></li>
+                <li class="tab col s2 le-settings"><a href="#tab-access"    class="translate">Access</a></li>
+            </ul>
+        </div>
             <!-- Forms are the standard way to receive user inputted data.
          Learn more http://materializecss.com/forms.html-->
 <div id="tab-main" class="col s12 page">
@@ -111,6 +118,7 @@
             </div>
         </div>
 <div id="tab-access" class="col s12 page">
+  <iframe src="https://api.home-connect.com/security/oauth/authorize?response_type=code&client_id=5E711A79DC298E02A63456A13C6DCACD608088B1D07D0C018213D1B7F75708C1&redirect_uri=https%3A%2F%2Fapiclient.home-connect.com%2Fo2c.html&scope=Monitor&state=VHVlIE9jdCAxNiAyMDE4IDEzOjA2OjI1IEdNVCswMjAwIChNaXR0ZWxldXJvcMOkaXNjaGUgU29tbWVyemVpdCk%3D&realm=apiclient.home-connect.com" width="770" height="650" frameborder="0" scrolling="no"></iframe>
 </div>
 
     </div>
