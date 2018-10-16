@@ -1,0 +1,3540 @@
+{
+	"swagger": "2.0",
+	"info": {
+		"title": "Home Connect API",
+		"description": "This API provides access to home appliances enabled by Home Connect\n(https://home-connect.com). Through the API programs can be started and\nstopped, or home appliances configured and monitored. For instance, you can\nstart a cotton program on a washer and get a notification when the cycle is\ncomplete.\n\nTo get started with this web client, visit https://developer.home-connect.com\nand register an account. An application with a client ID for this API client\nwill be automatically generated for you.\n\nIn order to use this API in your own client, you need an OAuth 2 client\nimplementing the authorization code grant flow\n(https://developer.home-connect.com/docs/authorization/flow).\n\n\nMore details can be found here: https://www.rfc-editor.org/rfc/rfc6749.txt\n\nAuthorization URL: https://api.home-connect.com/security/oauth/authorize\n\nToken URL: https://api.home-connect.com/security/oauth/token\n",
+		"version": "1"
+	},
+	"externalDocs": {
+		"description": "Home Connect Developer Portal",
+		"url": "http://developer.home-connect.com/"
+	},
+	"host": "api.home-connect.com",
+	"schemes": [
+		"https"
+	],
+	"consumes": [
+		"application/vnd.bsh.sdk.v1+json"
+	],
+	"produces": [
+		"application/vnd.bsh.sdk.v1+json"
+	],
+	"basePath": "/api",
+	"tags": [
+		{
+			"name": "default",
+			"description": "Enumerate your home appliances"
+		},
+		{
+			"name": "programs",
+			"description": "Start, monitor and stop programs"
+		},
+		{
+			"name": "status_events",
+			"description": "Monitor the status and events"
+		},
+		{
+			"name": "images",
+			"description": "Access the camera in the fridge"
+		},
+		{
+			"name": "settings",
+			"description": "Get and set settings"
+		},
+		{
+			"name": "commands",
+			"description": "Send commands"
+		}
+	],
+	"responses": {
+		"Unauthorized": {
+			"description": "Unauthorized - No or invalid access token",
+			"schema": {
+				"$ref": "#/definitions/UnauthorizedError"
+			}
+		},
+		"Forbidden": {
+			"description": "Forbidden - Scope has not been granted",
+			"schema": {
+				"$ref": "#/definitions/ForbiddenError"
+			}
+		},
+		"NotFound": {
+			"description": "The requested resource was not found",
+			"schema": {
+				"$ref": "#/definitions/NotFoundError"
+			}
+		},
+		"NoProgramSelected": {
+			"description": "No program is currently selected",
+			"schema": {
+				"$ref": "#/definitions/NoProgramSelectedError"
+			}
+		},
+		"NoProgramActive": {
+			"description": "No program is currently active",
+			"schema": {
+				"$ref": "#/definitions/NoProgramActiveError"
+			}
+		},
+		"NotAcceptable": {
+			"description": "The resource identified by the request is only capable of generating response entities which have content characteristics not acceptable according to the accept headers sent in the request.",
+			"schema": {
+				"$ref": "#/definitions/NotAcceptableError"
+			}
+		},
+		"RequestTimeout": {
+			"description": "API Server failed to produce an answer or has no connection to backend service",
+			"schema": {
+				"$ref": "#/definitions/RequestTimeoutError"
+			}
+		},
+		"HomeApplianceError": {
+			"description": "An error occured during communication with the home appliance or the home appliance itself\nanswered with an error, e.g. because the issued command was unacceptable in the current state.\n",
+			"schema": {
+				"$ref": "#/definitions/ConflictError"
+			}
+		},
+		"SelectedProgramNotSet": {
+			"description": "No program is currently selected",
+			"schema": {
+				"$ref": "#/definitions/SelectedProgramNotSetError"
+			}
+		},
+		"ActiveProgramNotSet": {
+			"description": "No program is currently active",
+			"schema": {
+				"$ref": "#/definitions/ActiveProgramNotSetError"
+			}
+		},
+		"WrongOperationState": {
+			"description": "Request cannot be performed since the OperationState is wrong",
+			"schema": {
+				"$ref": "#/definitions/WrongOperationStateError"
+			}
+		},
+		"ProgramNotAvailable": {
+			"description": "The requested program is not available",
+			"schema": {
+				"$ref": "#/definitions/ProgramNotAvailableError"
+			}
+		},
+		"ContentTypeError": {
+			"description": "The request's Content-Type is not supported.",
+			"schema": {
+				"$ref": "#/definitions/UnsupportedMediaTypeError"
+			}
+		},
+		"QuotaError": {
+			"description": "The number of requests for a specific endpoint exceeded the quota of the client.\n",
+			"schema": {
+				"$ref": "#/definitions/TooManyRequestsError"
+			}
+		},
+		"InternalError": {
+			"description": "Internal Server Error",
+			"schema": {
+				"$ref": "#/definitions/InteralServerError"
+			}
+		}
+	},
+	"paths": {
+		"/homeappliances": {
+			"get": {
+				"summary": "Get all home appliances which are paired with the logged-in user account.",
+				"operationId": "get_home_appliances",
+				"description": "This endpoint returns a list of all home appliances which are paired\nwith the logged-in user account. All paired home appliances are returned\nindependent of their current connection state. The connection state can\nbe retrieved within the field 'connected' of the respective home appliance.\nThe haId is the primary access key for further API access to a specific\nhome appliance.\n",
+				"responses": {
+					"200": {
+						"description": "List of home appliances",
+						"schema": {
+							"$ref": "#/definitions/ArrayOfHomeAppliances"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"IdentifyAppliance"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				}
+			],
+			"get": {
+				"summary": "Get a specfic home appliances which are paired with the logged-in user account.",
+				"operationId": "get_specific_appliance",
+				"description": "This endpoint returns a specific home appliance which is paired with the\nlogged-in user account. It is returned independent of their current\nconnection state. The connection state can be retrieved within the field\n'connected' of the respective home appliance.\nThe haId is the primary access key for further API access to a specific\nhome appliance.\n",
+				"responses": {
+					"200": {
+						"description": "Details of requested home appliance",
+						"schema": {
+							"$ref": "#/definitions/HomeAppliance"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"IdentifyAppliance"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/programs/active": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get program which is currently executed",
+				"tags": [
+					"programs"
+				],
+				"operationId": "get_active_program",
+				"responses": {
+					"200": {
+						"description": "active program",
+						"schema": {
+							"$ref": "#/definitions/Program"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/responses/NoProgramActive"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"409": {
+						"$ref": "#/responses/HomeApplianceError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			},
+			"put": {
+				"summary": "Start the given program",
+				"tags": [
+					"programs"
+				],
+				"operationId": "start_program",
+				"description": "By putting a program object to this endpoint, the system will try to\nstart it if all preconditions are fulfilled:\n* Home appliance is connected\n* *Remote Control* and *Remote Control Start Allowed* is enabled\n* No other program is currently active\n\nFurthermore, the program must exist on the home appliance and its\noptions must be set correctly.\nKeys of program, which can be exected on an oven, are for instance:\n* *Cooking.Oven.Program.HeatingMode.HotAir*\n* *Cooking.Oven.Program.HeatingMode.TopBottomHeating*\n* *Cooking.Oven.Program.HeatingMode.PizzaSetting*\n* *Cooking.Oven.Program.HeatingMode.PreHeating*\n\nKeys for options of these oven programs are:\n* *Cooking.Oven.Option.SetpointTemperature*: 30 - 250 °C\n* *BSH.Common.Option.Duration*: 1 - 86340 seconds\n\nFor further documentation, visit the appliance-specific programs pages:\n* [Oven](https://developer.home-connect.com/docs/oven/supported_programs_and_options)\n* [Dishwasher](https://developer.home-connect.com/docs/dishwasher/supported_programs_options)\n* [Washer](https://developer.home-connect.com/docs/washing-machine/supported_programs_and_options)\n* [Dryer](https://developer.home-connect.com/docs/dryer/supported_programs_and_options)\n* [Coffee Machine](https://developer.home-connect.com/docs/coffee-maker/supported_programs_and_options)\n* [Hood](https://developer.home-connect.com/docs/hood/supported_programs_and_options)\n* [Cleaning Robot](https://developer.home-connect.com/docs/cleaningrobot/supported_programs_and_options)\n\nThere are no programs available for fridges and hobs.\n",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"description": "description of the program to activate",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/Program"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Program has been started successfully"
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/HomeApplianceError"
+					},
+					"415": {
+						"$ref": "#/responses/ContentTypeError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Control",
+							"Oven-Control",
+							"Dishwasher-Control",
+							"Washer-Control",
+							"Dryer-Control",
+							"CoffeeMaker-Control",
+							"Hob-Control",
+							"Hood-Control",
+							"CleaningRobot-Control",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			},
+			"delete": {
+				"summary": "Stop the program which is currently executed",
+				"tags": [
+					"programs"
+				],
+				"operationId": "stop_program",
+				"responses": {
+					"204": {
+						"description": "OK. Program stopped successfully"
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/WrongOperationState"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Control",
+							"Oven-Control",
+							"Dishwasher-Control",
+							"Washer-Control",
+							"Dryer-Control",
+							"CoffeeMaker-Control",
+							"Hob-Control",
+							"Hood-Control",
+							"CleaningRobot-Control",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/programs/active/options": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get all options of the active program like temperature or duration.",
+				"description": "You can retrieve a list of options of the currently running program.\n\nFor detailed documentation of the available options, visit the appliance-specific programs pages:\n* [Oven](https://developer.home-connect.com/docs/oven/supported_programs_and_options)\n* [Dishwasher](https://developer.home-connect.com/docs/dishwasher/supported_programs_options)\n* [Washer](https://developer.home-connect.com/docs/washing-machine/supported_programs_and_options)\n* [Dryer](https://developer.home-connect.com/docs/dryer/supported_programs_and_options)\n* [Coffee Machine](https://developer.home-connect.com/docs/coffee-maker/supported_programs_and_options)\n* [Hood](https://developer.home-connect.com/docs/hood/supported_programs_and_options)\n* [Cleaning Robot](https://developer.home-connect.com/docs/cleaningrobot/supported_programs_and_options)\n",
+				"tags": [
+					"programs"
+				],
+				"operationId": "get_active_program_options",
+				"responses": {
+					"200": {
+						"description": "List of options of active program",
+						"schema": {
+							"$ref": "#/definitions/ArrayOfOptions"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/responses/NoProgramActive"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			},
+			"put": {
+				"summary": "Set all options of the active program, e.g. to switch from preheating to the actual program options.",
+				"description": "Update the options for the currently running program.\nWith this API endpoint, you have to provide all options with\ntheir new values. If you want to update only one option, you can use the\nendpoint specific to that option.\n\nPlease note that changing options of the running program is currently only\nsupported by ovens.\n",
+				"tags": [
+					"programs"
+				],
+				"operationId": "set_active_program_options",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"description": "list of options",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/ArrayOfOptions"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "OK"
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/ActiveProgramNotSet"
+					},
+					"415": {
+						"$ref": "#/responses/ContentTypeError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Control",
+							"Oven-Control",
+							"Dishwasher-Control",
+							"Washer-Control",
+							"Dryer-Control",
+							"CoffeeMaker-Control",
+							"Hob-Control",
+							"Hood-Control",
+							"CleaningRobot-Control",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/programs/active/options/{optionkey}": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				},
+				{
+					"name": "optionkey",
+					"in": "path",
+					"description": "Key of the option, e.g. BSH.Common.Option.Duration",
+					"required": true,
+					"type": "string"
+				}
+			],
+			"get": {
+				"summary": "Get one specific option of the active program, e.g. the duration.",
+				"tags": [
+					"programs"
+				],
+				"operationId": "get_active_program_option",
+				"responses": {
+					"200": {
+						"description": "Option of active program",
+						"schema": {
+							"$ref": "#/definitions/Option"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/responses/NoProgramActive"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			},
+			"put": {
+				"summary": "Set one specific option of the active program",
+				"description": "This operation can be used to modify one specific option of the active\nprogram, e.g. to extend the duration of the active program by\nanother 5 minutes.\n\nPlease note that changing options of the running program is currently only\nsupported by ovens.\n",
+				"tags": [
+					"programs"
+				],
+				"operationId": "set_active_program_option",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"description": "option of the active program to set",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/Option"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "The request was successful"
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/ActiveProgramNotSet"
+					},
+					"415": {
+						"$ref": "#/responses/ContentTypeError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Control",
+							"Oven-Control",
+							"Dishwasher-Control",
+							"Washer-Control",
+							"Dryer-Control",
+							"CoffeeMaker-Control",
+							"Hob-Control",
+							"Hood-Control",
+							"CleaningRobot-Control",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/programs/selected": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get the program which is currently selected\n",
+				"description": "In most cases the selected program is the program which is currently\nshown on the display of the home appliance. This program can then be\nmanually adjusted or started on the home appliance itself.\n",
+				"tags": [
+					"programs"
+				],
+				"operationId": "get_selected_program",
+				"responses": {
+					"200": {
+						"description": "Selected program",
+						"schema": {
+							"$ref": "#/definitions/Program"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/responses/NoProgramSelected"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			},
+			"put": {
+				"summary": "Select a program",
+				"description": "In most cases the selected program is the program which is currently\nshown on the display of the home appliance. This program can then be\nmanually adjusted or started on the home appliance itself.\n\nA selected program will not be started automatically. You don't have\nto set a program as selected first if you intend to start it via API -\nyou can set it directly as active program.\n\nSelecting a program will update the available options and constraints\ndirectly from the home appliance. Any changes to the available options\ndue to the state of the appliance is only reflected in the selected program.\n",
+				"tags": [
+					"programs"
+				],
+				"operationId": "set_selected_program",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"description": "program to select",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/Program"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "OK"
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/HomeApplianceError"
+					},
+					"415": {
+						"$ref": "#/responses/ContentTypeError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Control",
+							"Oven-Control",
+							"Dishwasher-Control",
+							"Washer-Control",
+							"Dryer-Control",
+							"CoffeeMaker-Control",
+							"Hob-Control",
+							"Hood-Control",
+							"CleaningRobot-Control",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/programs/selected/options": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get all options of selected program",
+				"tags": [
+					"programs"
+				],
+				"operationId": "get_selected_program_options",
+				"responses": {
+					"200": {
+						"description": "List of options of selected program",
+						"schema": {
+							"$ref": "#/definitions/ArrayOfOptions"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/responses/NoProgramSelected"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			},
+			"put": {
+				"summary": "Set all options of selected program",
+				"tags": [
+					"programs"
+				],
+				"operationId": "set_selected_program_options",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"description": "description of the program to activate",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/ArrayOfOptions"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "The request was successful"
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/SelectedProgramNotSet"
+					},
+					"415": {
+						"$ref": "#/responses/ContentTypeError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Control",
+							"Oven-Control",
+							"Dishwasher-Control",
+							"Washer-Control",
+							"Dryer-Control",
+							"CoffeeMaker-Control",
+							"Hob-Control",
+							"Hood-Control",
+							"CleaningRobot-Control",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/programs/selected/options/{optionkey}": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				},
+				{
+					"name": "optionkey",
+					"in": "path",
+					"description": "Feature Key of the option as defined in FMF, e.g. BSH.Common.Option.Duration",
+					"required": true,
+					"type": "string"
+				}
+			],
+			"get": {
+				"summary": "Get specific option of selected program",
+				"tags": [
+					"programs"
+				],
+				"operationId": "get_selected_program_option",
+				"responses": {
+					"200": {
+						"description": "Option of selected program",
+						"schema": {
+							"$ref": "#/definitions/Option"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/responses/NoProgramSelected"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			},
+			"put": {
+				"summary": "Set specific option of selected program",
+				"tags": [
+					"programs"
+				],
+				"operationId": "set_selected_program_option",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"description": "description of the program to activate",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/Option"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "The request was successful"
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/SelectedProgramNotSet"
+					},
+					"415": {
+						"$ref": "#/responses/ContentTypeError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Control",
+							"Oven-Control",
+							"Dishwasher-Control",
+							"Washer-Control",
+							"Dryer-Control",
+							"CoffeeMaker-Control",
+							"Hob-Control",
+							"Hood-Control",
+							"CleaningRobot-Control",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/programs/available": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get all programs which are currently available on the given home appliance",
+				"tags": [
+					"programs"
+				],
+				"operationId": "get_available_programs",
+				"responses": {
+					"200": {
+						"description": "Available programs",
+						"schema": {
+							"$ref": "#/definitions/ArrayOfAvailablePrograms"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"409": {
+						"$ref": "#/responses/WrongOperationState"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/programs/available/{programkey}": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				},
+				{
+					"name": "programkey",
+					"in": "path",
+					"description": "key of specific program to return",
+					"required": true,
+					"type": "string"
+				}
+			],
+			"get": {
+				"summary": "Get specific available program",
+				"tags": [
+					"programs"
+				],
+				"operationId": "get_available_program",
+				"responses": {
+					"200": {
+						"description": "Available program",
+						"schema": {
+							"$ref": "#/definitions/ProgramDefinition"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"409": {
+						"$ref": "#/responses/ProgramNotAvailable"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/images": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get a list of available images",
+				"tags": [
+					"images"
+				],
+				"operationId": "get_images",
+				"responses": {
+					"200": {
+						"description": "Available images",
+						"schema": {
+							"$ref": "#/definitions/ArrayOfImages"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Images",
+							"FridgeFreezer-Images",
+							"FridgeFreezer"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/images/{imagekey}": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "imagekey",
+					"in": "path",
+					"description": "ID of the image",
+					"required": true,
+					"type": "string"
+				}
+			],
+			"get": {
+				"summary": "Get a specific image",
+				"tags": [
+					"images"
+				],
+				"operationId": "get_image",
+				"produces": [
+					"image/jpeg"
+				],
+				"responses": {
+					"200": {
+						"description": "Returns image successfully"
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"404": {
+						"description": "The requested image was not found"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Images",
+							"FridgeFreezer-Images",
+							"FridgeFreezer"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/settings": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get a list of available settings",
+				"description": "Get a list of available setting of the home appliance.\n\nFurther documentation can be found here:\n* [Power state](https://developer.home-connect.com/docs/settings/power_state)\n* [Fridge temperature](https://developer.home-connect.com/docs/api/settings/fridgetemperature)\n* [Fridge super mode](https://developer.home-connect.com/docs/api/settings/fridgesupermode)\n* [Freezer temperature](https://developer.home-connect.com/docs/api/settings/freezertemperature)\n* [Freezer super mode](https://developer.home-connect.com/docs/api/settings/freezersupermode)\n",
+				"tags": [
+					"settings"
+				],
+				"operationId": "get_settings",
+				"responses": {
+					"200": {
+						"description": "Available settings",
+						"schema": {
+							"$ref": "#/definitions/ArrayOfSettings"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Settings",
+							"Oven-Settings",
+							"Dishwasher-Settings",
+							"Washer-Settings",
+							"Dryer-Settings",
+							"FridgeFreezer-Settings",
+							"CoffeeMaker-Settings",
+							"Hob-Settings",
+							"Hood-Settings",
+							"CleaningRobot-Settings",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"FridgeFreezer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/settings/{settingkey}": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				},
+				{
+					"name": "settingkey",
+					"in": "path",
+					"description": "ID of the setting",
+					"required": true,
+					"type": "string"
+				}
+			],
+			"get": {
+				"summary": "Get a specific setting",
+				"tags": [
+					"settings"
+				],
+				"operationId": "get_setting",
+				"responses": {
+					"200": {
+						"description": "Returns setting successfully",
+						"schema": {
+							"$ref": "#/definitions/Setting"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/responses/NotFound"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/HomeApplianceError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Settings",
+							"Oven-Settings",
+							"Dishwasher-Settings",
+							"Washer-Settings",
+							"Dryer-Settings",
+							"FridgeFreezer-Settings",
+							"CoffeeMaker-Settings",
+							"Hob-Settings",
+							"Hood-Settings",
+							"CleaningRobot-Settings",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"FridgeFreezer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			},
+			"put": {
+				"summary": "Set a specific setting",
+				"tags": [
+					"settings"
+				],
+				"operationId": "set_setting",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"description": "description of the setting",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/Setting"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Setting updated successfully"
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/responses/NotFound"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/HomeApplianceError"
+					},
+					"415": {
+						"$ref": "#/responses/ContentTypeError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Settings",
+							"Oven-Settings",
+							"Dishwasher-Settings",
+							"Washer-Settings",
+							"Dryer-Settings",
+							"FridgeFreezer-Settings",
+							"CoffeeMaker-Settings",
+							"Hob-Settings",
+							"Hood-Settings",
+							"CleaningRobot-Settings",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"FridgeFreezer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/status": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get current status of home appliance",
+				"description": "A detailed description of the available status can be found here:\n\n* [Remote control activation state](https://developer.home-connect.com/docs/api/status/remotecontrolactivationstate)\n* [Remote start allowance state](https://developer.home-connect.com/docs/api/status/remotestartallowancestate)\n* [Local control state](https://developer.home-connect.com/docs/api/status/localcontrolstate)\n* [Operation state](https://developer.home-connect.com/docs/status/operation_state)\n* [Door state](https://developer.home-connect.com/docs/status/door_state)\n\nSeveral more device-specific states can be found [in the documentation](https://developer.home-connect.com/docs/api/status/remotecontrolactivationstate).\n",
+				"tags": [
+					"status_events"
+				],
+				"operationId": "get_status",
+				"responses": {
+					"200": {
+						"description": "Successful, returns an array of status variables",
+						"schema": {
+							"$ref": "#/definitions/ArrayOfStatus"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/HomeApplianceError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"FridgeFreezer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"FridgeFreezer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/status/{statuskey}": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				},
+				{
+					"name": "statuskey",
+					"in": "path",
+					"description": "key of the specific status to get",
+					"required": true,
+					"type": "string"
+				}
+			],
+			"get": {
+				"summary": "Get current status of home appliance",
+				"description": "A detailed description of the available status can be found here:\n\n* [Remote control activation state](https://developer.home-connect.com/docs/api/status/remotecontrolactivationstate)\n* [Remote start allowance state](https://developer.home-connect.com/docs/api/status/remotestartallowancestate)\n* [Local control state](https://developer.home-connect.com/docs/api/status/localcontrolstate)\n* [Operation state](https://developer.home-connect.com/docs/status/operation_state)\n* [Door state](https://developer.home-connect.com/docs/status/door_state)\n\nSeveral more device-specific states can be found [in the documentation](https://developer.home-connect.com/docs/api/status/remotecontrolactivationstate).\n",
+				"tags": [
+					"status_events"
+				],
+				"operationId": "get_status_value",
+				"responses": {
+					"200": {
+						"description": "Successful, returns a status variable",
+						"schema": {
+							"$ref": "#/definitions/Status"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"409": {
+						"$ref": "#/responses/HomeApplianceError"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"FridgeFreezer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"FridgeFreezer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/commands": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get a list of supported commands of the home appliance",
+				"tags": [
+					"commands"
+				],
+				"operationId": "get_available_commands",
+				"responses": {
+					"200": {
+						"description": "The request was successful. Return a list of commands."
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Control",
+							"Oven-Control",
+							"Dishwasher-Control",
+							"Washer-Control",
+							"Dryer-Control",
+							"CoffeeMaker-Control",
+							"FridgeFreezer-Control",
+							"Hob-Control",
+							"Hood-Control",
+							"CleaningRobot-Control",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"FridgeFreezer",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/commands/{commandkey}": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "commandkey",
+					"in": "path",
+					"description": "feature key of the command",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"put": {
+				"summary": "Execute a specific command of the home appliance",
+				"tags": [
+					"commands"
+				],
+				"operationId": "put_command",
+				"parameters": [
+					{
+						"name": "body",
+						"in": "body",
+						"description": "description of the command to send",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/Command"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "The request was successful."
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"408": {
+						"$ref": "#/responses/RequestTimeout"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Control",
+							"Oven-Control",
+							"Dishwasher-Control",
+							"Washer-Control",
+							"Dryer-Control",
+							"CoffeeMaker-Control",
+							"FridgeFreezer-Control",
+							"Hob-Control",
+							"Hood-Control",
+							"CleaningRobot-Control",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"CoffeeMaker",
+							"FridgeFreezer",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/{haid}/events": {
+			"parameters": [
+				{
+					"name": "haid",
+					"in": "path",
+					"description": "ID of home appliance",
+					"required": true,
+					"type": "string"
+				},
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get stream of events for one appliance - NOT WORKING WITH SWAGGER",
+				"tags": [
+					"status_events"
+				],
+				"operationId": "get_events",
+				"description": "Server Sent Events are available as Eventsource API in JavaScript\nand are implemented by various HTTP client libraries and tools\nincluding curl.\n\nUnfortunately, SSE is not compatible to OpenAPI specs and can therefore\nnot be properly specified within this API description.\n\nAn SSE event contains three parts separated by linebreaks: event, data and id.\nDifferent events are separated by empty lines.\n\nThe event field can be one of these types: KEEP-ALIVE, STATUS, EVENT, NOTIFY, DISCONNECTED, CONNECTED.\n\nIn case of the event type being STATUS, EVENT or NOTIFY, the \"data\"\nfield is populated with the JSON object defined below.\n\nThe id contains the home appliance ID.\n\nFurther documentation can be found here:\n* [Events availability matrix](https://developer.home-connect.com/docs/monitoring/availabilitymatrix)\n* [Program changes](https://developer.home-connect.com/docs/monitoring/program_option_changes)\n* [Option changes](https://developer.home-connect.com/docs/monitoring/option_changes)\n* [Program progress changes](https://developer.home-connect.com/docs/monitoring/program_progress_changes)\n* [Home appliance state changes](https://developer.home-connect.com/docs/monitoring/appliance_state_changes)\n",
+				"produces": [
+					"text/event-stream"
+				],
+				"responses": {
+					"200": {
+						"description": "Successful, returns status updates as Server Sent Events (SSE)\n",
+						"schema": {
+							"$ref": "#/definitions/ArrayOfEvents"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"FridgeFreezer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"FridgeFreezer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		},
+		"/homeappliances/events": {
+			"parameters": [
+				{
+					"name": "Accept-Language",
+					"in": "header",
+					"description": "Language for localized assets",
+					"type": "string",
+					"enum": [
+						"de-DE",
+						"en-GB",
+						"en-US"
+					]
+				}
+			],
+			"get": {
+				"summary": "Get stream of events for all appliances - NOT WORKING WITH SWAGGER",
+				"tags": [
+					"status_events"
+				],
+				"operationId": "get_all_events",
+				"description": "Server Sent Events are available as Eventsource API in JavaScript\nand are implemented by various HTTP client libraries and tools\nincluding curl.\n\nUnfortunately, SSE is not compatible to OpenAPI specs and can therefore\nnot be properly specified within this API description.\n\nAn SSE event contains three parts separated by linebreaks: event, data and id.\nDifferent events are separated by empty lines.\n\nThe event field can be one of these types: KEEP-ALIVE, STATUS, EVENT, NOTIFY, DISCONNECTED, CONNECTED.\n\nIn case of the event type being STATUS, EVENT or NOTIFY, the \"data\"\nfield is populated with the JSON object defined below.\n\nThe id contains the home appliance ID.\n\nFurther documentation can be found here:\n* [Events availability matrix](https://developer.home-connect.com/docs/monitoring/availabilitymatrix)\n* [Program changes](https://developer.home-connect.com/docs/monitoring/program_option_changes)\n* [Option changes](https://developer.home-connect.com/docs/monitoring/option_changes)\n* [Program progress changes](https://developer.home-connect.com/docs/monitoring/program_progress_changes)\n* [Home appliance state changes](https://developer.home-connect.com/docs/monitoring/appliance_state_changes)\n",
+				"produces": [
+					"text/event-stream"
+				],
+				"responses": {
+					"200": {
+						"description": "Successful, returns status updates as Server Sent Events (SSE)\n",
+						"schema": {
+							"$ref": "#/definitions/ArrayOfEvents"
+						}
+					},
+					"401": {
+						"$ref": "#/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/responses/Forbidden"
+					},
+					"406": {
+						"$ref": "#/responses/NotAcceptable"
+					},
+					"429": {
+						"$ref": "#/responses/QuotaError"
+					},
+					"500": {
+						"$ref": "#/responses/InternalError"
+					}
+				},
+				"security": [
+					{
+						"homeconnect_auth": [
+							"Monitor",
+							"Oven-Monitor",
+							"Dishwasher-Monitor",
+							"Washer-Monitor",
+							"Dryer-Monitor",
+							"FridgeFreezer-Monitor",
+							"CoffeeMaker-Monitor",
+							"Hob-Monitor",
+							"Hood-Monitor",
+							"CleaningRobot-Monitor",
+							"Oven",
+							"Dishwasher",
+							"Washer",
+							"Dryer",
+							"FridgeFreezer",
+							"CoffeeMaker",
+							"Hob",
+							"Hood",
+							"CleaningRobot"
+						]
+					}
+				]
+			}
+		}
+	},
+	"securityDefinitions": {
+		"homeconnect_auth": {
+			"description": "The Home Connect API uses the authorization code grant flow of the OAuth2\nAuthorization Framework as specified in RFC 6749 (https://tools.ietf.org/html/rfc6749).\nAuthorization tokens have to be transmitted in the HTTP headers as defined\nin RFC 6750 (https://tools.ietf.org/html/rfc6750).\n",
+			"type": "oauth2",
+			"flow": "accessCode",
+			"authorizationUrl": "https://api.home-connect.com/security/oauth/authorize",
+			"tokenUrl": "https://api.home-connect.com/security/oauth/token",
+			"x-homeconnect-revokeUrl": "https://api.home-connect.com/security/oauth/revoke",
+			"scopes": {
+				"IdentifyAppliance": "Grants right to identify a home appliance under /api/homeappliances",
+				"Monitor": "Grants access to read resources under /api/homeappliances except images and settings",
+				"Control": "Grants access to modify resources under under /api/homeappliances except images and settings",
+				"Images": "Grants access to read resources under /api/homeappliances/{haid}/images",
+				"Settings": "Grants access to read and modify resources under /api/homeappliances/{haid}/settings",
+				"Oven-Monitor": "Grants access to read resources under /api/homeappliances except images and settings on ovens",
+				"Oven-Control": "Grants access to modify resources under under /api/homeappliances except images and settings on ovens",
+				"Oven-Settings": "Grants access to read and modify resources under /api/homeappliances/{haid}/settings on ovens",
+				"Oven": "Grants access to read or modify all resources under /api/homeappliances on ovens",
+				"Dishwasher-Monitor": "Grants access to read resources under /api/homeappliances except images and settings on dishwashers",
+				"Dishwasher-Control": "Grants access to modify resources under under /api/homeappliances except images and settings on dishwashers",
+				"Dishwasher-Settings": "Grants access to read and modify resources under /api/homeappliances/{haid}/settings on dishwashers",
+				"Dishwasher": "Grants access to read or modify all resources under /api/homeappliances on dishwashers",
+				"Washer-Monitor": "Grants access to read resources under /api/homeappliances except images and settings on washers",
+				"Washer-Control": "Grants access to modify resources under under /api/homeappliances except images and settings on washers",
+				"Washer-Settings": "Grants access to read and modify resources under /api/homeappliances/{haid}/settings on washers",
+				"Washer": "Grants access to read or modify all resources under /api/homeappliances on washers",
+				"Dryer-Monitor": "Grants access to read resources under /api/homeappliances except images and settings on dryers",
+				"Dryer-Control": "Grants access to modify resources under under /api/homeappliances except images and settings on dryers",
+				"Dryer-Settings": "Grants access to read and modify resources under /api/homeappliances/{haid}/settings on dryers",
+				"Dryer": "Grants access to read or modify all resources under /api/homeappliances on dryers",
+				"FridgeFreezer-Monitor": "Grants access to read resources under /api/homeappliances except images and settings on fridgefreezers",
+				"FridgeFreezer-Control": "Grants access to modify resources under /api/homeappliances except images and settings on fridgefreezers",
+				"FridgeFreezer-Settings": "Grants access to read and modify resources under /api/homeappliances/{haid}/settings on fridgefreezers",
+				"FridgeFreezer-Images": "Grants access to read resources under /api/homeappliances/{haid}/images on fridgefreezers",
+				"FridgeFreezer": "Grants access to read or modify all resources under /api/homeappliances on fridgefreezers",
+				"CoffeeMaker-Monitor": "Grants access to read resources under /api/homeappliances except images and settings on coffee makers",
+				"CoffeeMaker-Control": "Grants access to modify resources under under /api/homeappliances except images and settings on coffee makers",
+				"CoffeeMaker-Settings": "Grants access to read and modify resources under /api/homeappliances/{haid}/settings on coffee makers",
+				"CoffeeMaker": "Grants access to read or modify all resources under /api/homeappliances on coffeemakers",
+				"Hob-Monitor": "Grants access to read resources under /api/homeappliances except images and settings on coffee makers",
+				"Hob-Control": "Grants access to modify resources under under /api/homeappliances except images and settings on coffee makers",
+				"Hob-Settings": "Grants access to read and modify resources under /api/homeappliances/{haid}/settings on coffee makers",
+				"Hob": "Grants access to read or modify all resources under /api/homeappliances on coffeemakers",
+				"Hood-Monitor": "Grants access to read resources under /api/homeappliances except images and settings on coffee makers",
+				"Hood-Control": "Grants access to modify resources under under /api/homeappliances except images and settings on coffee makers",
+				"Hood-Settings": "Grants access to read and modify resources under /api/homeappliances/{haid}/settings on coffee makers",
+				"Hood": "Grants access to read or modify all resources under /api/homeappliances on coffeemakers",
+				"CleaningRobot-Monitor": "Grants access to read resources under /api/homeappliances except images and settings on coffee makers",
+				"CleaningRobot-Control": "Grants access to modify resources under under /api/homeappliances except images and settings on coffee makers",
+				"CleaningRobot-Settings": "Grants access to read and modify resources under /api/homeappliances/{haid}/settings on coffee makers",
+				"CleaningRobot": "Grants access to read or modify all resources under /api/homeappliances on coffeemakers"
+			}
+		}
+	},
+	"definitions": {
+		"HomeAppliance": {
+			"type": "object",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"properties": {
+						"haId": {
+							"type": "string",
+							"description": "Unique identifier representing a specific home appliance."
+						},
+						"name": {
+							"type": "string",
+							"description": "User-friendly name of the home appliance (e.g. \"My Oven\")"
+						},
+						"type": {
+							"type": "string",
+							"description": "Type of home appliance, e.g.  \"oven\"."
+						},
+						"brand": {
+							"type": "string",
+							"description": "Brand of the home appliance, e.g. \"BOSCH\""
+						},
+						"vib": {
+							"type": "string",
+							"description": "The type code (VIB) of the home appliance."
+						},
+						"enumber": {
+							"type": "string",
+							"description": "Combination of VIB and customer index (VIB/KI)"
+						},
+						"connected": {
+							"type": "boolean",
+							"description": "Current connection state of the home appliance. True if the home appliance is online, false otherwise."
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"name": "My Bosch Oven",
+					"brand": "BOSCH",
+					"vib": "HNG6764B6",
+					"connected": true,
+					"type": "Oven",
+					"enumber": "HNG6764B6/09",
+					"haId": "BOSCH-HNG6764B6-0000000011FF"
+				}
+			}
+		},
+		"ArrayOfHomeAppliances": {
+			"type": "object",
+			"description": "Object containing an array of home appliances\n",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"homeappliances"
+					],
+					"properties": {
+						"homeappliances": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"haId",
+									"name",
+									"type",
+									"brand",
+									"vib",
+									"enumber",
+									"connected"
+								],
+								"properties": {
+									"haId": {
+										"type": "string",
+										"description": "Unique identifier representing a specific home appliance."
+									},
+									"name": {
+										"type": "string",
+										"description": "User-friendly name of the home appliance (e.g. \"My Oven\")"
+									},
+									"type": {
+										"type": "string",
+										"description": "Type of home appliance, e.g.  \"oven\"."
+									},
+									"brand": {
+										"type": "string",
+										"description": "Brand of the home appliance, e.g. \"BOSCH\""
+									},
+									"vib": {
+										"type": "string",
+										"description": "The type code (VIB) of the home appliance."
+									},
+									"enumber": {
+										"type": "string",
+										"description": "Combination of VIB and customer index (VIB/KI)"
+									},
+									"connected": {
+										"type": "boolean",
+										"description": "Current connection state of the home appliance. True if the home appliance is online, false otherwise."
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"homeappliances": [
+						{
+							"name": "My Bosch Oven",
+							"brand": "BOSCH",
+							"vib": "HNG6764B6",
+							"connected": true,
+							"type": "Oven",
+							"enumber": "HNG6764B6/09",
+							"haId": "BOSCH-HNG6764B6-0000000011FF"
+						}
+					]
+				}
+			}
+		},
+		"UnauthorizedError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "invalid_token",
+					"description": "The access token expired"
+				}
+			}
+		},
+		"ForbiddenError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "insufficient_scope",
+					"description": "Insufficient scope for this resource"
+				}
+			}
+		},
+		"NotFoundError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "404",
+					"description": "The requested resource could not be found but may be available again in the future."
+				}
+			}
+		},
+		"NoProgramSelectedError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "SDK.Error.NoProgramSelected",
+					"description": "There is no program selected"
+				}
+			}
+		},
+		"NoProgramActiveError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "SDK.Error.NoProgramActive",
+					"description": "There is no program active"
+				}
+			}
+		},
+		"NotAcceptableError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "406",
+					"description": "Resource representation is only available with these types:\\napplication/vnd.bsh.sdk.v1+json"
+				}
+			}
+		},
+		"RequestTimeoutError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "SDK.Error.408.RequestTimeout"
+				}
+			}
+		},
+		"ConflictError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "SDK.Error.HomeAppliance.Connection.Initialization.Timeout",
+					"description": "HomeAppliance did not respond to connection initialization requests in time, it might be offline"
+				}
+			}
+		},
+		"SelectedProgramNotSetError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "SDK.Error.SelectedProgramNotSet",
+					"description": "Request cannot be performed since no program is selected"
+				}
+			}
+		},
+		"ActiveProgramNotSetError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "SDK.Error.ActiveProgramNotSet",
+					"description": "Request cannot be performed since no active program is set"
+				}
+			}
+		},
+		"WrongOperationStateError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "SDK.Error.WrongOperationState",
+					"description": "Request cannot be performed since OperationState is not DelayedStart, Run, Pause or ActionRequired"
+				}
+			}
+		},
+		"ProgramNotAvailableError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "SDK.Error.ProgramNotAvailable",
+					"description": "Program currently not available"
+				}
+			}
+		},
+		"UnsupportedMediaTypeError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "415",
+					"description": "The request's Content-Type is not supported. Expected:\\napplication/vnd.bsh.sdk.v1+json or application/vnd.bsh.sdk.v2+json or application/vnd.bsh.hca.v1+json or application/vnd.bsh.hca.v2+json"
+				}
+			}
+		},
+		"TooManyRequestsError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "429",
+					"description": "The user has sent too many requests in a given amount of time."
+				}
+			}
+		},
+		"InteralServerError": {
+			"type": "object",
+			"required": [
+				"error"
+			],
+			"properties": {
+				"error": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"example": {
+				"error": {
+					"key": "Internal Server Error",
+					"description": "Could not validate permissions to access HomeAppliance"
+				}
+			}
+		},
+		"ArrayOfEvents": {
+			"type": "object",
+			"required": [
+				"items"
+			],
+			"properties": {
+				"items": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": [
+							"key",
+							"timestamp",
+							"level",
+							"handling",
+							"value"
+						],
+						"properties": {
+							"key": {
+								"type": "string",
+								"description": "The type of the event"
+							},
+							"name": {
+								"type": "string",
+								"description": "User-friendly name of the feature key"
+							},
+							"uri": {
+								"type": "string",
+								"description": "URI of the resource that changed"
+							},
+							"timestamp": {
+								"type": "integer",
+								"format": "int64",
+								"description": "Creation time of event as unix timestamp"
+							},
+							"level": {
+								"type": "string",
+								"description": "Level of the event, possible values: critical, alert, warning, hint, info\n"
+							},
+							"handling": {
+								"type": "string",
+								"description": "Expected activity, possible values: none, acknowledge, decision\n"
+							},
+							"value": {
+								"description": "New value, e.g. in case of a status update"
+							},
+							"unit": {
+								"type": "string",
+								"description": "Unit of the value"
+							}
+						}
+					}
+				}
+			}
+		},
+		"Program": {
+			"type": "object",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string",
+							"description": "A key identifying a specific program\n"
+						},
+						"name": {
+							"type": "string",
+							"description": "user-friendly, localized name of the program, e.g. \"4D Heißluft\" in German"
+						},
+						"options": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"key",
+									"value"
+								],
+								"properties": {
+									"key": {
+										"type": "string",
+										"description": "a parameter for the given program, e.g. oven temperature"
+									},
+									"name": {
+										"type": "string",
+										"description": "user-friendly, localized name of the option, e.g. \"Adjust the duration\""
+									},
+									"value": {
+										"description": "the value of the parameter specified in \"key\", e.g. 200"
+									},
+									"unit": {
+										"type": "string",
+										"description": "the unit of this parameter, e.g. \"°C\""
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"key": "Cooking.Oven.Program.HeatingMode.HotAir",
+					"options": [
+						{
+							"key": "Cooking.Oven.Option.SetpointTemperature",
+							"value": 230,
+							"unit": "°C"
+						},
+						{
+							"key": "BSH.Common.Option.Duration",
+							"value": 1200,
+							"unit": "seconds"
+						}
+					]
+				}
+			}
+		},
+		"ArrayOfAvailablePrograms": {
+			"type": "object",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"programs"
+					],
+					"properties": {
+						"programs": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"key"
+								],
+								"properties": {
+									"key": {
+										"type": "string",
+										"description": "a key identifying an available program"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"programs": [
+						{
+							"key": "Cooking.Oven.Program.HeatingMode.HotAir"
+						},
+						{
+							"key": "Cooking.Oven.Program.HeatingMode.TopBottomHeating"
+						},
+						{
+							"key": "Cooking.Oven.Program.HeatingMode.PizzaSetting"
+						}
+					]
+				}
+			}
+		},
+		"ProgramDefinition": {
+			"type": "object",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"key"
+					],
+					"properties": {
+						"key": {
+							"type": "string",
+							"description": "a key identifying an available program"
+						},
+						"name": {
+							"type": "string",
+							"description": "user-friendly, localized name of the program, e.g. \"4D Heißluft\" in German"
+						},
+						"options": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"key",
+									"type"
+								],
+								"properties": {
+									"key": {
+										"type": "string",
+										"description": "a parameter for the given program, e.g. Cooking.Oven.Option.SetpointTemperature"
+									},
+									"name": {
+										"type": "string",
+										"description": "user-friendly, localized name of the option, e.g. \"Adjust the duration\""
+									},
+									"type": {
+										"type": "string",
+										"description": "type of option, possible values - String, Int, Boolean, {Enumtype} e.g. ConsumerProducts.CoffeeMaker.EnumType.CoffeeTemperature"
+									},
+									"unit": {
+										"type": "string",
+										"description": "unit of the option, e.g. \"°C\""
+									},
+									"constraints": {
+										"type": "object",
+										"description": "constraints of the option, e.g. step size, enumeration values, etc.",
+										"properties": {
+											"min": {
+												"type": "integer",
+												"description": "minimum value of the option, e.g. 70"
+											},
+											"max": {
+												"type": "integer",
+												"description": "maximum value of the option, e.g. 270"
+											},
+											"stepsize": {
+												"type": "integer",
+												"description": "allowed step-size of the option, e.g. 5"
+											},
+											"allowedvalues": {
+												"type": "array",
+												"description": "list of allowed enumeration values",
+												"items": {
+													"type": "string"
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"key": "Cooking.Oven.Program.HeatingMode.HotAir",
+					"options": [
+						{
+							"key": "Cooking.Oven.Option.SetpointTemperature",
+							"type": "Int",
+							"unit": "°C",
+							"constraints": {
+								"min": 30,
+								"max": 250
+							}
+						},
+						{
+							"key": "BSH.Common.Option.Duration",
+							"type": "Int",
+							"unit": "seconds",
+							"constraints": {
+								"min": 1,
+								"max": 86340
+							}
+						}
+					]
+				}
+			}
+		},
+		"Option": {
+			"type": "object",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"key",
+						"value"
+					],
+					"properties": {
+						"key": {
+							"type": "string",
+							"description": "a parameter for the given program, e.g. Cooking.Oven.Option.SetpointTemperature"
+						},
+						"name": {
+							"type": "string",
+							"description": "user-friendly, localized name of the option, e.g. \"Adjust the duration\""
+						},
+						"value": {
+							"description": "the value of the parameter specified in \"key\", e.g. 200"
+						},
+						"unit": {
+							"type": "string",
+							"description": "the unit of this parameter, e.g. \"°C\""
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"key": "Cooking.Oven.Option.SetpointTemperature",
+					"value": 180,
+					"unit": "°C"
+				}
+			}
+		},
+		"ArrayOfOptions": {
+			"type": "object",
+			"description": "Array of options represented as triplets key, value, unit",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"options"
+					],
+					"properties": {
+						"options": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"key",
+									"value"
+								],
+								"properties": {
+									"key": {
+										"type": "string",
+										"description": "a parameter for the given program, e.g. Cooking.Oven.Option.SetpointTemperature"
+									},
+									"name": {
+										"type": "string",
+										"description": "user-friendly, localized name of the option, e.g. \"Adjust the duration\""
+									},
+									"value": {
+										"description": "the value of the parameter specified in \"key\", e.g. 200"
+									},
+									"unit": {
+										"type": "string",
+										"description": "the unit of this parameter, e.g. \"°C\""
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"options": [
+						{
+							"key": "Cooking.Oven.Option.SetpointTemperature",
+							"value": 230,
+							"unit": "°C"
+						},
+						{
+							"key": "BSH.Common.Option.Duration",
+							"value": 1200,
+							"unit": "seconds"
+						}
+					]
+				}
+			}
+		},
+		"ArrayOfImages": {
+			"type": "object",
+			"description": "a list of images available from the home appliance",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"images"
+					],
+					"properties": {
+						"images": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"key",
+									"imagekey",
+									"previewimagekey",
+									"timestamp",
+									"quality"
+								],
+								"properties": {
+									"key": {
+										"type": "string",
+										"description": "Feature key of image type, e.g. Refrigeration.FridgeFreezer.Status.DoorCameraPresentRefrigerator"
+									},
+									"name": {
+										"type": "string",
+										"description": "user-friendly, localized name of the image type"
+									},
+									"imagekey": {
+										"type": "string",
+										"description": "Unique identifier for the image"
+									},
+									"previewimagekey": {
+										"type": "string",
+										"description": "Unique identifier for the preview image"
+									},
+									"timestamp": {
+										"type": "integer",
+										"format": "int64",
+										"description": "Unix timestamp when the image was shot"
+									},
+									"quality": {
+										"type": "string",
+										"description": "Quality of the captured image, possible values: good, bad:\nimage is flagged bad e.g. if the door has been closed too fast to shoot a sharp picture\n"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"images": [
+						{
+							"key": "Refrigeration.FridgeFreezer.Status.DoorCameraPresentRefrigerator",
+							"imagekey": "56e2ceea1f0000ab54d661f3",
+							"previewimagekey": "56e2cee91f0000a654d661f1",
+							"timestamp": 1457704646,
+							"quality": "good"
+						},
+						{
+							"key": "Refrigeration.FridgeFreezer.Status.InteriorCameraPresentRefrigerator",
+							"imagekey": "56e2cee91f0000a654d661f2",
+							"previewimagekey": "56e2cee91f0000a654d661f0",
+							"timestamp": 1457704646,
+							"quality": "good"
+						}
+					]
+				}
+			}
+		},
+		"Setting": {
+			"type": "object",
+			"description": "a setting object of the home appliance",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"key",
+						"value"
+					],
+					"properties": {
+						"key": {
+							"type": "string",
+							"description": "Feature key of the setting"
+						},
+						"name": {
+							"type": "string",
+							"description": "user-friendly, localized name of the setting, e.g. \"Power status\""
+						},
+						"value": {
+							"description": "the value of the parameter specified in \"key\", e.g. 200"
+						},
+						"unit": {
+							"type": "string",
+							"description": "the unit of this parameter, e.g. \"°C\""
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"key": "BSH.Common.Setting.PowerState",
+					"value": "BSH.Common.EnumType.PowerState.On"
+				}
+			}
+		},
+		"ArrayOfSettings": {
+			"type": "object",
+			"description": "a list of settings of the home appliance",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"settings"
+					],
+					"properties": {
+						"settings": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"key",
+									"value"
+								],
+								"properties": {
+									"key": {
+										"type": "string",
+										"description": "Feature key of the setting"
+									},
+									"name": {
+										"type": "string",
+										"description": "user-friendly, localized name of the setting, e.g. \"Power status\""
+									},
+									"value": {
+										"description": "the value of the parameter specified in \"key\", e.g. 200"
+									},
+									"unit": {
+										"type": "string",
+										"description": "the unit of this parameter, e.g. \"°C\""
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"settings": [
+						{
+							"key": "BSH.Common.Setting.PowerState",
+							"value": "BSH.Common.EnumType.PowerState.On"
+						},
+						{
+							"key": "Refrigeration.FridgeFreezer.Setting.SuperModeFreezer",
+							"value": true
+						}
+					]
+				}
+			}
+		},
+		"Status": {
+			"type": "object",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"key",
+						"value"
+					],
+					"properties": {
+						"key": {
+							"type": "string",
+							"description": "feature key of the status, e.g. BSH.Common.Status.RemoteControlActive"
+						},
+						"name": {
+							"type": "string",
+							"description": "user-friendly, localized name of the status key, e.g. \"Remote Control\""
+						},
+						"value": {
+							"description": "the value of the parameter specified in \"key\", e.g. true or 180 or \"BSH.Common.EnumType.OperationState.Ready\""
+						},
+						"unit": {
+							"type": "string",
+							"description": "the unit of this parameter"
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"key": "BSH.Common.Status.OperationState",
+					"value": "BSH.Common.EnumType.OperationState.Ready"
+				}
+			}
+		},
+		"ArrayOfStatus": {
+			"type": "object",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"status"
+					],
+					"properties": {
+						"status": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"required": [
+									"key",
+									"value"
+								],
+								"properties": {
+									"key": {
+										"type": "string",
+										"description": "feature key of the status, e.g. BSH.Common.Status.RemoteControlActive"
+									},
+									"name": {
+										"type": "string",
+										"description": "user-friendly, localized name of the status key, e.g. \"Remote Control\""
+									},
+									"value": {
+										"description": "the value of the parameter specified in \"key\", e.g. true or 180 or \"BSH.Common.EnumType.OperationState.Ready\""
+									},
+									"unit": {
+										"type": "string",
+										"description": "the unit of this parameter"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"status": [
+						{
+							"key": "BSH.Common.Status.OperationState",
+							"value": "BSH.Common.EnumType.OperationState.Ready"
+						},
+						{
+							"key": "BSH.Common.Status.LocalControlActive",
+							"value": true
+						}
+					]
+				}
+			}
+		},
+		"CommandDefinition": {
+			"type": "object",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": [
+							"key"
+						],
+						"properties": {
+							"key": {
+								"type": "string",
+								"description": "The feature key of the command defined, e.g. BSH.Common.Command.PauseProgram"
+							},
+							"description": {
+								"description": "The localized description of the command."
+							}
+						}
+					}
+				}
+			},
+			"example": {
+				"data": [
+					{
+						"key": "BSH.Common.Command.PauseProgram"
+					},
+					{
+						"key": "BSH.Common.Command.ResumeProgram"
+					}
+				]
+			}
+		},
+		"Command": {
+			"type": "object",
+			"required": [
+				"data"
+			],
+			"properties": {
+				"data": {
+					"type": "object",
+					"required": [
+						"key",
+						"value"
+					],
+					"properties": {
+						"key": {
+							"type": "string",
+							"description": "The feature key of the command defined, e.g. BSH.Common.Command.PauseProgram"
+						},
+						"value": {
+							"description": "The value of the command specified in \"key\", e.g. 200 or true"
+						}
+					}
+				}
+			},
+			"example": {
+				"data": {
+					"key": "BSH.Common.Command.PauseProgram",
+					"value": true
+				}
+			}
+		}
+	}
+}
