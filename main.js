@@ -115,7 +115,7 @@ function main() {
         adapter.log.error('password not specified!');
         //return;
     }
-  adapter.log.error('SCOPE: ' + !adapter.config.scope);
+  adapter.log.error('SCOPE: ' + adapter.config.scope);
     /**
      *
      *      For every state in the system there has to be also an object of type state
