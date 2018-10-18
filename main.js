@@ -36,6 +36,7 @@
 // you have to require the utils module and call adapter function
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
 const BSHapi =   require(__dirname + '/lib/BSHapi.json');
+const request =  require(__dirname + '/lib/auth.js');
 
 // you have to call the adapter function and pass a options object
 // name has to be set and has to be equal to adapters folder name and main file name excluding extension
@@ -116,6 +117,8 @@ function main() {
         //return;
     }
   adapter.log.error('SCOPE: ' + adapter.config.scope);
+
+  post();
     /**
      *
      *      For every state in the system there has to be also an object of type state
