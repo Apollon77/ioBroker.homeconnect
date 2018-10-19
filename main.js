@@ -116,7 +116,7 @@ function main() {
         adapter.log.error('password not specified!');
         //return;
     }
-  adapter.log.error('SCOPE: ' + adapter.config.scope);
+  //adapter.log.error('SCOPE: ' + adapter.config.scope);
 let scope=adapter.config.scope;
 auth.init(scope);
     /**
