@@ -119,6 +119,7 @@ function main() {
   //adapter.log.error('SCOPE: ' + adapter.config.scope);
 let scope=adapter.config.scope;
 auth.init(scope);
+adapter.log.error(scopeReturn);
     /**
      *
      *      For every state in the system there has to be also an object of type state
