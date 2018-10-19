@@ -118,8 +118,11 @@ function main() {
     }
   //adapter.log.error('SCOPE: ' + adapter.config.scope);
 let scope=adapter.config.scope;
+let clientID=adapter.config.clientID;
 let authorize=auth.init(scope);
+let authUrl=auth.post(scope,clientID);
 adapter.log.error(authorize);
+adapter.log.error(authUrl);
     /**
      *
      *      For every state in the system there has to be also an object of type state
