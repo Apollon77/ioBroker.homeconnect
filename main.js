@@ -138,6 +138,7 @@ function successCallback(){
 
 function failureCallback(){
     adapter.log.error("So ein Mist!!");
+    adapter.log.error(response.statusCode);
 }
 
 
