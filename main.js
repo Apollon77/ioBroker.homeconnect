@@ -130,7 +130,7 @@ promise.then(successCallback, failureCallback);
 
 
 function successCallback(){
-    adapter.log.error(deviceCode);
+    adapter.log.error(auth.post.deviceCode);
     adapter.log.error("ok");
 }
 
