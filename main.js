@@ -140,7 +140,7 @@ function failureCallback(){
 }
 
 
-//setTimeout(adapter.log.error(post.deviceCode),1000);
+
     /**
      *
      *      For every state in the system there has to be also an object of type state
