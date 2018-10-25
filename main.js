@@ -116,15 +116,30 @@ function main() {
         adapter.log.error('password not specified!');
         //return;
     }
-  //adapter.log.error('SCOPE: ' + adapter.config.scope);
+ 
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
-//let authorize=auth.init(scope);
-let authUrl=auth.post(scope,clientID);
-//adapter.log.error(authorize);
+
+//let authUrl=auth.post(scope,clientID);
+
 adapter.log.error(authUrl);
 
-setTimeout(adapter.log.error(post.deviceCode),1000);
+const promise = auth.post(scope,clientID); 
+promise.then(successCallback, failureCallback);
+
+
+
+function successCallback(){
+    adapter.log.error(deviceCode);
+    adapter.log.error("ok");
+}
+
+function failureCallback(){
+    adapter.log.error("So ein Mist!!");
+}
+
+
+//setTimeout(adapter.log.error(post.deviceCode),1000);
     /**
      *
      *      For every state in the system there has to be also an object of type state
