@@ -124,7 +124,7 @@ let authUrl=auth.post(scope,clientID);
 //adapter.log.error(authorize);
 adapter.log.error(authUrl);
 
-setTimeout(adapter.log.error(deviceCode),1000);
+setTimeout(adapter.log.error(post.deviceCode),1000);
     /**
      *
      *      For every state in the system there has to be also an object of type state
