@@ -122,7 +122,7 @@ let clientID=adapter.config.clientID;
 
 
 auth.devCodeGet(scope,clientID).then(
-    test=>{
+    devCode=>{
         adapter.log.error(test);
     },
     error=>{
