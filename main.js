@@ -122,10 +122,8 @@ let clientID=adapter.config.clientID;
 
 
 auth.devCodeGet(scope,clientID).then(
-    body=>{
-        authParse=JSON.parse(body);
-        adapter.log.error("Devicecode: " + authParse.device_code);
-        adapter.log.error("Authorization-URI: " + authParse.verification_uri_complete);
+    authUri=>{
+        adapter.log.error("Authorization-URI: " + uthUri);
     },
     error=>{
         adapter.log.error("So ein Mist!!");
