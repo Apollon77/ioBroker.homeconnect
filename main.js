@@ -123,7 +123,7 @@ let clientID=adapter.config.clientID;
 
 auth.devCodeGet(scope,clientID).then(
     authUri=>{
-        adapter.log.error("Authorization-URI: " + uthUri);
+        adapter.log.error("Authorization-URI: " + authUri);
     },
     error=>{
         adapter.log.error("So ein Mist!!");
