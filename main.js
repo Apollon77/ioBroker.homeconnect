@@ -98,7 +98,7 @@ function main() {
 
     // The adapters config (in the instance object everything under the attribute "native") is accessible via
     // adapter.config:
-    adapter.log.info('config EMail: '    + adapter.config.email);
+    //adapter.log.info('config EMail: '    + adapter.config.email);
     adapter.log.info('config Password: '    + adapter.config.pwd);
     adapter.log.info('config ClientID: ' + adapter.config.clientID);
 
@@ -124,6 +124,7 @@ let clientID=adapter.config.clientID;
 auth.devCodeGet(scope,clientID).then(
     authUri=>{
         adapter.log.error("Authorization-URI: " + authUri);
+        adapter.config.authUri=authUri;
     },
     error=>{
         adapter.log.error("So ein Mist!!");
