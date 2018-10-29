@@ -121,9 +121,9 @@ let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
 
 
-auth.devCodeGet(scope,clientID); 
+//auth.devCodeGet(scope,clientID); 
 //promise.then(successCallback, failureCallback);
-promise.then(
+auth.devCodeGet(scope,clientID).then(
     data=>{
         adapter.log.error(test);
     },
