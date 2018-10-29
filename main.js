@@ -120,9 +120,6 @@ function main() {
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
 
-//let authUrl=auth.post(scope,clientID);
-
-//adapter.log.error(authUrl);
 
 const promise = auth.post(scope,clientID); 
 promise.then(successCallback, failureCallback);
