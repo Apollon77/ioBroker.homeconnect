@@ -123,7 +123,7 @@ let clientID=adapter.config.clientID;
 
 auth.devCodeGet(scope,clientID).then(
     devCode=>{
-        adapter.log.error(test);
+        adapter.log.error(devCode);
     },
     error=>{
         adapter.log.error("So ein Mist!!");
