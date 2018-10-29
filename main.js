@@ -127,9 +127,9 @@ promise.then(successCallback, failureCallback);
 
 
 function successCallback(){
-    let obj = JSON.parse(body);
+    //let obj = JSON.parse(body);
     adapter.log.error("Devicecode: ");
-    adapter.log.error(obj.device_code);
+    adapter.log.error(test);
     adapter.log.error("ok");
 }
 
