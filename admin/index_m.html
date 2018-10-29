@@ -83,11 +83,10 @@
                 </div>
             </div>
                 <div class="row">
-                <div class="input-field col s12 m6 l4">
-                  <input id="authUri" type="email" class="value validate">
-                  <label for="authUri" data-error="wrong" data-success="right">Home-Connect URI</label>
-                  <span class="translate">login</span>
-                </div>
+                    <div class="col s12">
+                        <input class="value" id="authUri" size="60" maxlength="96" />
+                        <label for="authUri" class="translate">Authorization URI</label>
+                    </div>
                 <div class="input-field col s12 m6 l4">
                     <input class="value" data-crypt="1" type="password" id="pwd" />
                     <label for="pwd" class="translate">Home Connect password</label>
