@@ -121,10 +121,8 @@ let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
 
 
-//auth.devCodeGet(scope,clientID); 
-//promise.then(successCallback, failureCallback);
 auth.devCodeGet(scope,clientID).then(
-    data=>{
+    test=>{
         adapter.log.error(test);
     },
     error=>{
@@ -132,20 +130,7 @@ auth.devCodeGet(scope,clientID).then(
     }
 )
 
-/** 
-function successCallback(){
-    //let obj = JSON.parse(body);
-    adapter.log.error("Devicecode: ");
-    adapter.log.error(test);
-    adapter.log.error("ok");
-}
 
-function failureCallback(){
-    adapter.log.error("So ein Mist!!");
-    adapter.log.error(response.statusCode);
-}
-
-*/
 
     /**
      *
