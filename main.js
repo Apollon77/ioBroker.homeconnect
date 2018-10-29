@@ -122,8 +122,15 @@ let clientID=adapter.config.clientID;
 
 
 const promise = auth.post(scope,clientID); 
-promise.then(successCallback, failureCallback);
-
+//promise.then(successCallback, failureCallback);
+promise.then(
+    data=>{
+        adapter.log.error(test);
+    },
+    error=>{
+        adapter.log.error("So ein Mist!!");
+    }
+)
 
 
 function successCallback(){
