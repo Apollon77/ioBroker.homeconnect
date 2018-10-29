@@ -121,7 +121,7 @@ let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
 
 
-const promise = auth.post(scope,clientID); 
+let promise = auth.post(scope,clientID); 
 //promise.then(successCallback, failureCallback);
 promise.then(
     data=>{
