@@ -3,34 +3,8 @@
  * homeconnect adapter
  *
  *
- *  file io-package.json comments:
- *
- *  {
- *      "common": {
- *          "name":         "homeconnect",                  // name has to be set and has to be equal to adapters folder name and main file name excluding extension
- *          "version":      "0.0.0",                    // use "Semantic Versioning"! see http://semver.org/
- *          "title":        "Node.js homeconnect Adapter",  // Adapter title shown in User Interfaces
- *          "authors":  [                               // Array of authord
- *              "name <mail@homeconnect.com>"
- *          ]
- *          "desc":         "homeconnect adapter",          // Adapter description shown in User Interfaces. Can be a language object {de:"...",ru:"..."} or a string
- *          "platform":     "Javascript/Node.js",       // possible values "javascript", "javascript/Node.js" - more coming
- *          "mode":         "daemon",                   // possible values "daemon", "schedule", "subscribe"
- *          "materialize":  true,                       // support of admin3
- *          "schedule":     "0 0 * * *"                 // cron-style schedule. Only needed if mode=schedule
- *          "loglevel":     "info"                      // Adapters Log Level
- *      },
- *      "native": {                                     // the native object is available via adapter.config in your adapters code - use it for configuration
- *          "test1": true,
- *          "test2": 42,
- *          "mySelect": "auto"
- *      }
- *  }
- *
  */
 
-/* jshint -W097 */// jshint strict:false
-/*jslint node: true */
 'use strict';
 
 // you have to require the utils module and call adapter function
@@ -43,10 +17,7 @@ const auth =     require(__dirname + '/lib/auth.js');
 // adapter will be restarted automatically every time as the configuration changed, e.g system.adapter.homeconnect.0
 const adapter = new utils.Adapter('homeconnect');
 
-/*Variable declaration, since ES6 there are let to declare variables. Let has a more clearer definition where
-it is available then var.The variable is available inside a block and it's childs, but not outside.
-You can define the same variable name inside a child without produce a conflict with the variable of the parent block.*/
-let variable = 1234;
+
 
 // is called when adapter shuts down - callback has to be called under any circumstances!
 adapter.on('unload', function (callback) {
@@ -105,10 +76,11 @@ function main() {
         //return;
     }
 
+//OAuth2 Deviceflow
+//Get Authorization-URI to grant access ===> User interaction    
 	
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
-
 
 auth.devCodeGet(scope,clientID).then(
     ([authUri,devCode,pollInterval])=>{
@@ -119,8 +91,8 @@ auth.devCodeGet(scope,clientID).then(
         adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
         adapter.setState('pollInterval', pollInterval);
     },
-    error=>{
-        adapter.log.error("Irgendwas stimmt da wohl nicht!!");
+    statusPost=>{
+        adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
     }
 )
 
