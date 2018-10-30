@@ -109,6 +109,7 @@ auth.authUriGet(scope,clientID).then(
     }
 )
 
+/**
 let getToken=auth.tokenGet(deviceCode,clientID).then(
     (token)=>{
         adapter.log.info('Accestoken: ' + token);
@@ -125,7 +126,7 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
     }
 )
 
-
+ */
 
     /**
      *
