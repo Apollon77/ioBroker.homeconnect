@@ -49,10 +49,16 @@ adapter.on('stateChange', function (id, state) {
 
         adapter.log.error('DeviceCode vor Token: ' + deviceCode);
 
+        //counter=50;
+        let getInterval=setInterval(getToken,5000);
+//
+function getToken(){
+
     auth.tokenGet(deviceCode,clientID).then(
         (token)=>{
             adapter.log.info('Accestoken: ' + token);
-                          
+            clearInterval(getInterval);
+            adapter.setState('token', token);                     
         },
         statusPost=>{
             if (statusPost=='400'){
@@ -62,7 +68,8 @@ adapter.on('stateChange', function (id, state) {
         }
         }
     );        
-
+    }
+    //
     }
 
 
@@ -180,6 +187,16 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
         type: 'state',
         common: {
             name: 'Poll-Interval in sec.',
+            type: 'mixed',
+            role: 'indicator'
+        },
+        native: {}
+    });
+
+    adapter.setObject('token', {
+        type: 'state',
+        common: {
+            name: 'Access-Token',
             type: 'mixed',
             role: 'indicator'
         },
