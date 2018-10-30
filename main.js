@@ -42,7 +42,21 @@ adapter.on('stateChange', function (id, state) {
     if (id=='homeconnect.0.authUriComplete'){
         adapter.log.info('authUriComplete wurde geändert!');
         deviceCode=adapter.getState('devCode').val;
-    setInterval (tokenGetInterval,5000);        
+    setInterval (auth.tokenGet(deviceCode,clientID).then(
+        (token)=>{
+            adapter.log.info('Accestoken: ' + token);
+            if (!token){
+                clearInterval(tokenGetInterval);
+            }                
+        },
+        statusPost=>{
+            if (statusPost=='400'){
+                adapter.log.error('400 Bad Request (invalid or missing request parameters)');
+            }else{
+            adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
+        }
+        }
+    ),5000);        
 
     }
 
@@ -109,21 +123,7 @@ auth.authUriGet(scope,clientID).then(
 )
 
 
-let tokenGetInterval=auth.tokenGet(deviceCode,clientID).then(
-    (token)=>{
-        adapter.log.info('Accestoken: ' + token);
-        if (!token){
-            clearInterval(tokenGetInterval);
-        }                
-    },
-    statusPost=>{
-        if (statusPost=='400'){
-            adapter.log.error('400 Bad Request (invalid or missing request parameters)');
-        }else{
-        adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
-    }
-    }
-)
+
 
 
     /**
