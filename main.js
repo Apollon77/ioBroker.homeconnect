@@ -45,7 +45,7 @@ adapter.on('stateChange', function (id, state) {
 
         adapter.getState('devCode', function (err, state) {
     
-            let deviceCode=state.val            
+            deviceCode=state.val            
         }); 
         
          
