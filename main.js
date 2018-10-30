@@ -39,8 +39,8 @@ adapter.on('stateChange', function (id, state) {
     // Warning, state can be null if it was deleted
     adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
 
-    if (id=='homeconnect.0.authUriComplete'){
-        adapter.log.info('authUriComplete wurde geändert!');
+    if (id=='homeconnect.0.devCode'){
+        adapter.log.info('Devicecode wurde geändert!');
         let deviceCode=state.val;
 
               
