@@ -42,6 +42,14 @@ adapter.on('stateChange', function (id, state) {
     if (id=='homeconnect.0.authUriComplete'){
         adapter.log.info('authUriComplete wurde geändert!');
         let deviceCode=adapter.getState(('devCode').val);
+
+        adapter.getState('devCode', function (err, state) {
+    
+            let deviceCode=state.val            
+        }); 
+        
+         
+
         adapter.log.error('DeviceCode vor Token: ' + deviceCode);
     //setInterval (getToken(deviceCode),5000);        
 
