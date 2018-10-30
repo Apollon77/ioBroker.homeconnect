@@ -43,7 +43,7 @@ adapter.on('stateChange', function (id, state) {
         adapter.log.info('authUriComplete wurde geändert!');
         let deviceCode=adapter.getState(('devCode').val);
         adapter.log.error('DeviceCode vor Token: ' + deviceCode);
-    setInterval (getToken(deviceCode),5000);        
+    //setInterval (getToken(deviceCode),5000);        
 
     }
 
