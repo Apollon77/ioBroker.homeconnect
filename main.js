@@ -43,21 +43,7 @@ adapter.on('stateChange', function (id, state) {
         adapter.log.info('authUriComplete wurde geändert!');
         let deviceCode=adapter.getState(('devCode').val);
         adapter.log.error('DeviceCode vor Token: ' + deviceCode);
-    setInterval (auth.tokenGet(deviceCode,clientID).then(
-        (token)=>{
-            adapter.log.info('Accestoken: ' + token);
-            if (!token){
-                clearInterval(auth.tokenGet);
-            }                
-        },
-        statusPost=>{
-            if (statusPost=='400'){
-                adapter.log.error('400 Bad Request (invalid or missing request parameters)');
-            }else{
-            adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
-        }
-        }
-    ),5000);        
+    setInterval (getToken,5000);        
 
     }
 
@@ -123,7 +109,21 @@ auth.authUriGet(scope,clientID).then(
     }
 )
 
-
+let getToken=auth.tokenGet(deviceCode,clientID).then(
+    (token)=>{
+        adapter.log.info('Accestoken: ' + token);
+        if (!token){
+            clearInterval(getToken);
+        }                
+    },
+    statusPost=>{
+        if (statusPost=='400'){
+            adapter.log.error('400 Bad Request (invalid or missing request parameters)');
+        }else{
+        adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
+    }
+    }
+)
 
 
 
