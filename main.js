@@ -40,7 +40,22 @@ adapter.on('stateChange', function (id, state) {
     adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
 
     if (id=='homeconnect.0.token'){
-        adapter.log.info('Devicecode wurde geändert!');
+        adapter.log.info('Token wurde geändert!');
+        let token=state.val;
+        
+        auth.getAppliances(token).then(
+            (appliances)=>{
+                adapter.log.info(appliances.data.homeappliances[0].name);
+            },
+            statusGet=>{
+                if (statusGet=='400'){
+                    adapter.log.error('Bitte die Freigabe für ioBroker erteilen!!!');
+                }else{
+                adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet );
+            }
+            }
+
+        )   
     }
     
 
