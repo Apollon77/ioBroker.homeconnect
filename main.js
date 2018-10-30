@@ -49,11 +49,11 @@ adapter.on('stateChange', function (id, state) {
 
         adapter.log.error('DeviceCode vor Token: ' + deviceCode);
 
-    setInterval (auth.tokenGet(deviceCode,clientID).then(
+    let tokenGetInterval=setInterval (auth.tokenGet(deviceCode,clientID).then(
         (token)=>{
             adapter.log.info('Accestoken: ' + token);
             if (!token){
-                clearInterval(getToken);
+                clearInterval(tokenGetInterval);
             }                
         },
         statusPost=>{
