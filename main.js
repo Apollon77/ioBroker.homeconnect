@@ -124,7 +124,7 @@ let clientID=adapter.config.clientID;
 auth.devCodeGet(scope,clientID).then(
     authUri=>{
         adapter.log.error("Authorization-URI: " + authUri);
-        return (authUri);
+        adapter.setState('authUriComplete', authUri);  
     },
     error=>{
         adapter.log.error("So ein Mist!!");
@@ -145,10 +145,10 @@ auth.devCodeGet(scope,clientID).then(
      *
      */
 
-    adapter.setObject('testVariable', {
+    adapter.setObject('authUriComplete', {
         type: 'state',
         common: {
-            name: 'testVariable',
+            name: 'AuthorizationURI',
             type: 'mixed',
             role: 'indicator'
         },
@@ -167,7 +167,7 @@ auth.devCodeGet(scope,clientID).then(
      */
 
     // the variable testVariable is set to true as command (ack=false)
-    adapter.setState('testVariable', authUri);
+    //adapter.setState('testVariable', authUri);
 
     // same thing, but the value is flagged "ack"
     // ack should be always set to true if the value is received from or acknowledged from the target system
