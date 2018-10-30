@@ -47,7 +47,22 @@ adapter.on('stateChange', function (id, state) {
          
 
         adapter.log.error('DeviceCode vor Token: ' + deviceCode);
-    //setInterval (getToken(deviceCode),5000);        
+
+    setInterval (auth.tokenGet(deviceCode,clientID).then(
+        (token)=>{
+            adapter.log.info('Accestoken: ' + token);
+            if (!token){
+                clearInterval(getToken);
+            }                
+        },
+        statusPost=>{
+            if (statusPost=='400'){
+                adapter.log.error('400 Bad Request (invalid or missing request parameters)');
+            }else{
+            adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
+        }
+        }
+    ),5000);        
 
     }
 
