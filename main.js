@@ -17,8 +17,6 @@ const auth =     require(__dirname + '/lib/auth.js');
 // adapter will be restarted automatically every time as the configuration changed, e.g system.adapter.homeconnect.0
 const adapter = new utils.Adapter('homeconnect');
 
-let scope=adapter.config.scope;
-let clientID=adapter.config.clientID;
 
 // is called when adapter shuts down - callback has to be called under any circumstances!
 adapter.on('unload', function (callback) {
@@ -88,6 +86,8 @@ function main() {
 //OAuth2 Deviceflow
 //Get Authorization-URI to grant access ===> User interaction    
 	
+let scope=adapter.config.scope;
+let clientID=adapter.config.clientID;
 
 
 auth.authUriGet(scope,clientID).then(
