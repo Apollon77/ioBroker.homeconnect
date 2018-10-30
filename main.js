@@ -57,12 +57,12 @@ function getToken(){
     auth.tokenGet(deviceCode,clientID).then(
         (token)=>{
             adapter.log.info('Accestoken: ' + token);
+            adapter.setState('token', token);    
             clearInterval(getInterval);
-            adapter.setState('token', token);                     
         },
         statusPost=>{
             if (statusPost=='400'){
-                adapter.log.error('400 Bad Request (invalid or missing request parameters) Token!!!');
+                adapter.log.error('Bitte die Freigabe für ioBroker erteilen!!!');
             }else{
             adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
         }
