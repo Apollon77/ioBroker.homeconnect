@@ -97,9 +97,10 @@ auth.authUriGet(scope,clientID).then(
         adapter.setState('authUriComplete', authUri);
         adapter.log.info('DeviceCode: ' + devCode);  
         adapter.setState('devCode', devCode);
-        deviceCode=devCode;
+        let deviceCode=devCode;
         adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
         adapter.setState('pollInterval', pollInterval);
+        return(deviceCode);
     },
     statusPost=>{
         if (statusPost=='400'){
