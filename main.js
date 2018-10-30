@@ -111,14 +111,16 @@ let clientID=adapter.config.clientID;
 
 
 auth.devCodeGet(scope,clientID).then(
-    ([authUri,devCode])=>{
-        adapter.log.debug("Authorization-URI: " + authUri);
+    ([authUri,devCode,pollInterval])=>{
+        adapter.log.info("Authorization-URI: " + authUri);
         adapter.setState('authUriComplete', authUri);
-        adapter.log.debug('DeviceCode: ' + devCode);  
+        adapter.log.info('DeviceCode: ' + devCode);  
         adapter.setState('devCode', devCode);
+        adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
+        adapter.setState('pollInterval', pollInterval);
     },
     error=>{
-        adapter.log.error("So ein Mist!!");
+        adapter.log.error("Irgendwas stimmt da wohl nicht!!");
     }
 )
 
@@ -154,6 +156,15 @@ auth.devCodeGet(scope,clientID).then(
         native: {}
     });
 
+    adapter.setObject('pollInterval', {
+        type: 'state',
+        common: {
+            name: 'Poll-Interval in sec.',
+            type: 'mixed',
+            role: 'indicator'
+        },
+        native: {}
+    });
 
     // in this homeconnect all states changes inside the adapters namespace are subscribed
     adapter.subscribeStates('*');
