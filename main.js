@@ -40,7 +40,7 @@ adapter.on('stateChange', function (id, state) {
     // Warning, state can be null if it was deleted
     adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
 
-    if (id=='authUriComplete'){
+    if (id=='homeconnect.0.authUriComplete'){
         adapter.log.info('authUriComplete wurde geändert!');
     }
 
