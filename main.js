@@ -39,7 +39,11 @@ adapter.on('stateChange', function (id, state) {
     // Warning, state can be null if it was deleted
     adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
 
-       
+    if (id=='homeconnect.0.token'){
+        adapter.log.info('Devicecode wurde geändert!');
+    }
+    
+
     if (id=='homeconnect.0.devCode'){
         adapter.log.info('Devicecode wurde geändert!');
         let deviceCode=state.val;
@@ -55,9 +59,11 @@ adapter.on('stateChange', function (id, state) {
 function getToken(){
 
     auth.tokenGet(deviceCode,clientID).then(
-        (token)=>{
+        ([token,refreshToken])=>{
             adapter.log.info('Accestoken: ' + token);
+            adapter.log.info('Refresh-Token: ' + refreshToken);
             adapter.setState('token', {val: token, ack: true});
+            adapter.setState('refreshToken', {val: refreshToken, ack: true});
             //adapter.setState('homeconnect.0.token', token);    
             clearInterval(getInterval);
         },
@@ -203,6 +209,17 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
         },
         native: {}
     });
+
+    adapter.setObject('refreshToken', {
+        type: 'state',
+        common: {
+            name: 'Refresh-Token',
+            type: 'mixed',
+            role: 'indicator'
+        },
+        native: {}
+    });
+
 
     // in this homeconnect all states changes inside the adapters namespace are subscribed
     adapter.subscribeStates('*');
