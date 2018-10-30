@@ -42,10 +42,11 @@ adapter.on('stateChange', function (id, state) {
     if (id=='homeconnect.0.token'){
         adapter.log.info('Token wurde geändert!');
         let token=state.val;
-        
+
         auth.getAppliances(token).then(
             (appliances)=>{
-                adapter.log.info(appliances.data.homeappliances[0].name);
+                //adapter.log.info(appliances.data.homeappliances[0].name);
+                adapter.log.info(appliances);
             },
             statusGet=>{
                 if (statusGet=='400'){
