@@ -17,7 +17,8 @@ const auth =     require(__dirname + '/lib/auth.js');
 // adapter will be restarted automatically every time as the configuration changed, e.g system.adapter.homeconnect.0
 const adapter = new utils.Adapter('homeconnect');
 
-
+let scope=adapter.config.scope;
+let clientID=adapter.config.clientID;
 
 // is called when adapter shuts down - callback has to be called under any circumstances!
 adapter.on('unload', function (callback) {
@@ -42,7 +43,11 @@ adapter.on('stateChange', function (id, state) {
 
     if (id=='homeconnect.0.authUriComplete'){
         adapter.log.info('authUriComplete wurde geändert!');
+        let deviceCode=adapter.getState('devCode').val;
+    setInterval (tokenGetInterval,5000);        
+
     }
+
 
     // you can use the ack flag to detect if it is status (true) or command (false)
     if (state && !state.ack) {
@@ -83,10 +88,9 @@ function main() {
 //OAuth2 Deviceflow
 //Get Authorization-URI to grant access ===> User interaction    
 	
-let scope=adapter.config.scope;
-let clientID=adapter.config.clientID;
 
-auth.devCodeGet(scope,clientID).then(
+
+auth.authUriGet(scope,clientID).then(
     ([authUri,devCode,pollInterval])=>{
         adapter.log.info("Authorization-URI: " + authUri);
         adapter.setState('authUriComplete', authUri);
@@ -104,6 +108,22 @@ auth.devCodeGet(scope,clientID).then(
     }
 )
 
+
+let tokenGetInterval=auth.tokenGet(deviceCode,clientID).then(
+    (token)=>{
+        adapter.log.info('Accestoken: ' + token);
+        if (!token){
+            clearInterval(tokenGetInterval);
+        }                
+    },
+    statusPost=>{
+        if (statusPost=='400'){
+            adapter.log.error('400 Bad Request (invalid or missing request parameters)');
+        }else{
+        adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
+    }
+    }
+)
 
 
     /**
