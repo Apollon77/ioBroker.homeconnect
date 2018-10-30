@@ -57,7 +57,8 @@ function getToken(){
     auth.tokenGet(deviceCode,clientID).then(
         (token)=>{
             adapter.log.info('Accestoken: ' + token);
-            adapter.setState('homeconnect.0.token', token);    
+            adapter.setState('token', {val: token, ack: true});
+            //adapter.setState('homeconnect.0.token', token);    
             clearInterval(getInterval);
         },
         statusPost=>{
