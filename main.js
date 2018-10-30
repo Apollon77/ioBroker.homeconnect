@@ -62,9 +62,9 @@ function getToken(){
         },
         statusPost=>{
             if (statusPost=='400'){
-                adapter.log.error('400 Bad Request (invalid or missing request parameters)');
+                adapter.log.error('400 Bad Request (invalid or missing request parameters) Token!!!');
             }else{
-            adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
+            adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
         }
         }
     );        
