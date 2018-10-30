@@ -49,12 +49,10 @@ adapter.on('stateChange', function (id, state) {
 
         adapter.log.error('DeviceCode vor Token: ' + deviceCode);
 
-    let tokenGetInterval=setInterval (auth.tokenGet(deviceCode,clientID).then(
+    auth.tokenGet(deviceCode,clientID).then(
         (token)=>{
             adapter.log.info('Accestoken: ' + token);
-            if (!token){
-                clearInterval(tokenGetInterval);
-            }                
+                          
         },
         statusPost=>{
             if (statusPost=='400'){
@@ -63,7 +61,7 @@ adapter.on('stateChange', function (id, state) {
             adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
         }
         }
-    ),5000);        
+    );        
 
     }
 
