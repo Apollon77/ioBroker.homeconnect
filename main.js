@@ -98,8 +98,6 @@ function main() {
 
     // The adapters config (in the instance object everything under the attribute "native") is accessible via
     // adapter.config:
-    //adapter.log.info('config EMail: '    + adapter.config.email);
-    adapter.log.info('config Password: '    + adapter.config.pwd);
     adapter.log.info('config ClientID: ' + adapter.config.clientID);
 
     if (!adapter.config.clientID) {
@@ -107,31 +105,22 @@ function main() {
         //return;
     }
 
-	if (!adapter.config.email) {
-        adapter.log.error('E-Mail not specified!');
-        //return;
-    }
-
-	if (!adapter.config.pwd) {
-        adapter.log.error('password not specified!');
-        //return;
-    }
- 
+	
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
 
 
 auth.devCodeGet(scope,clientID).then(
-    authUri=>{
-        adapter.log.error("Authorization-URI: " + authUri);
-        adapter.setState('authUriComplete', authUri);  
+    ([authUri,devCode])=>{
+        adapter.log.debug("Authorization-URI: " + authUri);
+        adapter.setState('authUriComplete', authUri);
+        adapter.log.debug('DeviceCode: ' + devCode);  
+        adapter.setState('devCode', devCode);
     },
     error=>{
         adapter.log.error("So ein Mist!!");
     }
 )
-
-//exports.authUri=authUri;
 
 
 
@@ -154,6 +143,17 @@ auth.devCodeGet(scope,clientID).then(
         },
         native: {}
     });
+
+    adapter.setObject('devCode', {
+        type: 'state',
+        common: {
+            name: 'DeviceCode',
+            type: 'mixed',
+            role: 'indicator'
+        },
+        native: {}
+    });
+
 
     // in this homeconnect all states changes inside the adapters namespace are subscribed
     adapter.subscribeStates('*');
