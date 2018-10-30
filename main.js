@@ -92,7 +92,11 @@ auth.devCodeGet(scope,clientID).then(
         adapter.setState('pollInterval', pollInterval);
     },
     statusPost=>{
+        if (statusPost=='400'){
+            adapter.log.error('400 Bad Request (invalid or missing request parameters)');
+        }else{
         adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
+    }
     }
 )
 
