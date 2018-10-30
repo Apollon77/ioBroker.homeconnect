@@ -57,7 +57,7 @@ function getToken(){
     auth.tokenGet(deviceCode,clientID).then(
         (token)=>{
             adapter.log.info('Accestoken: ' + token);
-            adapter.setState('token', token);    
+            adapter.setState('toke', token);    
             clearInterval(getInterval);
         },
         statusPost=>{
