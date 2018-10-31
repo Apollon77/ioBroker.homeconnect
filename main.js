@@ -11,6 +11,7 @@
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
 const BSHapi =   require(__dirname + '/lib/BSHapi.json');
 const auth =     require(__dirname + '/lib/auth.js');
+const state =     require(__dirname + '/lib/states.js');
 
 // you have to call the adapter function and pass a options object
 // name has to be set and has to be equal to adapters folder name and main file name excluding extension
@@ -137,20 +138,23 @@ function main() {
 	
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
-//let access=adapter.getState('access').val;
+let state='access';
+state.stateGet(state).then(
+    (value)=>{
+        let access=value;
+        adapter.log.info('VALUE= '+value);
+    },
+    err=>{
+        if (!err){
+            adapter.log.error('FEHLER: ' + err);
+        }
 
-let access=adapter.getState('access', function (err, state) {
-    
-    adapter.log.error('State in function:' + state.val);
-        return(state.val); 
-        
-    
+    }
+)
 
-}); 
 
-adapter.log.error('Access-State = ' + access);
 
-if (!access && access === true ){
+
 
 auth.authUriGet(scope,clientID).then(
     ([authUri,devCode,pollInterval])=>{
@@ -167,9 +171,9 @@ auth.authUriGet(scope,clientID).then(
         }else{
         adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
     }
-    }
-)
 }
+)
+
 
 /**
 let getToken=auth.tokenGet(deviceCode,clientID).then(
