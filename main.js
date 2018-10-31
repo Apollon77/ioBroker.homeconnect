@@ -137,7 +137,16 @@ function main() {
 	
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
-let access=adapter.getState('access').val;
+//let access=adapter.getState('access').val;
+
+let access=adapter.getState('access', function (err, state) {
+    
+    adapter.log.error('State in function:' + state.val);
+        return(state.val); 
+        
+    ); 
+
+}); 
 
 adapter.log.error('Access-State = ' + access);
 
