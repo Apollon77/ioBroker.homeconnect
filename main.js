@@ -145,9 +145,9 @@ state.stateGet(stat).then(
         adapter.log.info('VALUE= '+value);
     },
     err=>{
-        if (!err){
+        
             adapter.log.error('FEHLER: ' + err);
-        }
+        
 
     }
 )
