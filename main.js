@@ -137,7 +137,11 @@ function main() {
 	
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
+let access=adapter.getState('access').val;
 
+adapter.log.error('Access-State = ' + access);
+
+if (!access && access === true ){}
 
 auth.authUriGet(scope,clientID).then(
     ([authUri,devCode,pollInterval])=>{
@@ -156,7 +160,7 @@ auth.authUriGet(scope,clientID).then(
     }
     }
 )
-
+}
 /**
 let getToken=auth.tokenGet(deviceCode,clientID).then(
     (token)=>{
@@ -236,6 +240,15 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
         native: {}
     });
 
+    adapter.setObject('access', {
+        type: 'state',
+        common: {
+            name: 'access',
+            type: 'boolean',
+            role: 'indicator'
+        },
+        native: {}
+    });
 
     // in this homeconnect all states changes inside the adapters namespace are subscribed
     adapter.subscribeStates('*');

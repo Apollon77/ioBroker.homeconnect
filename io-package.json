@@ -14,8 +14,8 @@
         },
 		"title": "Home Connect",
         "titleLang": {
-            "en": "Javascript/Node.js based homeconnect",
-            "de": "Javascript / Node.js basierte Vorlagenadapter",
+            "en": "BSH Home-Connect Adapter",
+            "de": "BSH Home-Connect Adapter",
             "ru": "Адаптер шаблонов на основе Javascript / Node.js",
             "pt": "Adaptador de modelo baseado em Javascript / Node.js",
             "nl": "Javascript / Node.js gebaseerde sjabloonadapter",
