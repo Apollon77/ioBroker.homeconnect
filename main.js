@@ -46,7 +46,7 @@ adapter.on('stateChange', function (id, state) {
         auth.getAppliances(token).then(
             (appliances)=>{
                 //adapter.log.info(appliances.data.homeappliances[0].name);
-                adapter.log.info(appliances);
+                adapter.log.error(appliances);
             },
             statusGet=>{
                 if (statusGet=='400'){
