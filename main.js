@@ -138,8 +138,8 @@ function main() {
 	
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
-let state='access';
-state.stateGet(state).then(
+let stat='access';
+state.stateGet(stat).then(
     (value)=>{
         let access=value;
         adapter.log.info('VALUE= '+value);
