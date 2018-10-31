@@ -144,7 +144,7 @@ let access=adapter.getState('access', function (err, state) {
     adapter.log.error('State in function:' + state.val);
         return(state.val); 
         
-    ); 
+    
 
 }); 
 
