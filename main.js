@@ -139,7 +139,8 @@ function main() {
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
 let stat='access';
-state.stateGet(stat).then(
+
+stateGet(stat).then(
     (value)=>{
         let access=value;
         adapter.log.info('VALUE= '+value);
@@ -296,6 +297,23 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
         console.log('check group user admin group admin: ' + res);
     });
 
+
+    function stateGet(stat){
+
+        return new Promise((resolve, reject) => {
+        
+        adapter.getState(stat, function (err, state) {
+        
+            if (err){
+                reject(err);
+            }else{
+                let value=state.val;
+                resolve(value);
+                
+            }
+        }); 
+        });
+        }
 
 
 }
