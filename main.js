@@ -261,7 +261,7 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
             name: 'access',
             type: 'boolean',
             role: 'indicator',
-            value: 'false'
+            state: 'false'
         },
         native: {}
     });
