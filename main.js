@@ -255,7 +255,7 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
         native: {}
     });
 
-    adapter.setObject('access', {
+    adapter.setObject('access', false, {
         type: 'state',
         common: {
             name: 'access',
