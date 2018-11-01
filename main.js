@@ -138,7 +138,7 @@ function main() {
 	
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
-let stat='access';
+let stat='homeconnect.0.access';
 
 stateGet(stat).then(
     (value)=>{
