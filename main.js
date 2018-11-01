@@ -255,12 +255,13 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
         native: {}
     });
 
-    adapter.setObject('access', false, {
+    adapter.setObject('access',  {
         type: 'state',
         common: {
             name: 'access',
             type: 'boolean',
-            role: 'indicator'
+            role: 'indicator',
+            value: 'false'
         },
         native: {}
     });
