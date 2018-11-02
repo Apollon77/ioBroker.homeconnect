@@ -145,8 +145,27 @@ let stat='homeconnect.0.access';
 stateGet(stat).then(
     (value)=>{
         let access=value;
-        return(access);
-        adapter.log.info('VALUE= '+value);
+        if (access === false){
+
+
+            auth.authUriGet(scope,clientID).then(
+                ([authUri,devCode,pollInterval])=>{
+                    adapter.log.info("Authorization-URI: " + authUri);
+                    adapter.setState('authUriComplete', authUri);
+                    adapter.log.info('DeviceCode: ' + devCode);  
+                    adapter.setState('devCode', devCode);
+                    adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
+                    adapter.setState('pollInterval', pollInterval);
+                },
+                statusPost=>{
+                    if (statusPost=='400'){
+                        adapter.log.error('400 Bad Request (invalid or missing request parameters)');
+                    }else{
+                    adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
+                }
+            }
+            );
+            }
     },
     err=>{
         
@@ -157,27 +176,7 @@ stateGet(stat).then(
 )
 
 
-if (access === false){
 
-
-auth.authUriGet(scope,clientID).then(
-    ([authUri,devCode,pollInterval])=>{
-        adapter.log.info("Authorization-URI: " + authUri);
-        adapter.setState('authUriComplete', authUri);
-        adapter.log.info('DeviceCode: ' + devCode);  
-        adapter.setState('devCode', devCode);
-        adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
-        adapter.setState('pollInterval', pollInterval);
-    },
-    statusPost=>{
-        if (statusPost=='400'){
-            adapter.log.error('400 Bad Request (invalid or missing request parameters)');
-        }else{
-        adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
-    }
-}
-);
-}
 
 /**
 let getToken=auth.tokenGet(deviceCode,clientID).then(
