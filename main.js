@@ -156,7 +156,7 @@ stateGet(stat).then(
 )
 
 
-
+if (access=== false){
 
 
 auth.authUriGet(scope,clientID).then(
@@ -175,8 +175,8 @@ auth.authUriGet(scope,clientID).then(
         adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
     }
 }
-)
-
+);
+}
 
 /**
 let getToken=auth.tokenGet(deviceCode,clientID).then(
