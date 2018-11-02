@@ -44,6 +44,8 @@ adapter.on('stateChange', function (id, state) {
         adapter.log.info('Token wurde geändert!');
         let token=state.val;
 
+        adapter.setState('access', true);
+
         auth.getAppliances(token).then(
             (appliances)=>{
                 //adapter.log.info(appliances.data.homeappliances[0].name);
