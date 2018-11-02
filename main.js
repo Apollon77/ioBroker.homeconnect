@@ -166,7 +166,7 @@ stateGet(stat).then(
             }
             );
             }else{
-                adapter.log.error('Devicecode: '+ devCode);
+                adapter.log.error('Devicecode: '+ deviceCode);
                 getToken();
             }
     },
