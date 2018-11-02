@@ -128,7 +128,7 @@ function main() {
 
     // The adapters config (in the instance object everything under the attribute "native") is accessible via
     // adapter.config:
-    adapter.log.info('config ClientID: ' + adapter.config.clientID);
+    //adapter.log.info('config ClientID: ' + adapter.config.clientID);
 
     if (!adapter.config.clientID) {
         adapter.log.error('Client ID not specified!');
@@ -181,24 +181,6 @@ stateGet(stat).then(
 
 
 
-/**
-let getToken=auth.tokenGet(deviceCode,clientID).then(
-    (token)=>{
-        adapter.log.info('Accestoken: ' + token);
-        if (!token){
-            clearInterval(getToken);
-        }                
-    },
-    statusPost=>{
-        if (statusPost=='400'){
-            adapter.log.error('400 Bad Request (invalid or missing request parameters)');
-        }else{
-        adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost );
-    }
-    }
-)
-
- */
 
     /**
      *
@@ -303,7 +285,10 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
         console.log('check group user admin group admin: ' + res);
     });
 
-
+/**
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+*/
     function stateGet(stat){
 
         return new Promise((resolve, reject) => {
