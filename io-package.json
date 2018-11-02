@@ -63,7 +63,8 @@
     "native": {
            "test1": true,
            "test2": 42,
-           "mySelect": "auto"
+           "mySelect": "auto",
+           "access": false
        },
     "objects": [
 
