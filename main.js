@@ -145,6 +145,7 @@ let stat='homeconnect.0.access';
 stateGet(stat).then(
     (value)=>{
         let access=value;
+        return(access);
         adapter.log.info('VALUE= '+value);
     },
     err=>{
@@ -156,7 +157,7 @@ stateGet(stat).then(
 )
 
 
-if (access=== false){
+if (access === false){
 
 
 auth.authUriGet(scope,clientID).then(
