@@ -308,7 +308,7 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
             if (err){
                 reject(err);
             }else{
-                if (typeof state != undefined && state.val != null){
+                if (typeof state != undefined && state != null){
                 let value=state.val;
                 resolve(value);
                 }else{
