@@ -144,8 +144,8 @@ let stat='homeconnect.0.access';
 
 stateGet(stat).then(
     (value)=>{
-        let access=value;
-        if (access === false){
+        //let access=value;
+        if (value === false){
 
 
             auth.authUriGet(scope,clientID).then(
@@ -165,7 +165,7 @@ stateGet(stat).then(
                 }
             }
             );
-            }else{
+            }else if (value === true){
                 adapter.log.error('Devicecode: '+ deviceCode);
                 getToken();
             }
