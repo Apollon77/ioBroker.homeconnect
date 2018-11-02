@@ -144,6 +144,7 @@ let stat='homeconnect.0.access';
 
 stateGet(stat).then(
     (value)=>{
+        adapter.log.info('STATE: ' + value);
         //let access=value;
         if (value === false){
 
