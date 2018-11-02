@@ -4,9 +4,52 @@
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
 const BSHapi =   require(__dirname + '/lib/BSHapi.json');
 const auth =     require(__dirname + '/lib/auth.js');
-//const state =     require(__dirname + '/lib/states.js');
 
 const adapter = new utils.Adapter('homeconnect');
+
+
+function stateGet(stat){
+
+    return new Promise((resolve, reject) => {
+    
+    adapter.getState(stat, function (err, state) {
+    
+        if (err){
+            reject(err);
+        }else{
+            if (typeof state != undefined && state != null){
+            let value=state.val;
+            resolve(value);
+            }else{
+                let value=false;
+                resolve(value);
+            }
+        }
+    }); 
+    });
+    }
+
+    function getToken(){
+
+        auth.tokenGet(deviceCode,clientID).then(
+            ([token,refreshToken])=>{
+                adapter.log.info('Accestoken: ' + token);
+                adapter.log.info('Refresh-Token: ' + refreshToken);
+                adapter.setState('token', {val: token, ack: true});
+                adapter.setState('refreshToken', {val: refreshToken, ack: true});
+                clearInterval(getInterval);
+            },
+            statusPost=>{
+                if (statusPost=='400'){
+                    adapter.log.error('Bitte die Freigabe für ioBroker erteilen!!!');
+                }else{
+                adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
+            }
+            }
+        );        
+        }
+
+
 
 adapter.on('unload', function (callback) {
     try {
@@ -17,12 +60,12 @@ adapter.on('unload', function (callback) {
     }
 });
 
-// is called if a subscribed object changes
+
 adapter.on('objectChange', function (id, obj) {
     adapter.log.info('objectChange ' + id + ' ' + JSON.stringify(obj));
 });
 
-// is called if a subscribed state changes
+
 adapter.on('stateChange', function (id, state) {
 
     if (id=='homeconnect.0.token'){
@@ -46,7 +89,6 @@ adapter.on('stateChange', function (id, state) {
         )   
     }
     
-
     if (id=='homeconnect.0.devCode'){
         adapter.log.info('Devicecode wurde geändert!');
         let deviceCode=state.val;
@@ -55,25 +97,7 @@ adapter.on('stateChange', function (id, state) {
 
         let getInterval=setInterval(getToken,5000);
 //
-function getToken(){
 
-    auth.tokenGet(deviceCode,clientID).then(
-        ([token,refreshToken])=>{
-            adapter.log.info('Accestoken: ' + token);
-            adapter.log.info('Refresh-Token: ' + refreshToken);
-            adapter.setState('token', {val: token, ack: true});
-            adapter.setState('refreshToken', {val: refreshToken, ack: true});
-            clearInterval(getInterval);
-        },
-        statusPost=>{
-            if (statusPost=='400'){
-                adapter.log.error('Bitte die Freigabe für ioBroker erteilen!!!');
-            }else{
-            adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
-        }
-        }
-    );        
-    }
     }
 
 
@@ -103,10 +127,6 @@ adapter.on('ready', function () {
 
 function main() {
 
-    // The adapters config (in the instance object everything under the attribute "native") is accessible via
-    // adapter.config:
-
-
     if (!adapter.config.clientID) {
         adapter.log.error('Client ID not specified!');
         }
@@ -116,14 +136,12 @@ function main() {
 	
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
-let stat='homeconnect.0.access';
+let stat=adapter.namespace + '.access';
 
 stateGet(stat).then(
     (value)=>{
         adapter.log.info('STATE: ' + value);
-        //let access=value;
-        if (value === false){
-
+            if (value === false){
 
             auth.authUriGet(scope,clientID).then(
                 ([authUri,devCode,pollInterval])=>{
@@ -155,11 +173,7 @@ stateGet(stat).then(
     }
 )
 
-    /**
-     *
-     *      For every state in the system there has to be also an object of type state
-     */
-
+    
     adapter.setObject('authUriComplete', {
         type: 'state',
         common: {
@@ -216,15 +230,13 @@ stateGet(stat).then(
             name: 'access',
             type: 'boolean',
             role: 'indicator',
-            state: 'false'
         },
         native: {}
     });
 
-    // in this homeconnect all states changes inside the adapters namespace are subscribed
+
     adapter.subscribeStates('*');
 
-    // examples for the checkPassword/checkGroup functions
     adapter.checkPassword('admin', 'iobroker', function (res) {
         console.log('check user admin pw ioboker: ' + res);
     });
@@ -232,33 +244,4 @@ stateGet(stat).then(
     adapter.checkGroup('admin', 'admin', function (res) {
         console.log('check group user admin group admin: ' + res);
     });
-
-/**
-/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-*/
-    
-
-function stateGet(stat){
-
-    return new Promise((resolve, reject) => {
-    
-    adapter.getState(stat, function (err, state) {
-    
-        if (err){
-            reject(err);
-        }else{
-            if (typeof state != undefined && state != null){
-            let value=state.val;
-            resolve(value);
-            }else{
-                let value=false;
-                resolve(value);
-            }
-            
-            
-        }
-    }); 
-    });
-    }
 }
