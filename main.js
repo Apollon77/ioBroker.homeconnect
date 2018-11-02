@@ -310,10 +310,12 @@ let getToken=auth.tokenGet(deviceCode,clientID).then(
             }else{
                 if (typeof state.val != undefined && state.val != null){
                 let value=state.val;
+                resolve(value);
                 }else{
                     let value=false;
+                    resolve(value);
                 }
-                resolve(value);
+                
                 
             }
         }); 
