@@ -291,28 +291,30 @@ stateGet(stat).then(
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 */
-    function stateGet(stat){
-
-        return new Promise((resolve, reject) => {
-        
-        adapter.getState(stat, function (err, state) {
-        
-            if (err){
-                reject(err);
-            }else{
-                if (typeof state != undefined && state != null){
-                let value=state.val;
-                resolve(value);
-                }else{
-                    let value=false;
-                    resolve(value);
-                }
-                
-                
-            }
-        }); 
-        });
-        }
+    
 
 
 }
+
+function stateGet(stat){
+
+    return new Promise((resolve, reject) => {
+    
+    adapter.getState(stat, function (err, state) {
+    
+        if (err){
+            reject(err);
+        }else{
+            if (typeof state != undefined && state != null){
+            let value=state.val;
+            resolve(value);
+            }else{
+                let value=false;
+                resolve(value);
+            }
+            
+            
+        }
+    }); 
+    });
+    }
