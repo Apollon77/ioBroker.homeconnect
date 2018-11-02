@@ -65,7 +65,8 @@ adapter.on('stateChange', function (id, state) {
 
     if (id=='homeconnect.0.devCode'){
         adapter.log.info('Devicecode wurde geändert!');
-        let deviceCode=state.val;
+        //let deviceCode=state.val;
+        let deviceCode=stateGet(id);
         let clientID=adapter.config.clientID;
               
          
@@ -167,7 +168,7 @@ stateGet(stat).then(
             }
             );
             }else if (value === true){
-                adapter.log.error('Devicecode: ');
+                adapter.log.error('Devicecode: '+ deviceCode);
                 getToken();
             }
     },
