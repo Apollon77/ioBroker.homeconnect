@@ -11,7 +11,7 @@
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
 const BSHapi =   require(__dirname + '/lib/BSHapi.json');
 const auth =     require(__dirname + '/lib/auth.js');
-const state =     require(__dirname + '/lib/states.js');
+//const state =     require(__dirname + '/lib/states.js');
 
 // you have to call the adapter function and pass a options object
 // name has to be set and has to be equal to adapters folder name and main file name excluding extension
@@ -38,7 +38,7 @@ adapter.on('objectChange', function (id, obj) {
 // is called if a subscribed state changes
 adapter.on('stateChange', function (id, state) {
     // Warning, state can be null if it was deleted
-    adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
+    //adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
 
     if (id=='homeconnect.0.token'){
         adapter.log.info('Token wurde geändert!');
@@ -165,6 +165,8 @@ stateGet(stat).then(
                 }
             }
             );
+            }else{
+                getToken();
             }
     },
     err=>{
