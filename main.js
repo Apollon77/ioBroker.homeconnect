@@ -36,7 +36,7 @@ function stateGet(stat){
             (value)=>{
                 adapter.log.info('getToken STATE: ' + value);
                 adapter.log.info('getToken DeviceCode: '+ deviceCode);
-                return(deviceCode);
+                //return(deviceCode);
                      },
             err=>{
                 adapter.log.error('getToken FEHLER: ' + err);
@@ -44,7 +44,7 @@ function stateGet(stat){
         )
                
         let clientID=adapter.config.clientID;
-
+            adapter.log.info('DeviceCode vor Token: '+ deviceCode);
         auth.tokenGet(deviceCode,clientID).then(
             ([token,refreshToken])=>{
                 adapter.log.info('Accestoken: ' + token);
