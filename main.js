@@ -94,7 +94,7 @@ adapter.on('stateChange', function (id, state) {
             },
             statusGet=>{
                 if (statusGet=='400'){
-                    adapter.log.error('Bitte die Freigabe für ioBroker erteilen!!!');
+                    adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                 }else{
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet );
             }
@@ -154,7 +154,7 @@ let stat=adapter.namespace + '.access';
 
 stateGet(stat).then(
     (value)=>{
-        adapter.log.info('STATE: ' + value);
+        adapter.log.info('STATE(1): ' + value);
             if (value === false){
 
             auth.authUriGet(scope,clientID).then(
