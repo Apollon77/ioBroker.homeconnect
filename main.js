@@ -34,11 +34,11 @@ function stateGet(stat){
         let stat='devicecode';
         let deviceCode=stateGet(stat).then(
             (value)=>{
-                adapter.log.info('STATE: ' + value);
+                adapter.log.info('getToken STATE: ' + value);
                 return(deviceCode);
                      },
             err=>{
-                adapter.log.error('FEHLER: ' + err);
+                adapter.log.error('getToken FEHLER: ' + err);
             }
         )
                
