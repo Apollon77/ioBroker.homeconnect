@@ -154,7 +154,7 @@ let stat=adapter.namespace + '.access';
 stateGet(stat).then(
     (value)=>{
         adapter.log.info('STATE(1): ' + value);
-            if (value === 'false'){
+            if (value == false){
 
             auth.authUriGet(scope,clientID).then(
                 ([authUri,devCode,pollInterval])=>{
@@ -173,7 +173,7 @@ stateGet(stat).then(
                 }
             }
             );
-            }else if (value === 'true'){
+            }else if (value == true){
                 adapter.log.error('Devicecode: '+ deviceCode);
                 //getToken();
             }
