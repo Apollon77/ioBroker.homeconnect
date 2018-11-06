@@ -82,6 +82,8 @@ adapter.on('objectChange', function (id, obj) {
 
 adapter.on('stateChange', function (id, state) {
 
+    adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
+
     if (id=='homeconnect.0.token'){
         adapter.log.info('Token wurde geändert!');
         let token=state.val;
