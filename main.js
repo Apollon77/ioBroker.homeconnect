@@ -151,7 +151,7 @@ function main() {
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
 let stat=adapter.namespace + '.access';
-
+let token=adapter.getState('token');
 stateGet(stat).then(
     (value)=>{
         adapter.log.info('STATE(1): ' + value);
@@ -176,6 +176,9 @@ stateGet(stat).then(
             );
             }else if (value == true){
                 adapter.log.error('value=true Devcode schon vorhanden');
+                adapter.log.info('Token ----> ' + token);
+                
+                
                 //getToken();
                 auth.getAppliances(token).then(
                     (appliances)=>{
