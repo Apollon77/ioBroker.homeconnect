@@ -174,7 +174,7 @@ stateGet(stat).then(
             }
             );
             }else if (value == true){
-                adapter.log.error('Devicecode: '+ deviceCode+'    value=true');
+                adapter.log.error('value=true Devcode schon vorhanden');
                 //getToken();
             }
     },
