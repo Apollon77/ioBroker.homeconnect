@@ -36,7 +36,7 @@ function stateGet(stat){
             (value)=>{
                 adapter.log.info('getToken STATE: ' + value);
                 let clientID=adapter.config.clientID;
-        
+                let deviceCode=value;
             
         auth.tokenGet(deviceCode,clientID).then(
             ([token,refreshToken])=>{
