@@ -175,7 +175,7 @@ stateGet(stat).then(
             );
             }else if (value == true){
                 adapter.log.error('value=true Devcode schon vorhanden');
-                //getToken();
+                getToken();
             }
     },
     err=>{
