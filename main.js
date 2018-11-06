@@ -35,17 +35,9 @@ function stateGet(stat){
         let deviceCode=stateGet(stat).then(
             (value)=>{
                 adapter.log.info('getToken STATE: ' + value);
-                adapter.log.info('getToken DeviceCode: '+ deviceCode);
-                //return(deviceCode);
-                     },
-            err=>{
-                adapter.log.error('getToken FEHLER: ' + err);
-            }
-        )
-               
-        let clientID=adapter.config.clientID;
+                let clientID=adapter.config.clientID;
         
-            adapter.log.info('DeviceCode vor Token: '+ value);
+            
         auth.tokenGet(deviceCode,clientID).then(
             ([token,refreshToken])=>{
                 adapter.log.info('Accestoken: ' + token);
@@ -61,7 +53,14 @@ function stateGet(stat){
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
             }
             }
-        );        
+        );
+                     },
+            err=>{
+                adapter.log.error('getToken FEHLER: ' + err);
+            }
+        )
+               
+                
         }
 
 
