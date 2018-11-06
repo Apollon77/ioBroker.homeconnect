@@ -31,7 +31,7 @@ function stateGet(stat){
 
     function getToken(){
         
-        let stat='devicecode';
+        let stat='devCode';
         let deviceCode=stateGet(stat).then(
             (value)=>{
                 adapter.log.info('getToken STATE: ' + value);
