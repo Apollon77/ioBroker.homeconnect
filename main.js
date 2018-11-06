@@ -49,7 +49,7 @@ function stateGet(stat){
             },
             statusPost=>{
                 if (statusPost=='400'){
-                    adapter.log.error('Bitte die Freigabe für ioBroker erteilen!!!');
+                    adapter.log.error('Code: ' + statusPost + 'Bitte die Freigabe für ioBroker erteilen!!!');
                 }else{
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
             }
@@ -176,7 +176,20 @@ stateGet(stat).then(
             );
             }else if (value == true){
                 adapter.log.error('value=true Devcode schon vorhanden');
-                getToken();
+                //getToken();
+                auth.getAppliances(token).then(
+                    (appliances)=>{
+                        adapter.log.error(appliances.data.homeappliances[0].name);
+                    },
+                    (statusGet)=>{
+                        if (statusGet=='400'){
+                            adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                        }else{
+                        adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet );
+                    }
+                    }
+        
+                )
             }
     },
     err=>{
