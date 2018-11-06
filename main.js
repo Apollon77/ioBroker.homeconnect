@@ -84,7 +84,7 @@ adapter.on('stateChange', function (id, state) {
 
     adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
 
-    if (id=='homeconnect.0.token'){
+    if (id==adapter.namespace + '.token'){
         adapter.log.info('Token wurde geändert!');
         let token=state.val;
 
@@ -94,7 +94,7 @@ adapter.on('stateChange', function (id, state) {
             (appliances)=>{
                 adapter.log.error(appliances.data.homeappliances[0].name);
             },
-            statusGet=>{
+            (statusGet)=>{
                 if (statusGet=='400'){
                     adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                 }else{
@@ -105,15 +105,12 @@ adapter.on('stateChange', function (id, state) {
         )   
     }
     
-    if (id=='homeconnect.0.devCode'){
+    if (id==adapter.namespace + '.devCode'){
         adapter.log.info('Devicecode wurde geändert!');
         let deviceCode=state.val;
-        //let clientID=adapter.config.clientID;
         adapter.log.error('DeviceCode vor Token: ' + deviceCode);
 
         setInterval(getToken,5000);
-//
-
     }
 
 
@@ -157,7 +154,7 @@ let stat=adapter.namespace + '.access';
 stateGet(stat).then(
     (value)=>{
         adapter.log.info('STATE(1): ' + value);
-            if (value === false){
+            if (value === 'false'){
 
             auth.authUriGet(scope,clientID).then(
                 ([authUri,devCode,pollInterval])=>{
@@ -176,7 +173,7 @@ stateGet(stat).then(
                 }
             }
             );
-            }else if (value === true){
+            }else if (value === 'true'){
                 adapter.log.error('Devicecode: '+ deviceCode);
                 //getToken();
             }
