@@ -32,7 +32,7 @@ function stateGet(stat){
     function getToken(){
         
         let stat='devCode';
-        let deviceCode=stateGet(stat).then(
+        stateGet(stat).then(
             (value)=>{
                 adapter.log.info('getToken STATE: ' + value);
                 let clientID=adapter.config.clientID;
@@ -40,11 +40,11 @@ function stateGet(stat){
             
         auth.tokenGet(deviceCode,clientID).then(
             ([token,refreshToken])=>{
-                adapter.log.info('Accestoken: ' + token);
-                adapter.log.info('Refresh-Token: ' + refreshToken);
+                adapter.log.info('Accestoken generiert!');
+                //adapter.log.info('Refresh-Token: ' + refreshToken);
                 adapter.setState('token', {val: token, ack: true});
                 adapter.setState('refreshToken', {val: refreshToken, ack: true});
-                clearInterval(getInterval);
+                clearInterval(getToken);
             },
             statusPost=>{
                 if (statusPost=='400'){
@@ -106,10 +106,10 @@ adapter.on('stateChange', function (id, state) {
     if (id=='homeconnect.0.devCode'){
         adapter.log.info('Devicecode wurde geändert!');
         let deviceCode=state.val;
-        let clientID=adapter.config.clientID;
+        //let clientID=adapter.config.clientID;
         adapter.log.error('DeviceCode vor Token: ' + deviceCode);
 
-        let getInterval=setInterval(getToken,5000);
+        setInterval(getToken,5000);
 //
 
     }
