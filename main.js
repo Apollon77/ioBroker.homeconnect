@@ -41,8 +41,8 @@ function stateGet(stat){
         auth.tokenGet(deviceCode,clientID).then(
             ([token,refreshToken])=>{
                 adapter.log.info('Accestoken generiert!');
-                adapter.setState('token', {val: token, ack: true});
-                adapter.setState('refreshToken', {val: refreshToken, ack: true});
+                adapter.setState('dev.token', {val: token, ack: true});
+                adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
                 clearInterval(getTokenInterval);
             },
             statusPost=>{
@@ -83,7 +83,7 @@ adapter.on('stateChange', function (id, state) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
-    if (id==adapter.namespace + '.homeappliancesJSON'){
+    if (id==adapter.namespace + '.dev.homeappliancesJSON'){
         let appliances=state.val;
         let appliancesArray=JSON.parse(appliances);
         let appliancesLength=appliancesArray.data.homeappliances.length;
@@ -200,15 +200,15 @@ adapter.on('stateChange', function (id, state) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    if (id==adapter.namespace + '.token'){
+    if (id==adapter.namespace + '.dev.token'){
         adapter.log.info('Token wurde geändert!');
         let token=state.val;
 
-        adapter.setState('access', true);
+        adapter.setState('dev.access', true);
 
         auth.getAppliances(token).then(
             (appliances)=>{
-                adapter.setState(adapter.namespace + '.homeappliancesJSON', JSON.stringify(appliances));
+                adapter.setState(adapter.namespace + '.dev.homeappliancesJSON', JSON.stringify(appliances));
             },
             (statusGet)=>{
                 if (statusGet=='400'){
@@ -262,7 +262,7 @@ function main() {
 	
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
-let stat=adapter.namespace + '.access';
+let stat=adapter.namespace + '.dev.access';
 
 stateGet(stat).then(
     (value)=>{
@@ -272,10 +272,10 @@ stateGet(stat).then(
             auth.authUriGet(scope,clientID).then(
                 ([authUri,devCode,pollInterval])=>{
                     adapter.log.error("Authorization-URI ====>  " + authUri);
-                    adapter.setState('authUriComplete', authUri);
+                    adapter.setState('dev.authUriComplete', authUri);
                     adapter.setState('dev.devCode', devCode);
                     //adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
-                    adapter.setState('pollInterval', pollInterval);
+                    adapter.setState('dev.pollInterval', pollInterval);
                 },
                 statusPost=>{
                     if (statusPost=='400'){
@@ -286,14 +286,14 @@ stateGet(stat).then(
             }
             );
             }else if (value == true){
-                let stat=adapter.namespace + '.token';
+                let stat=adapter.namespace + '.dev.token';
                 stateGet(stat).then(
                     (value)=>{
                         adapter.log.error('Devicecode schon vorhanden');
                         let token=value;
                         auth.getAppliances(token).then(
                             (appliances)=>{
-                                adapter.setState(adapter.namespace + '.homeappliancesJSON', JSON.stringify(appliances));
+                                adapter.setState(adapter.namespace + '.dev.homeappliancesJSON', JSON.stringify(appliances));
                             },
                             (statusGet)=>{
                                 if (statusGet=='400'){
@@ -327,7 +327,7 @@ stateGet(stat).then(
 )
 
     
-    adapter.setObject('authUriComplete', {
+    adapter.setObject('dev.authUriComplete', {
         type: 'state',
         common: {
             name: 'AuthorizationURI',
@@ -347,7 +347,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('pollInterval', {
+    adapter.setObject('dev.pollInterval', {
         type: 'state',
         common: {
             name: 'Poll-Interval in sec.',
@@ -357,7 +357,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('token', {
+    adapter.setObject('dev.token', {
         type: 'state',
         common: {
             name: 'Access-Token',
@@ -367,7 +367,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('refreshToken', {
+    adapter.setObject('dev.refreshToken', {
         type: 'state',
         common: {
             name: 'Refresh-Token',
@@ -377,7 +377,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('access',  {
+    adapter.setObject('dev.access',  {
         type: 'state',
         common: {
             name: 'access',
@@ -387,7 +387,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('homeappliancesJSON', {
+    adapter.setObject('dev.homeappliancesJSON', {
         type: 'state',
         common: {
             name: 'Homeappliances_JSON',
