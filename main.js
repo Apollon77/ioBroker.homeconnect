@@ -129,7 +129,7 @@ adapter.on('stateChange', function (id, state) {
                 adapter.setObject(name + '.brand', {
                     type: 'state',
                     common: {
-                        name: 'Name',
+                        name: 'brand',
                         type: 'mixed',
                         role: 'indicator'
                     },
@@ -139,7 +139,7 @@ adapter.on('stateChange', function (id, state) {
                 adapter.setObject(name + '.vib', {
                     type: 'state',
                     common: {
-                        name: 'Name',
+                        name: 'vib',
                         type: 'mixed',
                         role: 'indicator'
                     },
@@ -149,8 +149,8 @@ adapter.on('stateChange', function (id, state) {
                 adapter.setObject(name + '.connected', {
                     type: 'state',
                     common: {
-                        name: 'Name',
-                        type: 'mixed',
+                        name: 'connected',
+                        type: 'boolean',
                         role: 'indicator'
                     },
                     native: {}
@@ -159,7 +159,7 @@ adapter.on('stateChange', function (id, state) {
                 adapter.setObject(name + '.type', {
                     type: 'state',
                     common: {
-                        name: 'Name',
+                        name: 'type',
                         type: 'mixed',
                         role: 'indicator'
                     },
@@ -169,7 +169,7 @@ adapter.on('stateChange', function (id, state) {
                 adapter.setObject(name + '.enumber', {
                     type: 'state',
                     common: {
-                        name: 'Name',
+                        name: 'enumber',
                         type: 'mixed',
                         role: 'indicator'
                     },
@@ -179,7 +179,7 @@ adapter.on('stateChange', function (id, state) {
                 adapter.setObject(name + '.haId', {
                     type: 'state',
                     common: {
-                        name: 'Name',
+                        name: 'haId',
                         type: 'mixed',
                         role: 'indicator'
                     },
