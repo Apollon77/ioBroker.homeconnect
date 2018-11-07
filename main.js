@@ -204,7 +204,7 @@ adapter.on('stateChange', function (id, state) {
                     adapter.setState(name + '.connected', connected);
                     adapter.setState(name + '.type', type);
                     adapter.setState(name + '.enumber', enumber);
-
+                    adapter.setState(name + '.haId', haId);
                 }
 
 
