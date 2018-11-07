@@ -105,6 +105,8 @@ adapter.on('stateChange', function (id, state) {
 
             if (appliancesCount < appliancesLength){
                 
+                adapter.log.info('Counter: ' + aplliancesCount + '   Arraylänge: ' + appliancesLength);
+                /*
                 adapter.setObject(adapter.namespace + '.' + appliancesArray.data.homeappliances.name[appliancesCount], {
                     type: 'state',
                     common: {
@@ -114,7 +116,7 @@ adapter.on('stateChange', function (id, state) {
                     },
                     native: {}
                 });
-
+                */
                 appliancesCount ++;
                     inventorySub();
             }
