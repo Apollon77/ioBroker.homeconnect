@@ -179,7 +179,7 @@ adapter.on('stateChange', function (id, state) {
 
                 setTimeout(function(){
                     appliancesStates()
-                },6000);
+                },3000);
 
                 function appliancesStates(){
                     adapter.setState(name + '.brand', brand);
