@@ -107,8 +107,16 @@ adapter.on('stateChange', function (id, state) {
                 
                 adapter.log.info('Counter: ' + appliancesCount + '   Arraylänge: ' + appliancesLength);
                 adapter.log.info('Datenpunkt: ' + adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name );
-                /*
-                adapter.setObject(adapter.namespace + '.' + appliancesArray.data.homeappliances.name[appliancesCount], {
+                
+                let name=adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name;
+                let brand=appliancesArray.data.homeappliances[appliancesCount].brand;
+                let vib=appliancesArray.data.homeappliances[appliancesCount].vib;
+                let connected=appliancesArray.data.homeappliances[appliancesCount].connected;
+                let type=appliancesArray.data.homeappliances[appliancesCount].type;
+                let enumber=appliancesArray.data.homeappliances[appliancesCount].enumber;
+                let haId=appliancesArray.data.homeappliances[appliancesCount].haId;
+
+                adapter.setObject(name, {
                     type: 'state',
                     common: {
                         name: 'Name',
@@ -117,7 +125,68 @@ adapter.on('stateChange', function (id, state) {
                     },
                     native: {}
                 });
-                */
+
+                adapter.setObject(name + '.brand', {
+                    type: 'state',
+                    common: {
+                        name: 'Name',
+                        type: 'mixed',
+                        role: 'indicator'
+                    },
+                    native: {}
+                });
+
+                adapter.setObject(name + '.vib', {
+                    type: 'state',
+                    common: {
+                        name: 'Name',
+                        type: 'mixed',
+                        role: 'indicator'
+                    },
+                    native: {}
+                });
+
+                adapter.setObject(name + '.connected', {
+                    type: 'state',
+                    common: {
+                        name: 'Name',
+                        type: 'mixed',
+                        role: 'indicator'
+                    },
+                    native: {}
+                });
+
+                adapter.setObject(name + '.type', {
+                    type: 'state',
+                    common: {
+                        name: 'Name',
+                        type: 'mixed',
+                        role: 'indicator'
+                    },
+                    native: {}
+                });
+
+                adapter.setObject(name + '.enumber', {
+                    type: 'state',
+                    common: {
+                        name: 'Name',
+                        type: 'mixed',
+                        role: 'indicator'
+                    },
+                    native: {}
+                });
+
+                adapter.setObject(name + '.haId', {
+                    type: 'state',
+                    common: {
+                        name: 'Name',
+                        type: 'mixed',
+                        role: 'indicator'
+                    },
+                    native: {}
+                });
+
+
                 appliancesCount ++;
                     inventorySub();
             }
