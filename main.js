@@ -46,7 +46,7 @@ function stateGet(stat){
             },
             statusPost=>{
                 if (statusPost=='400'){
-                    adapter.log.error('Code: ' + statusPost + 'Bitte die Freigabe für ioBroker erteilen!!!');
+                    adapter.log.error('Bitte ioBroker authorisieren!!');
                 }else{
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
                 clearInterval(getToken);
@@ -86,8 +86,7 @@ adapter.on('stateChange', function (id, state) {
         let appliances=state.val;
         let appliancesArray=JSON.parse(appliances);
         let appliancesLength=appliancesArray.data.homeappliances.length;
-        adapter.log.info('Arraylänge:' + appliancesArray.data.homeappliances.length);
-
+        
         let appliancesCount=0;
         
         inventory(appliancesLength);
@@ -99,9 +98,6 @@ adapter.on('stateChange', function (id, state) {
             function inventorySub(){
 
             if (appliancesCount < appliancesLength){
-                
-                adapter.log.info('Counter: ' + appliancesCount + '   Arraylänge: ' + appliancesLength);
-                adapter.log.info('Datenpunkt: ' + adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name );
                 
                 let name=adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name;
                 let brand=appliancesArray.data.homeappliances[appliancesCount].brand;
@@ -131,8 +127,6 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                
-
                 adapter.setObject(name + '.vib', {
                     type: 'state',
                     common: {
@@ -142,8 +136,6 @@ adapter.on('stateChange', function (id, state) {
                     },
                     native: {}
                 });
-
-                
 
                 adapter.setObject(name + '.connected', {
                     type: 'state',
@@ -155,8 +147,6 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                
-
                 adapter.setObject(name + '.type', {
                     type: 'state',
                     common: {
@@ -167,8 +157,6 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                
-
                 adapter.setObject(name + '.enumber', {
                     type: 'state',
                     common: {
@@ -178,8 +166,6 @@ adapter.on('stateChange', function (id, state) {
                     },
                     native: {}
                 });
-
-                
 
                 adapter.setObject(name + '.haId', {
                     type: 'state',
@@ -204,12 +190,9 @@ adapter.on('stateChange', function (id, state) {
                     adapter.setState(name + '.haId', haId);
                 }
 
-
-
                 appliancesCount ++;
                     inventorySub();
             }
-
         }
         }
     }
@@ -282,7 +265,7 @@ let stat=adapter.namespace + '.access';
 
 stateGet(stat).then(
     (value)=>{
-        adapter.log.info('STATE(1): ' + value);
+        //adapter.log.info('STATE(1): ' + value);
             if (value == false){
 
             auth.authUriGet(scope,clientID).then(
