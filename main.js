@@ -32,7 +32,7 @@ function stateGet(stat){
     function getToken(){
         
         let stat=adapter.namespace + '.dev.devcode';
-        
+        adapter.log.error('stat: ' + stat);
         stateGet(stat).then(
             (value)=>{
                 let clientID=adapter.config.clientID;
