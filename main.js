@@ -136,7 +136,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                setTimeout(adapter.setState(name + '.brand', brand),2000)
+                setTimeout(adapter.setState(name + '.brand', brand),1000)
 
                 adapter.setObject(name + '.vib', {
                     type: 'state',
@@ -160,7 +160,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                setTimeout(adapter.setState(name + '.connected', connected),2000)
+                setTimeout(adapter.setState(name + '.connected', connected),3000)
 
                 adapter.setObject(name + '.type', {
                     type: 'state',
@@ -172,7 +172,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                setTimeout(adapter.setState(name + '.type', type),2000)
+                setTimeout(adapter.setState(name + '.type', type),4000)
 
                 adapter.setObject(name + '.enumber', {
                     type: 'state',
@@ -184,7 +184,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                setTimeout(adapter.setState(name + '.enumber', enumber),2000)
+                setTimeout(adapter.setState(name + '.enumber', enumber),5000)
 
                 adapter.setObject(name + '.haId', {
                     type: 'state',
@@ -196,7 +196,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                setTimeout(adapter.setState(name + '.haId', haId),2000)
+                setTimeout(adapter.setState(name + '.haId', haId),6000)
 
                 appliancesCount ++;
                     inventorySub();
