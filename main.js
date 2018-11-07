@@ -34,15 +34,12 @@ function stateGet(stat){
         let stat='devCode';
         stateGet(stat).then(
             (value)=>{
-                adapter.log.info('getToken STATE: ' + value);
                 let clientID=adapter.config.clientID;
                 let deviceCode=value;
-                adapter.log.info('clientID: ' + clientID);
-            
+                            
         auth.tokenGet(deviceCode,clientID).then(
             ([token,refreshToken])=>{
                 adapter.log.info('Accestoken generiert!');
-                //adapter.log.info('Refresh-Token: ' + refreshToken);
                 adapter.setState('token', {val: token, ack: true});
                 adapter.setState('refreshToken', {val: refreshToken, ack: true});
                 clearInterval(getToken);
@@ -64,9 +61,7 @@ function stateGet(stat){
         )
                
                 
-        }
-
-
+    }
 
 adapter.on('unload', function (callback) {
     try {
@@ -77,11 +72,9 @@ adapter.on('unload', function (callback) {
     }
 });
 
-
 adapter.on('objectChange', function (id, obj) {
     adapter.log.info('objectChange ' + id + ' ' + JSON.stringify(obj));
 });
-
 
 adapter.on('stateChange', function (id, state) {
 
@@ -249,7 +242,6 @@ adapter.on('stateChange', function (id, state) {
         //let deviceCode=state.val;
         setInterval(getToken,10000);
     }
-
 
     // you can use the ack flag to detect if it is status (true) or command (false)
     if (state && !state.ack) {
