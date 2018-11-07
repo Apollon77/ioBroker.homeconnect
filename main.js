@@ -223,7 +223,8 @@ adapter.on('stateChange', function (id, state) {
     if (id==adapter.namespace + '.devCode'){
         adapter.log.info('Devicecode wurde geändert!');
         //let deviceCode=state.val;
-        setInterval(getToken,10000);
+        setInterval(function(){
+            getToken},10000);
     }
 
     // you can use the ack flag to detect if it is status (true) or command (false)
