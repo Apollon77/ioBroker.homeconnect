@@ -32,11 +32,12 @@ function stateGet(stat){
     function getToken(){
         
         let stat='dev.devcode';
+        
         stateGet(stat).then(
             (value)=>{
                 let clientID=adapter.config.clientID;
                 let deviceCode=value;
-                            
+                adapter.log.error('devicecode: '+ deviceCode);                    
         auth.tokenGet(deviceCode,clientID).then(
             ([token,refreshToken])=>{
                 adapter.log.info('Accestoken generiert!');
@@ -272,7 +273,6 @@ stateGet(stat).then(
                 ([authUri,devCode,pollInterval])=>{
                     adapter.log.error("Authorization-URI ====>  " + authUri);
                     adapter.setState('dev.authUriComplete', authUri);
-                    //adapter.log.info('DeviceCode: ' + devCode);  
                     adapter.setState('dev.devCode', devCode);
                     //adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
                     adapter.setState('pollInterval', pollInterval);
