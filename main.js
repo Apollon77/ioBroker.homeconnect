@@ -221,9 +221,8 @@ adapter.on('stateChange', function (id, state) {
         }
     }
 
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     if (id==adapter.namespace + '.token'){
         adapter.log.info('Token wurde geändert!');
         let token=state.val;
@@ -232,14 +231,11 @@ adapter.on('stateChange', function (id, state) {
 
         auth.getAppliances(token).then(
             (appliances)=>{
-                //adapter.log.error(appliances.data.homeappliances[0].name);
-                //let arrayLength=appliances.data.homeappliances.length;
                 adapter.setState(adapter.namespace + '.homeappliancesJSON', JSON.stringify(appliances));
-                    //adapter.log.info("Arraylänge: " + arrayLength);
             },
             (statusGet)=>{
                 if (statusGet=='400'){
-                    adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                 }else{
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet );
             }
@@ -250,10 +246,8 @@ adapter.on('stateChange', function (id, state) {
     
     if (id==adapter.namespace + '.devCode'){
         adapter.log.info('Devicecode wurde geändert!');
-        let deviceCode=state.val;
-        adapter.log.error('DeviceCode vor Token: ' + deviceCode);
-
-        setInterval(getToken,5000);
+        //let deviceCode=state.val;
+        setInterval(getToken,10000);
     }
 
 
@@ -293,13 +287,7 @@ function main() {
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
 let stat=adapter.namespace + '.access';
-/** adapter.getState(adapter.namespace + '.token',function (err, state) {
-    if (err){
-    token = state.val;
-    return (token);
-    }
-});
-*/
+
 stateGet(stat).then(
     (value)=>{
         adapter.log.info('STATE(1): ' + value);
@@ -307,11 +295,11 @@ stateGet(stat).then(
 
             auth.authUriGet(scope,clientID).then(
                 ([authUri,devCode,pollInterval])=>{
-                    adapter.log.info("Authorization-URI: " + authUri);
+                    adapter.log.error("Authorization-URI ====>  " + authUri);
                     adapter.setState('authUriComplete', authUri);
-                    adapter.log.info('DeviceCode: ' + devCode);  
+                    //adapter.log.info('DeviceCode: ' + devCode);  
                     adapter.setState('devCode', devCode);
-                    adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
+                    //adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
                     adapter.setState('pollInterval', pollInterval);
                 },
                 statusPost=>{
@@ -326,16 +314,12 @@ stateGet(stat).then(
                 let stat=adapter.namespace + '.token';
                 stateGet(stat).then(
                     (value)=>{
-                        adapter.log.error('value=true Devcode schon vorhanden');
-                
-                        adapter.log.info('TOKEN: '+ value);
+                        adapter.log.error('Devicecode schon vorhanden');
+                        //adapter.log.info('TOKEN: '+ value);
                         let token=value;
                         auth.getAppliances(token).then(
                             (appliances)=>{
-                                //adapter.log.error(appliances.data.homeappliances[0].name);
-                                //let arrayLength=appliances.data.homeappliances.length;
                                 adapter.setState(adapter.namespace + '.homeappliancesJSON', JSON.stringify(appliances));
-                                //adapter.log.info("Arraylänge: " + arrayLength);
                             },
                             (statusGet)=>{
                                 if (statusGet=='400'){
