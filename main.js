@@ -31,7 +31,7 @@ function stateGet(stat){
 
     function getToken(){
         
-        let stat='devCode';
+        let stat='dev.devcode';
         stateGet(stat).then(
             (value)=>{
                 let clientID=adapter.config.clientID;
@@ -220,7 +220,7 @@ adapter.on('stateChange', function (id, state) {
         )   
     }
     
-    if (id==adapter.namespace + '.devCode'){
+    if (id==adapter.namespace + '.dev.devCode'){
         adapter.log.info('Devicecode wurde geändert!');
         //let deviceCode=state.val;
         getTokenInterval=setInterval(getToken,10000);
@@ -273,7 +273,7 @@ stateGet(stat).then(
                     adapter.log.error("Authorization-URI ====>  " + authUri);
                     adapter.setState('dev.authUriComplete', authUri);
                     //adapter.log.info('DeviceCode: ' + devCode);  
-                    adapter.setState('devCode', devCode);
+                    adapter.setState('dev.devCode', devCode);
                     //adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
                     adapter.setState('pollInterval', pollInterval);
                 },
@@ -337,7 +337,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('devCode', {
+    adapter.setObject('dev.devCode', {
         type: 'state',
         common: {
             name: 'DeviceCode',
