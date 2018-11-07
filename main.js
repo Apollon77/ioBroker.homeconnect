@@ -60,8 +60,6 @@ function stateGet(stat){
                 clearInterval(getTokenInterval);
             }
         )
-               
-                
     }
 
 adapter.on('unload', function (callback) {
@@ -190,7 +188,6 @@ adapter.on('stateChange', function (id, state) {
                     adapter.setState(name + '.enumber', enumber);
                     adapter.setState(name + '.haId', haId);
                 }
-
                 appliancesCount ++;
                     inventorySub();
             }
@@ -217,7 +214,6 @@ adapter.on('stateChange', function (id, state) {
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet );
             }
             }
-
         )   
     }
     
@@ -302,27 +298,16 @@ stateGet(stat).then(
                                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet );
                             }
                             }
-                
                         )
                     },
                     err=>{
-                        
                             adapter.log.error('FEHLER: ' + err);
-                        
-                
                     }
                 )
-                               
-                
-                              
-              
             }
     },
     err=>{
-        
             adapter.log.error('FEHLER: ' + err);
-        
-
     }
 )
 
