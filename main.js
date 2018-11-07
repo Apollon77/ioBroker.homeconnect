@@ -90,7 +90,35 @@ adapter.on('stateChange', function (id, state) {
     if (id==adapter.namespace + '.homeappliancesJSON'){
         let appliances=state.val;
         let appliancesArray=JSON.parse(appliances);
+        let appliancesLength=appliancesArray.data.homeappliances.length;
         adapter.log.info('Arraylänge:' + appliancesArray.data.homeappliances.length);
+
+        let appliancesCount=0;
+        
+        inventory(appliancesLength);
+
+        function inventory(appliancesLength){
+
+            function inventorySub()
+
+            if (appliancesCount < appliancesLength){
+                
+                adapter.setObject(adapter.namespace + '.' + appliancesArray.data.homeappliances.name[appliancesCount], {
+                    type: 'state',
+                    common: {
+                        name: 'Name',
+                        type: 'mixed',
+                        role: 'indicator'
+                    },
+                    native: {}
+                });
+
+                appliancesCount ++;
+                    inventorySub();
+            }
+
+
+        }
     }
 
 
