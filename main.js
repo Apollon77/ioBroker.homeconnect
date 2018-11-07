@@ -198,7 +198,9 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                setTimeout(appliancesStates(),6000);
+                setTimeout(function(){
+                    appliancesStates()
+                },6000);
 
                 function appliancesStates(){
                     adapter.setState(name + '.brand', brand);
