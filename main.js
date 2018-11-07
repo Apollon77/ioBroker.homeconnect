@@ -42,21 +42,21 @@ function stateGet(stat){
                 adapter.log.info('Accestoken generiert!');
                 adapter.setState('token', {val: token, ack: true});
                 adapter.setState('refreshToken', {val: refreshToken, ack: true});
-                clearInterval(getToken);
+                clearInterval(getTokenInterval);
             },
             statusPost=>{
                 if (statusPost=='400'){
                     adapter.log.error('Bitte ioBroker authorisieren!!');
                 }else{
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
-                clearInterval(getToken);
+                clearInterval(getTokenInterval);
             }
             }
         );
                      },
             err=>{
                 adapter.log.error('getToken FEHLER: ' + err);
-                clearInterval(getToken);
+                clearInterval(getTokenInterval);
             }
         )
                
@@ -223,8 +223,7 @@ adapter.on('stateChange', function (id, state) {
     if (id==adapter.namespace + '.devCode'){
         adapter.log.info('Devicecode wurde geändert!');
         //let deviceCode=state.val;
-        setInterval(function(){
-            getToken},10000);
+        getTokenInterval=setInterval(getToken,10000);
     }
 
     // you can use the ack flag to detect if it is status (true) or command (false)
