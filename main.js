@@ -87,7 +87,7 @@ adapter.on('stateChange', function (id, state) {
 
 
     if (id==adapter.namespace + '.homeappliancesJSON'){
-        let appliances=state.val;
+        let appliances=JSON.parse(state.val);
         adapter.log.info('Arraylänge:' + appliances.data.length);
     }
 
