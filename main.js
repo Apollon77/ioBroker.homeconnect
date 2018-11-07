@@ -31,7 +31,7 @@ function stateGet(stat){
 
     function getToken(){
         
-        let stat='dev.devcode';
+        let stat=adapter.namespace + '.dev.devcode';
         
         stateGet(stat).then(
             (value)=>{
