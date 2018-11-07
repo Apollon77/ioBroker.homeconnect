@@ -85,19 +85,17 @@ adapter.on('stateChange', function (id, state) {
 
     adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
     if (id==adapter.namespace + '.homeappliancesJSON'){
-        let appliances=JSON.parse(state.val);
-        adapter.log.info('Arraylänge:' + appliances.data.length);
+        let appliances=state.val;
+        let appliancesArray=JSON.parse(appliances);
+        adapter.log.info('Arraylänge:' + appliancesArray.data.homeappliances.length);
     }
 
 
 
-
-
-
-
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     if (id==adapter.namespace + '.token'){
         adapter.log.info('Token wurde geändert!');
         let token=state.val;
