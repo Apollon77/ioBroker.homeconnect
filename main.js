@@ -197,10 +197,8 @@ stateGet(stat).then(
                 )
                                
                 adapter.log.error('value=true Devcode schon vorhanden');
-                
-                
-                
-                //getToken();
+                adapter.log.info('token: ' + token);
+                              
                 auth.getAppliances(token).then(
                     (appliances)=>{
                         adapter.log.error(appliances.data.homeappliances[0].name);
