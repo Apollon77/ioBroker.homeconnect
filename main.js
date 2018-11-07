@@ -151,12 +151,13 @@ function main() {
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
 let stat=adapter.namespace + '.access';
-adapter.getState(adapter.namespace + '.token',function (err, state) {
+/** adapter.getState(adapter.namespace + '.token',function (err, state) {
     if (err){
     token = state.val;
     return (token);
     }
 });
+*/
 stateGet(stat).then(
     (value)=>{
         adapter.log.info('STATE(1): ' + value);
@@ -180,8 +181,23 @@ stateGet(stat).then(
             }
             );
             }else if (value == true){
+                let stat=adapter.namespace + '.token';
+                stateGet(stat).then(
+                    (value)=>{
+                        adapter.log.info('TOKEN: '+ value);
+                        let token=value;
+                        return (token);
+                    },
+                    err=>{
+                        
+                            adapter.log.error('FEHLER: ' + err);
+                        
+                
+                    }
+                )
+                               
                 adapter.log.error('value=true Devcode schon vorhanden');
-                adapter.log.info('Token ----> ' + token);
+                
                 
                 
                 //getToken();
