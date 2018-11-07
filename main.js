@@ -85,6 +85,19 @@ adapter.on('stateChange', function (id, state) {
 
     adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
 
+
+    if (id==adapter.namespace + '.homeappliancesJSON'){
+        let appliances=state.val;
+        adapter.log.info('Arraylänge:' + appliances.length);
+    }
+
+
+
+
+
+
+
+
     if (id==adapter.namespace + '.token'){
         adapter.log.info('Token wurde geändert!');
         let token=state.val;
@@ -93,10 +106,10 @@ adapter.on('stateChange', function (id, state) {
 
         auth.getAppliances(token).then(
             (appliances)=>{
-                adapter.log.error(appliances.data.homeappliances[0].name);
-                let arrayLength=appliances.data.homeappliances.length;
+                //adapter.log.error(appliances.data.homeappliances[0].name);
+                //let arrayLength=appliances.data.homeappliances.length;
                 adapter.setState(adapter.namespace + '.homeappliancesJSON', JSON.stringify(appliances));
-                    adapter.log.info("Arraylänge: " + arrayLength);
+                    //adapter.log.info("Arraylänge: " + arrayLength);
             },
             (statusGet)=>{
                 if (statusGet=='400'){
@@ -193,10 +206,10 @@ stateGet(stat).then(
                         let token=value;
                         auth.getAppliances(token).then(
                             (appliances)=>{
-                                adapter.log.error(appliances.data.homeappliances[0].name);
-                                let arrayLength=appliances.data.homeappliances.length;
+                                //adapter.log.error(appliances.data.homeappliances[0].name);
+                                //let arrayLength=appliances.data.homeappliances.length;
                                 adapter.setState(adapter.namespace + '.homeappliancesJSON', JSON.stringify(appliances));
-                                adapter.log.info("Arraylänge: " + arrayLength);
+                                //adapter.log.info("Arraylänge: " + arrayLength);
                             },
                             (statusGet)=>{
                                 if (statusGet=='400'){
