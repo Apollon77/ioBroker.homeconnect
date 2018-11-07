@@ -151,9 +151,9 @@ function main() {
 let scope=adapter.config.scope;
 let clientID=adapter.config.clientID;
 let stat=adapter.namespace + '.access';
-let token=adapter.getState(adapter.namespace + '.token',function (err, state) {
-    let value = state.val;
-    return (value);
+adapter.getState(adapter.namespace + '.token',function (err, state) {
+    let token = state.val;
+    return (token);
 });
 stateGet(stat).then(
     (value)=>{
