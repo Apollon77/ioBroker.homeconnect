@@ -271,7 +271,7 @@ stateGet(stat).then(
             auth.authUriGet(scope,clientID).then(
                 ([authUri,devCode,pollInterval])=>{
                     adapter.log.error("Authorization-URI ====>  " + authUri);
-                    adapter.setState('authUriComplete', authUri);
+                    adapter.setState('dev.authUriComplete', authUri);
                     //adapter.log.info('DeviceCode: ' + devCode);  
                     adapter.setState('devCode', devCode);
                     //adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
@@ -290,7 +290,6 @@ stateGet(stat).then(
                 stateGet(stat).then(
                     (value)=>{
                         adapter.log.error('Devicecode schon vorhanden');
-                        //adapter.log.info('TOKEN: '+ value);
                         let token=value;
                         auth.getAppliances(token).then(
                             (appliances)=>{
@@ -328,7 +327,7 @@ stateGet(stat).then(
 )
 
     
-    adapter.setObject('authUriComplete', {
+    adapter.setObject('dev.authUriComplete', {
         type: 'state',
         common: {
             name: 'AuthorizationURI',
