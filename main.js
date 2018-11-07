@@ -99,7 +99,7 @@ adapter.on('stateChange', function (id, state) {
 
         function inventory(appliancesLength){
 
-            function inventorySub()
+            function inventorySub(){
 
             if (appliancesCount < appliancesLength){
                 
@@ -117,7 +117,7 @@ adapter.on('stateChange', function (id, state) {
                     inventorySub();
             }
 
-
+        }
         }
     }
 
