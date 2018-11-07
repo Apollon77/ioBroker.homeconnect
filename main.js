@@ -95,7 +95,7 @@ adapter.on('stateChange', function (id, state) {
             (appliances)=>{
                 adapter.log.error(appliances.data.homeappliances[0].name);
                 let arrayLength=appliances.data.homeappliances.length;
-                                adapter.setState('homeappliancesJSON', appliances.data.homeappliances);
+                                adapter.setState('homeappliancesJSON', appliances);
                                 adapter.log.info("Arraylänge: " + arrayLength);
             },
             (statusGet)=>{
@@ -195,7 +195,7 @@ stateGet(stat).then(
                             (appliances)=>{
                                 adapter.log.error(appliances.data.homeappliances[0].name);
                                 let arrayLength=appliances.data.homeappliances.length;
-                                adapter.setState('homeappliancesJSON', appliances.data.homeappliances);
+                                adapter.setState('homeappliancesJSON', appliances);
                                 adapter.log.info("Arraylänge: " + arrayLength);
                             },
                             (statusGet)=>{
