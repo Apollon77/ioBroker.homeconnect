@@ -184,9 +184,23 @@ stateGet(stat).then(
                 let stat=adapter.namespace + '.token';
                 stateGet(stat).then(
                     (value)=>{
+                        adapter.log.error('value=true Devcode schon vorhanden');
+                
                         adapter.log.info('TOKEN: '+ value);
                         let token=value;
-                        return (token);
+                        auth.getAppliances(token).then(
+                            (appliances)=>{
+                                adapter.log.error(appliances.data.homeappliances[0].name);
+                            },
+                            (statusGet)=>{
+                                if (statusGet=='400'){
+                                    adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                                }else{
+                                adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet );
+                            }
+                            }
+                
+                        )
                     },
                     err=>{
                         
@@ -196,22 +210,9 @@ stateGet(stat).then(
                     }
                 )
                                
-                adapter.log.error('value=true Devcode schon vorhanden');
-                adapter.log.info('token: ' + token);
+                
                               
-                auth.getAppliances(token).then(
-                    (appliances)=>{
-                        adapter.log.error(appliances.data.homeappliances[0].name);
-                    },
-                    (statusGet)=>{
-                        if (statusGet=='400'){
-                            adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
-                        }else{
-                        adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet );
-                    }
-                    }
-        
-                )
+              
             }
     },
     err=>{
