@@ -94,6 +94,9 @@ adapter.on('stateChange', function (id, state) {
         auth.getAppliances(token).then(
             (appliances)=>{
                 adapter.log.error(appliances.data.homeappliances[0].name);
+                let arrayLength=appliances.data.homeappliances.length;
+                                adapter.setState('homeappliancesJSON', appliances.data.homeappliances);
+                                adapter.log.info("Arraylänge: " + arrayLength);
             },
             (statusGet)=>{
                 if (statusGet=='400'){
@@ -192,6 +195,7 @@ stateGet(stat).then(
                             (appliances)=>{
                                 adapter.log.error(appliances.data.homeappliances[0].name);
                                 let arrayLength=appliances.data.homeappliances.length;
+                                adapter.setState('homeappliancesJSON', appliances.data.homeappliances);
                                 adapter.log.info("Arraylänge: " + arrayLength);
                             },
                             (statusGet)=>{
@@ -282,6 +286,16 @@ stateGet(stat).then(
             name: 'access',
             type: 'boolean',
             role: 'indicator',
+        },
+        native: {}
+    });
+
+    adapter.setObject('homeappliancesJSON', {
+        type: 'state',
+        common: {
+            name: 'Homeappliances_JSON',
+            type: 'object',
+            role: 'indicator'
         },
         native: {}
     });
