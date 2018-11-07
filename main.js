@@ -153,7 +153,7 @@ let clientID=adapter.config.clientID;
 let stat=adapter.namespace + '.access';
 adapter.getState(adapter.namespace + '.token',function (err, state) {
     if (err){
-    let token = state.val;
+    token = state.val;
     return (token);
     }
 });
