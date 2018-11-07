@@ -191,6 +191,8 @@ stateGet(stat).then(
                         auth.getAppliances(token).then(
                             (appliances)=>{
                                 adapter.log.error(appliances.data.homeappliances[0].name);
+                                let arrayLength=appliances.data.homeappliances.length;
+                                adapter.log.info("Arraylänge: " + arrayLength);
                             },
                             (statusGet)=>{
                                 if (statusGet=='400'){
