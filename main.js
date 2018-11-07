@@ -6,7 +6,7 @@ const BSHapi =   require(__dirname + '/lib/BSHapi.json');
 const auth =     require(__dirname + '/lib/auth.js');
 
 const adapter = new utils.Adapter('homeconnect');
-
+let getTokenInterval;
 
 function stateGet(stat){
 
