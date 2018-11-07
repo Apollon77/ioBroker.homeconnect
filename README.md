@@ -4,6 +4,13 @@
 
 Erster Versuch. 
 
+Für den Adapter wird eine ClientID benötigt. Dazu muss man sich ersteinmal im Developer-Portal von Home-Connect registrieren.
+
+https://developer.home-connect.com
+
+
+
+
 
 ## Changelog
 
