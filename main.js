@@ -52,12 +52,14 @@ function stateGet(stat){
                     adapter.log.error('Code: ' + statusPost + 'Bitte die Freigabe für ioBroker erteilen!!!');
                 }else{
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
+                clearInterval(getToken);
             }
             }
         );
                      },
             err=>{
                 adapter.log.error('getToken FEHLER: ' + err);
+                clearInterval(getToken);
             }
         )
                
