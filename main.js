@@ -46,9 +46,9 @@ function stateGet(stat){
                 adapter.setState('dev.expires', {val: expires, ack: true});
                 clearInterval(getTokenInterval);
 
-                getTokenRefreshInterval=setInterval(refreshToken,60000);
+                getTokenRefreshInterval=setInterval(getRefreshToken,60000);
 
-                function refreshToken(){
+                function getRefreshToken(){
                 auth.tokenRefresh(refreshToken).then(
                     ([token,refreshToken,expires])=>{
                         adapter.log.info('Accestoken generiert! (Refreshtoken)');
