@@ -17,7 +17,7 @@ registriert wurde.
 
 Bei **Account Type** Individual auswählen. Die restlichen Daten sofern vorhanden ergänzen (keine Ahnung, ob das geprüft wird)
 
-![Screenshot](img/application1.JPG)
+![Screenshot](img/application1)
 
 
 ## Changelog
