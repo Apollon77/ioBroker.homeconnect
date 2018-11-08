@@ -4,6 +4,8 @@
 
 Erster Versuch. 
 
+## Voraussetzungen vor der Installation
+
 Für den Adapter wird eine ClientID benötigt. Dazu muss man sich ersteinmal im Developer-Portal von Home-Connect registrieren.
 
 https://developer.home-connect.com
@@ -31,6 +33,8 @@ letzte Feld kann leer bleiben. Dann Speichern und dann hat man die benötigte Cl
 
 ## Changelog
 
+### 0.0.2
+* (dna909) OAuth2 Deviceflow-Authorization, List connected appliances
 
 ### 0.0.1
 * (dna909) initial release
