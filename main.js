@@ -86,6 +86,7 @@ function stateGet(stat){
 adapter.on('unload', function (callback) {
     try {
         adapter.log.info('cleaned everything up...');
+        clearInterval(getTokenRefreshInterval);
         callback();
     } catch (e) {
         callback();
