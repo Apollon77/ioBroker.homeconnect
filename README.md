@@ -10,7 +10,7 @@ https://developer.home-connect.com
 
 ![Screenshot](img/registrierung1.JPG)
 
-Bei
+Bei #Default Home Connect User Account for Testing
 
 
 
