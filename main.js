@@ -45,6 +45,23 @@ function stateGet(stat){
                 adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
                 adapter.setState('dev.expires', {val: expires, ack: true});
                 clearInterval(getTokenInterval);
+
+                setTimeout(function(){
+                auth.tokenRefresh(refreshToken).then(
+                    ([token,refreshToken,expires])=>{
+                        adapter.log.info('Accestoken generiert!');
+                        adapter.setState('dev.token', {val: token, ack: true});
+                        adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
+                        adapter.setState('dev.expires', {val: expires, ack: true}); 
+                    },
+                    statusPost=>{
+                        if (statusPost=='400'){
+                            adapter.log.error('FEHLER beim Refresh-Token!');
+                        }else{
+                        adapter.log.error("Irgendwas stimmt da wohl nicht!! Refresh-Token!!    Fehlercode: " + statusPost );
+                    }
+                    }
+                )                        
             },
             statusPost=>{
                 if (statusPost=='400'){
@@ -55,7 +72,8 @@ function stateGet(stat){
             }
             }
         );
-                     },
+        },30000);
+    },
             err=>{
                 adapter.log.error('getToken FEHLER: ' + err);
                 clearInterval(getTokenInterval);
