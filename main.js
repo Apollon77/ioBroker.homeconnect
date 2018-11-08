@@ -97,6 +97,7 @@ adapter.on('unload', function (callback) {
     try {
         adapter.log.info('cleaned everything up...');
         clearInterval(getTokenRefreshInterval);
+        clearInterval(getTokenInterval);
         callback();
     } catch (e) {
         callback();
