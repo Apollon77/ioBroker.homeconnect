@@ -61,7 +61,9 @@ function stateGet(stat){
                         adapter.log.error("Irgendwas stimmt da wohl nicht!! Refresh-Token!!    Fehlercode: " + statusPost );
                     }
                     }
-                )                        
+                )
+            },30000
+            );                        
             },
             statusPost=>{
                 if (statusPost=='400'){
@@ -70,8 +72,7 @@ function stateGet(stat){
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
                 clearInterval(getTokenInterval);
             }
-            },30000
-        );
+            
         });
     },
             err=>{
