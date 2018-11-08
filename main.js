@@ -70,9 +70,9 @@ function stateGet(stat){
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
                 clearInterval(getTokenInterval);
             }
-            }
+            },30000
         );
-        },30000);
+        });
     },
             err=>{
                 adapter.log.error('getToken FEHLER: ' + err);
