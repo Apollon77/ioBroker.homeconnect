@@ -33,10 +33,12 @@ letzte Feld kann leer bleiben. Dann Speichern und dann hat man die benötigte Cl
 
 ## Changelog
 
-### 0.0.2
+### 0.0.2  (08.11.2018)
+
 * (dna909) OAuth2 Deviceflow-Authorization, List connected appliances
 
 ### 0.0.1
+
 * (dna909) initial release
 
 ## License
