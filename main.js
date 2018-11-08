@@ -37,7 +37,7 @@ function stateGet(stat){
             (value)=>{
                 let clientID=adapter.config.clientID;
                 let deviceCode=value;
-                adapter.log.error('devicecode: '+ deviceCode);                    
+                //adapter.log.error('devicecode: '+ deviceCode);                    
         auth.tokenGet(deviceCode,clientID).then(
             ([token,refreshToken,expires])=>{
                 adapter.log.info('Accestoken generiert!');
@@ -51,7 +51,7 @@ function stateGet(stat){
                 function getRefreshToken(){
                 auth.tokenRefresh(refreshToken).then(
                     ([token,refreshToken,expires])=>{
-                        adapter.log.info('Accestoken generiert! (Refreshtoken)');
+                        adapter.log.info('Accestoken erneuert...');
                         adapter.setState('dev.token', {val: token, ack: true});
                         adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
                         adapter.setState('dev.expires', {val: expires, ack: true}); 
@@ -76,14 +76,12 @@ function stateGet(stat){
                     },
                     err=>{
                         adapter.log.error('FEHLER: ' + err);
-                       
                     }
                     );
                 }else{
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
                 clearInterval(getTokenInterval);
             }
-            
         });
     },
             err=>{
@@ -110,7 +108,7 @@ adapter.on('objectChange', function (id, obj) {
 
 adapter.on('stateChange', function (id, state) {
 
-    adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
+    //adapter.log.info('stateChange ' + id + ' ' + JSON.stringify(state));
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
@@ -118,7 +116,6 @@ adapter.on('stateChange', function (id, state) {
         let appliances=state.val;
         let appliancesArray=JSON.parse(appliances);
         let appliancesLength=appliancesArray.data.homeappliances.length;
-        
         let appliancesCount=0;
         
         inventory(appliancesLength);
@@ -231,7 +228,7 @@ adapter.on('stateChange', function (id, state) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if (id==adapter.namespace + '.dev.token'){
-        adapter.log.info('Token wurde geändert!');
+        //adapter.log.info('Token wurde geändert!');
         let token=state.val;
 
         adapter.setState('dev.access', true);
@@ -251,14 +248,12 @@ adapter.on('stateChange', function (id, state) {
     }
     
     if (id==adapter.namespace + '.dev.devCode'){
-        adapter.log.info('Devicecode wurde geändert!');
-        //let deviceCode=state.val;
-        getTokenInterval=setInterval(getToken,10000);
+        getTokenInterval=setInterval(getToken,10000);          // Polling bis Authorisation erfolgt ist
     }
 
     // you can use the ack flag to detect if it is status (true) or command (false)
     if (state && !state.ack) {
-        adapter.log.info('ack is not set!');
+        //adapter.log.info('ack is not set!');
     }
 });
 
@@ -295,12 +290,10 @@ let stat=adapter.namespace + '.dev.access';
 
 stateGet(stat).then(
     (value)=>{
-        //adapter.log.info('STATE(1): ' + value);
             if (value == false){
 
             auth.authUriGet(scope,clientID).then(
                 ([authUri,devCode,pollInterval])=>{
-                    adapter.log.error("Authorization-URI ====>  " + authUri);
                     adapter.setState('dev.authUriComplete', authUri);
                     adapter.setState('dev.devCode', devCode);
                     adapter.setState('dev.pollInterval', pollInterval);
@@ -317,7 +310,7 @@ stateGet(stat).then(
                 let stat=adapter.namespace + '.dev.token';
                 stateGet(stat).then(
                     (value)=>{
-                        adapter.log.error('Devicecode schon vorhanden');
+                        //adapter.log.error('Devicecode schon vorhanden');
                         let token=value;
                         auth.getAppliances(token).then(
                             (appliances)=>{
