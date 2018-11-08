@@ -19,7 +19,9 @@ Bei **Account Type** Individual auswählen. Die restlichen Daten sofern vorhande
 
 ![Screenshot](img/application1.JPG)
 
-Dann auf **Applications** und dann auf **Register Application** gehen.
+Dann auf **Applications** und anschließend auf **Register Application** gehen.
+
+![Screenshot](img/application2.JPG)
 
 
 ## Changelog
