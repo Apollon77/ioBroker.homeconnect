@@ -30,6 +30,14 @@ letzte Feld kann leer bleiben. Dann Speichern und dann hat man die benötigte Cl
 
 
 
+##  Konfiguration
+
+In der Adapter-Config muss nur die ClientID eingetragen werden. Wenn der Adapter läuft, wird eine Authorization-URL generiert, diese wird im 
+Log angezeigt. Die URL einfach kopieren und im Browser öffnen. Dann die Logindaten vom Home-Connect-Account (nicht der Developer-Account) eingeben und bestätigen. Dann die Authorisierung bestätigen. Fertig.
+
+
+
+
 
 ## Changelog
 
