@@ -49,7 +49,7 @@ function stateGet(stat){
                 setTimeout(function(){
                 auth.tokenRefresh(refreshToken).then(
                     ([token,refreshToken,expires])=>{
-                        adapter.log.info('Accestoken generiert!');
+                        adapter.log.info('Accestoken generiert! (Refreshtoken)');
                         adapter.setState('dev.token', {val: token, ack: true});
                         adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
                         adapter.setState('dev.expires', {val: expires, ack: true}); 
