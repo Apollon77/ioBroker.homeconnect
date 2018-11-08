@@ -10,8 +10,14 @@ https://developer.home-connect.com
 
 ![Screenshot](img/registrierung1.JPG)
 
-Bei #Default Home Connect User Account for Testing
+Bei **Default Home Connect User Account for Testing** die E-Mail-Adresse angeben, mit der die Home-Connect-App
+registriert wurde.
 
+![Screenshot](img/registrierung2.JPG)
+
+Bei **Account Type** Individual auswählen. Die restlichen Daten sofern vorhanden ergänzen (keine Ahnung, ob das geprüft wird)
+
+![Screenshot](img/application1.JPG)
 
 
 ## Changelog
