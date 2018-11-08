@@ -68,7 +68,17 @@ function stateGet(stat){
             },
             statusPost=>{
                 if (statusPost=='400'){
-                    adapter.log.error('Bitte ioBroker authorisieren!!');
+                    let stat='dev.authUriComplete';
+        
+                    stateGet(stat).then(
+                    (value)=>{
+                        adapter.log.error('Bitte ioBroker authorisieren!!  =====>>>   ' + value);
+                    },
+                    err=>{
+                        adapter.log.error('FEHLER: ' + err);
+                       
+                    }
+                    );
                 }else{
                 adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost );
                 clearInterval(getTokenInterval);
@@ -292,7 +302,6 @@ stateGet(stat).then(
                     adapter.log.error("Authorization-URI ====>  " + authUri);
                     adapter.setState('dev.authUriComplete', authUri);
                     adapter.setState('dev.devCode', devCode);
-                    //adapter.log.info('Poll-Interval: ' + pollInterval + ' sec.');
                     adapter.setState('dev.pollInterval', pollInterval);
                 },
                 statusPost=>{
