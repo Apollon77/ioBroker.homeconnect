@@ -23,6 +23,11 @@ Dann auf **Applications** und anschließend auf **Register Application** gehen.
 
 ![Screenshot](img/application2.JPG)
 
+Bei **Application ID** einen Namen für die Application eintragen, z.B. ioBroker. Bei **OAuth Flow** Device Flow selektieren das 
+letzte Feld kann leer bleiben. Dann Speichern und dann hat man die benötigte ClientID.
+
+
+
 
 ## Changelog
 
