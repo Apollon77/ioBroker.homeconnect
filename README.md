@@ -8,7 +8,7 @@ Für den Adapter wird eine ClientID benötigt. Dazu muss man sich ersteinmal im 
 
 https://developer.home-connect.com
 
-![Screenshot](img\reg_acc.JPG)
+![Screenshot](img/reg_acc.JPG)
 
 
 
