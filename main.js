@@ -39,10 +39,11 @@ function stateGet(stat){
                 let deviceCode=value;
                 adapter.log.error('devicecode: '+ deviceCode);                    
         auth.tokenGet(deviceCode,clientID).then(
-            ([token,refreshToken])=>{
+            ([token,refreshToken,expires])=>{
                 adapter.log.info('Accestoken generiert!');
                 adapter.setState('dev.token', {val: token, ack: true});
                 adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
+                adapter.setState('dev.expires', {val: expires, ack: true});
                 clearInterval(getTokenInterval);
             },
             statusPost=>{
@@ -381,6 +382,17 @@ stateGet(stat).then(
         },
         native: {}
     });
+
+    adapter.setObject('dev.expires', {
+        type: 'state',
+        common: {
+            name: 'Token expires in sec',
+            type: 'number',
+            role: 'indicator'
+        },
+        native: {}
+    });
+
 
 
     adapter.subscribeStates('*');
