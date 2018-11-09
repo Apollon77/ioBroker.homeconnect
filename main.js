@@ -219,6 +219,26 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
+                adapter.log.info('Token???? : ' + token);
+/*///////////////////////////////// verfügbare Datenpunkte ///////////////////////////////////
+
+                auth.getProgramsAvailable(token,haId).then(
+            (programsAvailable)=>{
+                adapter.setState(adapter.namespace + '.dev.programsAvailableJSON', JSON.stringify(programsAvailable));
+            },
+            (statusGet)=>{
+                if (statusGet=='400'){
+                adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                }else{
+                adapter.log.error("Irgendwas stimmt da wohl nicht!!  Fehlercode: " + statusGet );
+            }
+            }
+        )   
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////*/
+
                 setTimeout(function(){
                     appliancesStates()
                 },3000);
