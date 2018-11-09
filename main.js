@@ -420,12 +420,5 @@ stateGet(stat).then(
 
 
     adapter.subscribeStates('*');
-
-    adapter.checkPassword('admin', 'iobroker', function (res) {
-        console.log('check user admin pw ioboker: ' + res);
-    });
-
-    adapter.checkGroup('admin', 'admin', function (res) {
-        console.log('check group user admin group admin: ' + res);
-    });
+  
 }

@@ -36,16 +36,6 @@
         "authors": [
             "dna909 <dna909@googlemail.com>"
         ],
-        "docs": {
-            "en": "docs/en/admin.md",
-            "ru": "docs/ru/admin.md",
-            "de": "docs/de/admin.md",
-            "es": "docs/es/admin.md",
-            "it": "docs/it/admin.md",
-            "fr": "docs/fr/admin.md",
-            "nl": "docs/nl/admin.md",
-            "pt": "docs/pt/admin.md"
-        },
         "platform": "Javascript/Node.js",
         "mode": "daemon",
         "icon": "homeconnect.png",
@@ -55,16 +45,14 @@
         "keywords": ["homeconnect", "vis", "GUI", "graphical", "scada"],
         "readme": "https://github.com/dna909/ioBroker.homeconnect/blob/master/README.md",
         "loglevel": "info",
-        "type": "general",
+        "type": "household",
         "license": "MIT",
-        "messagebox": false,
-        "restartAdapters": ["vis"]
+        "messagebox": false
     },
     "native": {
-           "test1": true,
-           "test2": 42,
-           "mySelect": "auto"
-              },
+           "clientID": "",
+           "scope": ""
+            },
     "objects": [
 
     ]
