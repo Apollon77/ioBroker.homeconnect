@@ -6,6 +6,8 @@
 
 ## Voraussetzungen vor der Installation
 
+Es muß mindestens Node.js Version 6 installiert sein!!
+
 Für den Adapter wird eine ClientID benötigt. Dazu muss man sich ersteinmal im Developer-Portal von Home-Connect registrieren.
 
 https://developer.home-connect.com
@@ -43,7 +45,7 @@ Log angezeigt. Die URL einfach kopieren und im Browser öffnen. Dann die Loginda
 
 ### 0.0.2  (08.11.2018)
 
-* (dna909) OAuth2 Deviceflow-Authorization, List connected appliances
+* (dna909) OAuth2 Deviceflow-Authorization, enumerate connected appliances
 
 ### 0.0.1
 
