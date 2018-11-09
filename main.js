@@ -37,7 +37,6 @@ function stateGet(stat){
             (value)=>{
                 let clientID=adapter.config.clientID;
                 let deviceCode=value;
-                //adapter.log.error('devicecode: '+ deviceCode);                    
         auth.tokenGet(deviceCode,clientID).then(
             ([token,refreshToken,expires])=>{
                 adapter.log.info('Accestoken generiert!');
@@ -141,7 +140,9 @@ adapter.on('stateChange', function (id, state) {
                     common: {
                         name: 'Name',
                         type: 'mixed',
-                        role: 'indicator'
+                        role: 'indicator',
+                        write: false,
+                        read: true
                     },
                     native: {}
                 });
@@ -151,7 +152,9 @@ adapter.on('stateChange', function (id, state) {
                     common: {
                         name: 'brand',
                         type: 'mixed',
-                        role: 'indicator'
+                        role: 'indicator',
+                        write: false,
+                        read: true
                     },
                     native: {}
                 });
@@ -161,7 +164,9 @@ adapter.on('stateChange', function (id, state) {
                     common: {
                         name: 'vib',
                         type: 'mixed',
-                        role: 'indicator'
+                        role: 'indicator',
+                        write: false,
+                        read: true
                     },
                     native: {}
                 });
@@ -171,7 +176,9 @@ adapter.on('stateChange', function (id, state) {
                     common: {
                         name: 'connected',
                         type: 'boolean',
-                        role: 'indicator'
+                        role: 'indicator',
+                        write: false,
+                        read: true
                     },
                     native: {}
                 });
@@ -181,7 +188,9 @@ adapter.on('stateChange', function (id, state) {
                     common: {
                         name: 'type',
                         type: 'mixed',
-                        role: 'indicator'
+                        role: 'indicator',
+                        write: false,
+                        read: true
                     },
                     native: {}
                 });
@@ -191,7 +200,9 @@ adapter.on('stateChange', function (id, state) {
                     common: {
                         name: 'enumber',
                         type: 'mixed',
-                        role: 'indicator'
+                        role: 'indicator',
+                        write: false,
+                        read: true
                     },
                     native: {}
                 });
@@ -201,7 +212,9 @@ adapter.on('stateChange', function (id, state) {
                     common: {
                         name: 'haId',
                         type: 'mixed',
-                        role: 'indicator'
+                        role: 'indicator',
+                        write: false,
+                        read: true
                     },
                     native: {}
                 });
@@ -228,9 +241,7 @@ adapter.on('stateChange', function (id, state) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if (id==adapter.namespace + '.dev.token'){
-        //adapter.log.info('Token wurde geändert!');
         let token=state.val;
-
         adapter.setState('dev.access', true);
 
         auth.getAppliances(token).then(
@@ -310,7 +321,6 @@ stateGet(stat).then(
                 let stat=adapter.namespace + '.dev.token';
                 stateGet(stat).then(
                     (value)=>{
-                        //adapter.log.error('Devicecode schon vorhanden');
                         let token=value;
                         auth.getAppliances(token).then(
                             (appliances)=>{
@@ -335,14 +345,15 @@ stateGet(stat).then(
             adapter.log.error('FEHLER: ' + err);
     }
 )
-
     
     adapter.setObject('dev.authUriComplete', {
         type: 'state',
         common: {
             name: 'AuthorizationURI',
             type: 'mixed',
-            role: 'indicator'
+            role: 'indicator',
+            write: false,
+            read: true
         },
         native: {}
     });
@@ -352,7 +363,9 @@ stateGet(stat).then(
         common: {
             name: 'DeviceCode',
             type: 'mixed',
-            role: 'indicator'
+            role: 'indicator',
+            write: false,
+            read: true
         },
         native: {}
     });
@@ -362,7 +375,9 @@ stateGet(stat).then(
         common: {
             name: 'Poll-Interval in sec.',
             type: 'mixed',
-            role: 'indicator'
+            role: 'indicator',
+            write: false,
+            read: true
         },
         native: {}
     });
@@ -372,7 +387,9 @@ stateGet(stat).then(
         common: {
             name: 'Access-Token',
             type: 'mixed',
-            role: 'indicator'
+            role: 'indicator',
+            write: false,
+            read: true
         },
         native: {}
     });
@@ -382,7 +399,9 @@ stateGet(stat).then(
         common: {
             name: 'Refresh-Token',
             type: 'mixed',
-            role: 'indicator'
+            role: 'indicator',
+            write: false,
+            read: true
         },
         native: {}
     });
@@ -393,6 +412,8 @@ stateGet(stat).then(
             name: 'access',
             type: 'boolean',
             role: 'indicator',
+            write: true,
+            read: true
         },
         native: {}
     });
@@ -402,7 +423,9 @@ stateGet(stat).then(
         common: {
             name: 'Homeappliances_JSON',
             type: 'object',
-            role: 'indicator'
+            role: 'indicator',
+            write: false,
+            read: true
         },
         native: {}
     });
@@ -412,12 +435,12 @@ stateGet(stat).then(
         common: {
             name: 'Token expires in sec',
             type: 'number',
-            role: 'indicator'
+            role: 'indicator',
+            write: false,
+            read: true
         },
         native: {}
     });
-
-
 
     adapter.subscribeStates('*');
   
