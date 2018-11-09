@@ -219,7 +219,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.log.info('Token???? : ' + token);
+                //adapter.log.info('Token???? : ' + token);
 /*///////////////////////////////// verfügbare Datenpunkte ///////////////////////////////////
 
                 auth.getProgramsAvailable(token,haId).then(
