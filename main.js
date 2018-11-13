@@ -230,6 +230,7 @@ adapter.on('stateChange', function (id, state) {
                     (value)=>{
                         let token=value;
                         adapter.log.info('TOKEN =====>>>>   ' + token);
+                        adapter.log.info('haId  =====>>>>   ' + haId);
                         auth.getCurrentStatus(token,haId).then(
                             (currentStatus)=>{
                                 adapter.setState(adapter.namespace + '.dev.currentStatusJSON', JSON.stringify(currentStatus));
