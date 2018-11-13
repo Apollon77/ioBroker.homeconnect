@@ -137,6 +137,18 @@ adapter.on('stateChange', function (id, state) {
                 let enumber=appliancesArray.data.homeappliances[appliancesCount].enumber;
                 let haId=appliancesArray.data.homeappliances[appliancesCount].haId;
 
+                adapter.setObject(name + '.currentStatusJSON', {
+                    type: 'state',
+                    common: {
+                        name: 'currentStatusJSON',
+                        type: 'object',
+                        role: 'indicator',
+                        write: false,
+                        read: true
+                    },
+                    native: {}
+                });
+                                
                 adapter.setObject(name, {
                     type: 'state',
                     common: {
@@ -221,6 +233,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
+                
               
 /*///////////////////////////////// verfügbare Datenpunkte ///////////////////////////////////
  
@@ -233,7 +246,7 @@ adapter.on('stateChange', function (id, state) {
                         adapter.log.info('haId  =====>>>>   ' + haId);
                         auth.getCurrentStatus(token,haId).then(
                             (currentStatus)=>{
-                                adapter.setState(adapter.namespace + '.dev.currentStatusJSON', JSON.stringify(currentStatus));
+                                adapter.setState(name + '.currentStatusJSON', JSON.stringify(currentStatus));
                             },
                     (statusGet)=>{
                         if (statusGet=='400'){
