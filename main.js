@@ -148,7 +148,19 @@ adapter.on('stateChange', function (id, state) {
                     },
                     native: {}
                 });
-                                
+
+                adapter.setObject(name + '.programsAvailableJSON', {
+                    type: 'state',
+                    common: {
+                        name: 'programsAvailableJSON',
+                        type: 'object',
+                        role: 'indicator',
+                        write: false,
+                        read: true
+                    },
+                    native: {}
+                });
+                                                
                 adapter.setObject(name, {
                     type: 'state',
                     common: {
@@ -236,7 +248,9 @@ adapter.on('stateChange', function (id, state) {
                 
               
 /*///////////////////////////////// verfügbare Datenpunkte ///////////////////////////////////
- 
+
+aktuellen Status abfragen
+
 */
             let stat=adapter.namespace + '.dev.token';
                 stateGet(stat).then(
@@ -255,7 +269,21 @@ adapter.on('stateChange', function (id, state) {
                             adapter.log.error("Irgendwas stimmt da wohl nicht!!  Fehlercode: " + statusGet );
             }
             }
-        )   
+        );
+////////////////////////////////////////////////////
+                        auth.getProgramsAvailable(token,haId).then(
+                            (programsAvailable)=>{
+                                adapter.setState(name + '.programsAvailableJSON', JSON.stringify(programsAvailable));
+                            },
+                        (statusGet)=>{
+                        if (statusGet=='400'){
+                            adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                        }else{
+                            adapter.log.error("Irgendwas stimmt da wohl nicht!!  Fehlercode: " + statusGet );
+            }
+            }
+        );
+
                     },
                     err=>{
                         adapter.log.error('FEHLER: ' + err);
