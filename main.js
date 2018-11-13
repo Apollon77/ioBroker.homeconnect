@@ -49,11 +49,12 @@ function stateGet(stat){
 
                 function getRefreshToken(){
                 auth.tokenRefresh(refreshToken).then(
-                    ([token,refreshToken,expires])=>{
+                    ([token,refreshToken,expires,tokenScope])=>{
                         adapter.log.info('Accestoken erneuert...');
                         adapter.setState('dev.token', {val: token, ack: true});
                         adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
                         adapter.setState('dev.expires', {val: expires, ack: true}); 
+                        adapter.setState('dev.tokenScope', {val: tokenScope, ack: true});
                     },
                     statusPost=>{
                         if (statusPost=='400'){
@@ -219,21 +220,30 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                //adapter.log.info('Token???? : ' + token);
+              
 /*///////////////////////////////// verfügbare Datenpunkte ///////////////////////////////////
-
-                auth.getProgramsAvailable(token,haId).then(
-            (programsAvailable)=>{
-                adapter.setState(adapter.namespace + '.dev.programsAvailableJSON', JSON.stringify(programsAvailable));
-            },
-            (statusGet)=>{
-                if (statusGet=='400'){
-                adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
-                }else{
-                adapter.log.error("Irgendwas stimmt da wohl nicht!!  Fehlercode: " + statusGet );
+                let stat=adapter.namespace + '.dev.token';
+                stateGet(stat).then(
+                    (value)=>{
+                        auth.getProgramsAvailable(token,haId).then(
+                            (programsAvailable)=>{
+                                adapter.setState(adapter.namespace + '.dev.programsAvailableJSON', JSON.stringify(programsAvailable));
+                            },
+                    (statusGet)=>{
+                        if (statusGet=='400'){
+                            adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                        }else{
+                            adapter.log.error("Irgendwas stimmt da wohl nicht!!  Fehlercode: " + statusGet );
             }
             }
         )   
+                    },
+                    err=>{
+                        adapter.log.error('FEHLER: ' + err);
+                    }
+                    );
+
+       
 
 
 
@@ -461,6 +471,32 @@ stateGet(stat).then(
         },
         native: {}
     });
+
+    adapter.setObject('dev.tokenScope', {
+        type: 'state',
+        common: {
+            name: 'Scope',
+            type: 'mixed',
+            role: 'indicator',
+            write: false,
+            read: true
+        },
+        native: {}
+    });
+
+    adapter.setObject('dev.programsAvailableJSON', {
+        type: 'state',
+        common: {
+            name: 'programs available',
+            type: 'object',
+            role: 'indicator',
+            write: false,
+            read: true
+        },
+        native: {}
+    });
+
+    //
 
     adapter.subscribeStates('*');
   
