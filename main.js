@@ -223,12 +223,14 @@ adapter.on('stateChange', function (id, state) {
 
               
 /*///////////////////////////////// verfügbare Datenpunkte ///////////////////////////////////
-                let stat=adapter.namespace + '.dev.token';
+ 
+*/
+            let stat=adapter.namespace + '.dev.token';
                 stateGet(stat).then(
                     (value)=>{
-                        auth.getProgramsAvailable(token,haId).then(
-                            (programsAvailable)=>{
-                                adapter.setState(adapter.namespace + '.dev.programsAvailableJSON', JSON.stringify(programsAvailable));
+                        auth.getCurrentStatus(token,haId).then(
+                            (currentStatus)=>{
+                                adapter.setState(adapter.namespace + '.dev.currentStatusJSON', JSON.stringify(currentStatus));
                             },
                     (statusGet)=>{
                         if (statusGet=='400'){
@@ -485,10 +487,10 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('dev.programsAvailableJSON', {
+    adapter.setObject('dev.currentStatusJSON', {
         type: 'state',
         common: {
-            name: 'programs available',
+            name: 'currentStatus',
             type: 'object',
             role: 'indicator',
             write: false,
