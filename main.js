@@ -38,11 +38,12 @@ function stateGet(stat){
                 let clientID=adapter.config.clientID;
                 let deviceCode=value;
         auth.tokenGet(deviceCode,clientID).then(
-            ([token,refreshToken,expires])=>{
+            ([token,refreshToken,expires,tokenScope])=>{
                 adapter.log.info('Accestoken generiert!');
                 adapter.setState('dev.token', {val: token, ack: true});
                 adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
                 adapter.setState('dev.expires', {val: expires, ack: true});
+                adapter.setState('dev.tokenScope', {val: tokenScope, ack: true});
                 clearInterval(getTokenInterval);
 
                 getTokenRefreshInterval=setInterval(getRefreshToken,3600000);
