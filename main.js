@@ -292,12 +292,12 @@ aktuellen Status abfragen und Datenpunkte anlegen
 
                                                     setTimeout(function(){
                                                         currentStatusSetDpVal()
-                                                    },1000);
+                                                    },3000);
 
                                                     function currentStatusSetDpVal(){
                                                         adapter.setState(name + '.Status.' + dp, currentStatusArray.data.status[currentStatusCount].value);
                                                     }
-                                                    
+
                                                 currentStatusCount++;
                                                 currentStatusSetDp();
                                             }
