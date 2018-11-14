@@ -261,6 +261,10 @@ aktuellen Status abfragen
                         auth.getCurrentStatus(token,haId).then(
                             (currentStatus)=>{
                                 adapter.setState(name + '.currentStatusJSON', JSON.stringify(currentStatus));
+                                    let regex=/([^.]+)\.?$/;
+                                    let currentStatusArray=JSON.parse(currentStatus);
+                                    let currentStatusLength=currentStatusArray.data.status.length;
+                                    adapter.log.info('Länge currentStatusArray    ' + currentStatusLength);
                             },
                     (statusGet)=>{
                         if (statusGet=='400'){
@@ -270,7 +274,11 @@ aktuellen Status abfragen
             }
             }
         );
-////////////////////////////////////////////////////
+/*
+
+verfügbare Programme
+
+*/
                         auth.getProgramsAvailable(token,haId).then(
                             (programsAvailable)=>{
                                 adapter.setState(name + '.programsAvailableJSON', JSON.stringify(programsAvailable));
