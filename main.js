@@ -315,20 +315,20 @@ verfügbare Programme
 
                                         function programsAvailableSetDp(){
                                             if (programsAvailableCount < programsAvailableLength){
-                                                let programsAvailableDp=programsAvailableArray.data.status[programsAvailableCount].key;
+                                                let programsAvailableDp=programsAvailableArray.data.programs[programsAvailableCount].key;
                                                     let dp = programsAvailableDp.match(regex);
                                                     adapter.setObjectNotExists(name + '.Programs.' + dp, {
                                                         type: 'state',
                                                         common: {
                                                             name: programsAvailableDp,
-                                                            type: typeof(programsAvailableArray.data.status[programsAvailableCount].name),
+                                                            type: typeof(programsAvailableArray.data.programs[programsAvailableCount].name),
                                                             role: 'indicator',
                                                             write: true,
                                                             read: true
                                                         },
                                                         native: {}
                                                     });
-                                                        adapter.setState(name + '.Programs.' + dp, programsAvailableArray.data.status[programsAvailableCount].name);
+                                                        adapter.setState(name + '.Programs.' + dp, programsAvailableArray.data.programs[programsAvailableCount].name);
 
                                                         programsAvailableCount++;
                                                         programsAvailableSetDp();
