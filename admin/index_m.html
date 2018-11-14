@@ -26,7 +26,7 @@
     function load(settings, onChange) {
         // example: select elements with id=key and class=value and insert value
        if (!settings) return;
-       if (settings.scope  === undefined) settings.scope = "IdentifyAppliance";
+       if (settings.scope  === undefined) settings.scope = "IdentifyAppliance%20Monitor%20Settings%20Dishwasher-Control%20Washer-Control%20Dryer-Control%20CoffeeMaker-Control%20Hood-Control%20CleaningRobot-Control";
         $('.value').each(function () {
             var $key = $(this);
             var id = $key.attr('id');
@@ -94,11 +94,10 @@
                     <select  class="value" id="scope">
                         <option value="IdentifyAppliance" class="translate">IdentifyAppliance</option>
                         <option value="Monitor" class="translate">Monitor</option>
-                        <option value="Control" class="translate">Control</option>
-                        <option value="Images" class="translate">Images</option>
                         <option value="Settings" class="translate">Settings</option>
                         <option value="IdentifyAppliance%20Oven-Monitor" class="translate">IdentifyAppliance & Monitor Oven</option>
-                        <option value="IdentifyAppliance%20Oven-Monitor%20Oven-Settings" class="translate">IdentifyAppliance & Monitor Oven & Oven Settings</option>
+                        <option value="IdentifyAppliance%20Monitor%20Settings" class="translate">IdentifyAppliance & Monitor & Settings</option>
+                        <option value="IdentifyAppliance%20Monitor%20Settings%20Dishwasher-Control%20Washer-Control%20Dryer-Control%20CoffeeMaker-Control%20Hood-Control%20CleaningRobot-Control" class="translate">All</option>
                     </select>
                     <label class="translate" for="scope">Scope:</label>
                 </div>
