@@ -591,18 +591,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObjectNotExists('dev.currentStatusJSON', {
-        type: 'state',
-        common: {
-            name: 'currentStatus',
-            type: 'object',
-            role: 'indicator',
-            write: false,
-            read: true
-        },
-        native: {}
-    });
-
+    
     //
 
     adapter.subscribeStates('*');

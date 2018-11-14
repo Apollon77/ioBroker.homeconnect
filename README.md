@@ -2,7 +2,7 @@
 # ioBroker.homeconnect
 =================
 
-
+[![Build Status](https://travis-ci.org/dna909/ioBroker.homeconnect.svg?branch=master)](https://travis-ci.org/dna909/ioBroker.homeconnect)
 
 ## Voraussetzungen vor der Installation
 
