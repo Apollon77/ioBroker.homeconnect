@@ -321,14 +321,14 @@ verfügbare Programme
                                                         type: 'state',
                                                         common: {
                                                             name: programsAvailableDp,
-                                                            type: typeof(programsAvailableArray.data.programs[programsAvailableCount].name),
-                                                            role: 'indicator',
+                                                            type: 'boolean',
+                                                            role: 'button',
                                                             write: true,
                                                             read: true
                                                         },
                                                         native: {}
                                                     });
-                                                        adapter.setState(name + '.Programs.' + dp, programsAvailableArray.data.programs[programsAvailableCount].name);
+                                                        adapter.setState(name + '.Programs.' + dp, false);
 
                                                         programsAvailableCount++;
                                                         programsAvailableSetDp();
