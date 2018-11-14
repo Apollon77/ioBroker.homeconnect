@@ -282,7 +282,7 @@ aktuellen Status abfragen und Datenpunkte anlegen
                                                         type: 'state',
                                                         common: {
                                                             name: currentStatusDp,
-                                                            type: typeof(currentStatusArray.data.status[currentStatusCount].value),
+                                                            type: 'mixed',
                                                             role: 'indicator',
                                                             write: true,
                                                             read: true
@@ -292,8 +292,6 @@ aktuellen Status abfragen und Datenpunkte anlegen
 
                                                 currentStatusCount++;
                                                 currentStatusSetDp();
-                                            }else{
-                                                
                                             }
 
                                         }
