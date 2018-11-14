@@ -271,8 +271,9 @@ aktuellen Status abfragen und Datenpunkte anlegen
 
                                         function currentStatusSetDp(){
                                             if (currentStatusCount < currentStatusLength){
+                                                adapter.log.info('Counter: ' + currentStatusCount);
                                                 let currentStatusDp=currentStatusArray.data.status[currentStatusCount].key;
-                                                adapter.log.info("currentStatusDp:  " + currentStatusDp);
+                                                adapter.log.info('currentStatusDp:  ' + currentStatusDp);
                                                 currentStatusCount++;
                                                 currentStatusSetDp();
                                             }else{
