@@ -249,7 +249,7 @@ adapter.on('stateChange', function (id, state) {
               
 /*///////////////////////////////// verfügbare Datenpunkte ///////////////////////////////////
 
-aktuellen Status abfragen und Datenpunkte anlegen
+aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 */
             let stat=adapter.namespace + '.dev.token';
@@ -306,6 +306,34 @@ verfügbare Programme
                         auth.getProgramsAvailable(token,haId).then(
                             (programsAvailable)=>{
                                 adapter.setState(name + '.programsAvailableJSON', JSON.stringify(programsAvailable));
+                                let regex=/([^.]+)\.?$/gm;
+                                    let programsAvailableArray=JSON.parse(JSON.stringify(programsAvailable));
+                                    let programsAvailableLength=programsAvailableArray.data.programs.length;
+                                    let programsAvailableCount=0;
+                                    
+                                    programsAvailableSetDp();
+
+                                        function programsAvailableSetDp(){
+                                            if (programsAvailableCount < programsAvailableLength){
+                                                let programsAvailableDp=programsAvailableArray.data.status[programsAvailableCount].key;
+                                                    let dp = programsAvailableDp.match(regex);
+                                                    adapter.setObjectNotExists(name + '.Programs.' + dp, {
+                                                        type: 'state',
+                                                        common: {
+                                                            name: programsAvailableDp,
+                                                            type: typeof(programsAvailableArray.data.status[programsAvailableCount].name),
+                                                            role: 'indicator',
+                                                            write: true,
+                                                            read: true
+                                                        },
+                                                        native: {}
+                                                    });
+                                                        adapter.setState(name + '.Programs.' + dp, programsAvailableArray.data.status[programsAvailableCount].name);
+
+                                                        programsAvailableCount++;
+                                                        programsAvailableSetDp();
+                                            }
+                                        }
                             },
                         (statusGet)=>{
                         if (statusGet=='400'){
