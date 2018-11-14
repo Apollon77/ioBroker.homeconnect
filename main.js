@@ -262,11 +262,26 @@ aktuellen Status abfragen und Datenpunkte anlegen
                             (currentStatus)=>{
                                 adapter.setState(name + '.currentStatusJSON', JSON.stringify(currentStatus));
                                     let regex=/([^.]+)\.?$/;
-                                   // let currentStatusArrayJSON=JSON.stringify(currentStatus);
                                     let currentStatusArray=JSON.parse(JSON.stringify(currentStatus));
-                                   // let currentStatusArray=JSON.parse(currentStatusArrayJSON);
                                     let currentStatusLength=currentStatusArray.data.status.length;
+                                    let currentStatusCount=0;
                                     adapter.log.info('Länge currentStatusArray    ' + currentStatusLength);
+
+                                        currentStatusSetDp();
+
+                                        function currentStatusSetDp(){
+                                            if (currentStatusCount < currentStatusLength){
+                                                let currentStatusDp=currentStatusArray.data.status[currentStatusCount].key;
+                                                adapter.log.info("currentStatusDp:  " + currentStatusDp);
+                                                currentStatusCount++;
+                                                currentStatusSetDp();
+                                            }else{
+                                                
+                                            }
+
+                                        }
+
+
                             },
                     (statusGet)=>{
                         if (statusGet=='400'){
