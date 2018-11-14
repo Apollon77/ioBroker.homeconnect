@@ -278,18 +278,18 @@ aktuellen Status abfragen und Datenpunkte anlegen
                                                     adapter.log.info('Datenpunkt: ' + dp);
                                                     adapter.log.info('Datenpunkt vollständig: ' + name + '.Status.' + dp);
 
-                                                    setObjectNotExists(name + '.Status.' + dp, {
+                                                    adapter.setObjectNotExists(name + '.Status.' + dp, {
                                                         type: 'state',
                                                         common: {
                                                             name: currentStatusDp,
-                                                            type: 'mixed',
+                                                            type: typeof(currentStatusArray.data.status[currentStatusCount].value),
                                                             role: 'indicator',
                                                             write: true,
                                                             read: true
                                                         },
                                                         native: {}
                                                     });
-
+                                                                    //typeof(currentStatusArray.data.status[currentStatusCount].value),
                                                 currentStatusCount++;
                                                 currentStatusSetDp();
                                             }
