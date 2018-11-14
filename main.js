@@ -256,8 +256,7 @@ aktuellen Status abfragen und Datenpunkte anlegen
                 stateGet(stat).then(
                     (value)=>{
                         let token=value;
-                        adapter.log.info('TOKEN =====>>>>   ' + token);
-                        adapter.log.info('haId  =====>>>>   ' + haId);
+                        
                         auth.getCurrentStatus(token,haId).then(
                             (currentStatus)=>{
                                 adapter.setState(name + '.currentStatusJSON', JSON.stringify(currentStatus));
@@ -265,19 +264,13 @@ aktuellen Status abfragen und Datenpunkte anlegen
                                     let currentStatusArray=JSON.parse(JSON.stringify(currentStatus));
                                     let currentStatusLength=currentStatusArray.data.status.length;
                                     let currentStatusCount=0;
-                                    adapter.log.info('Länge currentStatusArray    ' + currentStatusLength);
-
+                                    
                                         currentStatusSetDp();
 
                                         function currentStatusSetDp(){
                                             if (currentStatusCount < currentStatusLength){
-                                                adapter.log.info('Counter: ' + currentStatusCount);
                                                 let currentStatusDp=currentStatusArray.data.status[currentStatusCount].key;
-                                                adapter.log.info('currentStatusDp:  ' + currentStatusDp);
                                                     let dp = currentStatusDp.match(regex);
-                                                    adapter.log.info('Datenpunkt: ' + dp);
-                                                    adapter.log.info('Datenpunkt vollständig: ' + name + '.Status.' + dp);
-
                                                     adapter.setObjectNotExists(name + '.Status.' + dp, {
                                                         type: 'state',
                                                         common: {
@@ -289,17 +282,12 @@ aktuellen Status abfragen und Datenpunkte anlegen
                                                         },
                                                         native: {}
                                                     });
-
-                                                    
                                                         adapter.setState(name + '.Status.' + dp, currentStatusArray.data.status[currentStatusCount].value);
-                                                    
 
                                                 currentStatusCount++;
                                                 currentStatusSetDp();
                                             }
-
                                         }
-
 
                             },
                     (statusGet)=>{
