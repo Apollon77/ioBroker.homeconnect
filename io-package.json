@@ -3,6 +3,14 @@
         "name": "homeconnect",
         "version": "0.0.2",
         "news": {
+            "0.0.3": {
+                "en": "Abfrage Status und verfügbare Programme",
+                "de": "query State and available programs",
+                "ru": "Первоначальный адаптер",
+                "pt": "Versão inicial",
+                "fr": "Version initiale",
+                "nl": "Eerste release"
+            },
              "0.0.2": {
                 "en": "initial adapter",
                 "de": "Initiale Version",

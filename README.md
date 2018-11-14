@@ -43,6 +43,10 @@ Log angezeigt. Die URL einfach kopieren und im Browser öffnen. Dann die Loginda
 
 ## Changelog
 
+### 0.0.3  (14.11.2018)
+
+* (dna909) query States and available programs
+
 ### 0.0.2  (08.11.2018)
 
 * (dna909) OAuth2 Deviceflow-Authorization, enumerate connected appliances
