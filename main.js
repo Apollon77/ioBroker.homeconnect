@@ -290,13 +290,9 @@ aktuellen Status abfragen und Datenpunkte anlegen
                                                         native: {}
                                                     });
 
-                                                    setTimeout(function(){
-                                                        currentStatusSetDpVal()
-                                                    },3000);
-
-                                                    function currentStatusSetDpVal(){
+                                                    
                                                         adapter.setState(name + '.Status.' + dp, currentStatusArray.data.status[currentStatusCount].value);
-                                                    }
+                                                    
 
                                                 currentStatusCount++;
                                                 currentStatusSetDp();
