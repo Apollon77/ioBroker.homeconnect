@@ -249,7 +249,7 @@ adapter.on('stateChange', function (id, state) {
               
 /*///////////////////////////////// verfügbare Datenpunkte ///////////////////////////////////
 
-aktuellen Status abfragen
+aktuellen Status abfragen und Datenpunkte anlegen
 
 */
             let stat=adapter.namespace + '.dev.token';
@@ -263,7 +263,7 @@ aktuellen Status abfragen
                                 adapter.setState(name + '.currentStatusJSON', JSON.stringify(currentStatus));
                                     let regex=/([^.]+)\.?$/;
                                     let currentStatusArray=JSON.parse(currentStatus);
-                                    let currentStatusLength=currentStatusArray.data.status.length;
+                                    let currentStatusLength=currentStatusArray.data.length;
                                     adapter.log.info('Länge currentStatusArray    ' + currentStatusLength);
                             },
                     (statusGet)=>{
