@@ -137,7 +137,7 @@ adapter.on('stateChange', function (id, state) {
                 let enumber=appliancesArray.data.homeappliances[appliancesCount].enumber;
                 let haId=appliancesArray.data.homeappliances[appliancesCount].haId;
 
-                adapter.setObject(name + '.currentStatusJSON', {
+                adapter.setObjectNotExists(name + '.currentStatusJSON', {
                     type: 'state',
                     common: {
                         name: 'currentStatusJSON',
@@ -149,7 +149,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObject(name + '.programsAvailableJSON', {
+                adapter.setObjectNotExists(name + '.programsAvailableJSON', {
                     type: 'state',
                     common: {
                         name: 'programsAvailableJSON',
@@ -161,7 +161,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
                                                 
-                adapter.setObject(name, {
+                adapter.setObjectNotExists(name, {
                     type: 'state',
                     common: {
                         name: 'Name',
@@ -173,7 +173,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObject(name + '.brand', {
+                adapter.setObjectNotExists(name + '.brand', {
                     type: 'state',
                     common: {
                         name: 'brand',
@@ -185,7 +185,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObject(name + '.vib', {
+                adapter.setObjectNotExists(name + '.vib', {
                     type: 'state',
                     common: {
                         name: 'vib',
@@ -197,7 +197,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObject(name + '.connected', {
+                adapter.setObjectNotExists(name + '.connected', {
                     type: 'state',
                     common: {
                         name: 'connected',
@@ -209,7 +209,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObject(name + '.type', {
+                adapter.setObjectNotExists(name + '.type', {
                     type: 'state',
                     common: {
                         name: 'type',
@@ -221,7 +221,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObject(name + '.enumber', {
+                adapter.setObjectNotExists(name + '.enumber', {
                     type: 'state',
                     common: {
                         name: 'enumber',
@@ -233,7 +233,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObject(name + '.haId', {
+                adapter.setObjectNotExists(name + '.haId', {
                     type: 'state',
                     common: {
                         name: 'haId',
@@ -483,7 +483,7 @@ stateGet(stat).then(
     }
 )
     
-    adapter.setObject('dev.authUriComplete', {
+    adapter.setObjectNotExists('dev.authUriComplete', {
         type: 'state',
         common: {
             name: 'AuthorizationURI',
@@ -495,7 +495,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('dev.devCode', {
+    adapter.setObjectNotExists('dev.devCode', {
         type: 'state',
         common: {
             name: 'DeviceCode',
@@ -507,7 +507,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('dev.pollInterval', {
+    adapter.setObjectNotExists('dev.pollInterval', {
         type: 'state',
         common: {
             name: 'Poll-Interval in sec.',
@@ -519,7 +519,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('dev.token', {
+    adapter.setObjectNotExists('dev.token', {
         type: 'state',
         common: {
             name: 'Access-Token',
@@ -531,7 +531,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('dev.refreshToken', {
+    adapter.setObjectNotExists('dev.refreshToken', {
         type: 'state',
         common: {
             name: 'Refresh-Token',
@@ -543,7 +543,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('dev.access',  {
+    adapter.setObjectNotExists('dev.access',  {
         type: 'state',
         common: {
             name: 'access',
@@ -555,7 +555,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('dev.homeappliancesJSON', {
+    adapter.setObjectNotExists('dev.homeappliancesJSON', {
         type: 'state',
         common: {
             name: 'Homeappliances_JSON',
@@ -567,7 +567,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('dev.expires', {
+    adapter.setObjectNotExists('dev.expires', {
         type: 'state',
         common: {
             name: 'Token expires in sec',
@@ -579,7 +579,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('dev.tokenScope', {
+    adapter.setObjectNotExists('dev.tokenScope', {
         type: 'state',
         common: {
             name: 'Scope',
@@ -591,7 +591,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObject('dev.currentStatusJSON', {
+    adapter.setObjectNotExists('dev.currentStatusJSON', {
         type: 'state',
         common: {
             name: 'currentStatus',
