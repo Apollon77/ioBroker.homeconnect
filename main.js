@@ -276,6 +276,7 @@ aktuellen Status abfragen und Datenpunkte anlegen
                                                 adapter.log.info('currentStatusDp:  ' + currentStatusDp);
                                                     let dp = currentStatusDp.match(regex);
                                                     adapter.log.info('Datenpunkt: ' + dp);
+                                                    adapter.log.info('Datenpunkt vollständig: ' + name + '.Status.' + dp);
 
                                                     setObjectNotExists(name + '.Status.' + dp, {
                                                         type: 'state',
