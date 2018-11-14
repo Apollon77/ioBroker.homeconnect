@@ -277,6 +277,18 @@ aktuellen Status abfragen und Datenpunkte anlegen
                                                     let dp = currentStatusDp.match(regex);
                                                     adapter.log.info('Datenpunkt: ' + dp);
 
+                                                    setObjectNotExists(name + '.Status.' + dp, {
+                                                        type: 'state',
+                                                        common: {
+                                                            name: currentStatusDp,
+                                                            type: typeof(currentStatusArray.data.status[currentStatusCount].value),
+                                                            role: 'indicator',
+                                                            write: true,
+                                                            read: true
+                                                        },
+                                                        native: {}
+                                                    });
+
                                                 currentStatusCount++;
                                                 currentStatusSetDp();
                                             }else{
