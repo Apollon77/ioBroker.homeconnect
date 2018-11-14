@@ -137,7 +137,7 @@ adapter.on('stateChange', function (id, state) {
                 let enumber=appliancesArray.data.homeappliances[appliancesCount].enumber;
                 let haId=appliancesArray.data.homeappliances[appliancesCount].haId;
 
-                adapter.setObjectNotExists(name + '.currentStatusJSON', {
+                adapter.setObjectNotExists(name + '.General.currentStatusJSON', {
                     type: 'state',
                     common: {
                         name: 'currentStatusJSON',
@@ -149,7 +149,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.programsAvailableJSON', {
+                adapter.setObjectNotExists(name + '.General.programsAvailableJSON', {
                     type: 'state',
                     common: {
                         name: 'programsAvailableJSON',
@@ -173,7 +173,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.brand', {
+                adapter.setObjectNotExists(name + '.General.brand', {
                     type: 'state',
                     common: {
                         name: 'brand',
@@ -185,7 +185,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.vib', {
+                adapter.setObjectNotExists(name + '.General.vib', {
                     type: 'state',
                     common: {
                         name: 'vib',
@@ -197,7 +197,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.connected', {
+                adapter.setObjectNotExists(name + '.General.connected', {
                     type: 'state',
                     common: {
                         name: 'connected',
@@ -209,7 +209,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.type', {
+                adapter.setObjectNotExists(name + '.General.type', {
                     type: 'state',
                     common: {
                         name: 'type',
@@ -221,7 +221,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.enumber', {
+                adapter.setObjectNotExists(name + '.General.enumber', {
                     type: 'state',
                     common: {
                         name: 'enumber',
@@ -233,7 +233,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.haId', {
+                adapter.setObjectNotExists(name + '.General.haId', {
                     type: 'state',
                     common: {
                         name: 'haId',
@@ -259,7 +259,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
                         
                         auth.getCurrentStatus(token,haId).then(
                             (currentStatus)=>{
-                                adapter.setState(name + '.currentStatusJSON', JSON.stringify(currentStatus));
+                                adapter.setState(name + '.General.currentStatusJSON', JSON.stringify(currentStatus));
                                     let regex=/([^.]+)\.?$/gm;
                                     let currentStatusArray=JSON.parse(JSON.stringify(currentStatus));
                                     let currentStatusLength=currentStatusArray.data.status.length;
@@ -305,7 +305,7 @@ verfügbare Programme
 */
                         auth.getProgramsAvailable(token,haId).then(
                             (programsAvailable)=>{
-                                adapter.setState(name + '.programsAvailableJSON', JSON.stringify(programsAvailable));
+                                adapter.setState(name + '.General.programsAvailableJSON', JSON.stringify(programsAvailable));
                                 let regex=/([^.]+)\.?$/gm;
                                     let programsAvailableArray=JSON.parse(JSON.stringify(programsAvailable));
                                     let programsAvailableLength=programsAvailableArray.data.programs.length;
@@ -361,12 +361,12 @@ verfügbare Programme
                 },3000);
 
                 function appliancesStates(){
-                    adapter.setState(name + '.brand', brand);
-                    adapter.setState(name + '.vib', vib);
-                    adapter.setState(name + '.connected', connected);
-                    adapter.setState(name + '.type', type);
-                    adapter.setState(name + '.enumber', enumber);
-                    adapter.setState(name + '.haId', haId);
+                    adapter.setState(name + '.General.brand', brand);
+                    adapter.setState(name + '.General.vib', vib);
+                    adapter.setState(name + '.General.connected', connected);
+                    adapter.setState(name + '.General.type', type);
+                    adapter.setState(name + '.General.enumber', enumber);
+                    adapter.setState(name + '.General.haId', haId);
                 }
                 appliancesCount ++;
                     inventorySub();
