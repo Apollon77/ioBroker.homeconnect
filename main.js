@@ -261,7 +261,7 @@ aktuellen Status abfragen und Datenpunkte anlegen
                         auth.getCurrentStatus(token,haId).then(
                             (currentStatus)=>{
                                 adapter.setState(name + '.currentStatusJSON', JSON.stringify(currentStatus));
-                                    let regex=/([^.]+)\.?$/;
+                                    let regex=/([^.]+)\.?$/gm;
                                     let currentStatusArray=JSON.parse(JSON.stringify(currentStatus));
                                     let currentStatusLength=currentStatusArray.data.status.length;
                                     let currentStatusCount=0;
