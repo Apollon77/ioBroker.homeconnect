@@ -290,11 +290,12 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
                                         }
 
                             },
-                    (statusGet)=>{
+                    ([statusGet,description])=>{
                         if (statusGet=='400'){
                             adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                         }else{
-                            adapter.log.error("Irgendwas stimmt da wohl nicht!!  Fehlercode: " + statusGet );
+                            adapter.log.error('2: Irgendwas stimmt da wohl nicht!!  Fehlercode: ' + statusGet );
+                            adapter.log.error(description);
             }
             }
         );
@@ -335,11 +336,12 @@ verfügbare Programme
                                             }
                                         }
                             },
-                        (statusGet)=>{
+                        ([statusGet,description])=>{
                         if (statusGet=='400'){
                             adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                         }else{
-                            adapter.log.error("Irgendwas stimmt da wohl nicht!!  Fehlercode: " + statusGet );
+                            adapter.log.error("3: Irgendwas stimmt da wohl nicht!!  Fehlercode: " + statusGet );
+                            adapter.log.error(description);
             }
             }
         );
@@ -385,11 +387,12 @@ verfügbare Programme
             (appliances)=>{
                 adapter.setState(adapter.namespace + '.dev.homeappliancesJSON', JSON.stringify(appliances));
             },
-            (statusGet)=>{
+            ([statusGet,description])=>{
                 if (statusGet=='400'){
                 adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                 }else{
-                adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet );
+                adapter.log.error("1: Irgendwas stimmt da wohl nicht!!     Fehlercode: " + statusGet );
+                adapter.log.error(description);
             }
             }
         )   
