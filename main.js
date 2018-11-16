@@ -394,7 +394,7 @@ auth.getSettingsAvailable(token,haId).then(
                                 native: {}
                             });
                                 adapter.log.info('Value: '+name + '.Settings.' + dp + ' : ' + dpValue);
-                                adapter.setState(name + '.Settings.' + dp, dpValue);
+                                adapter.setState(name + '.Settings.' + dp,  {val: dpValue, ack: true});
 
                                 settingsAvailableCount++;
                                 settingsAvailableSetDp();
