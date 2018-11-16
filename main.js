@@ -294,7 +294,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
                         if (statusGet=='400'){
                             adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                         }else{
-                            adapter.log.error('2: Irgendwas stimmt da wohl nicht!!  Fehlercode: ' + statusGet );
+                            adapter.log.error('2:  Fehlercode: ' + statusGet + '   haId: ' + haId);
                             adapter.log.error(description);
             }
             }
@@ -340,13 +340,63 @@ verfügbare Programme
                         if (statusGet=='400'){
                             adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                         }else{
-                            adapter.log.error("3: Irgendwas stimmt da wohl nicht!!  Fehlercode: " + statusGet );
+                            adapter.log.error('3: Fehlercode: ' + statusGet + '   haId: ' + haId);
                             adapter.log.error(description);
             }
             }
         );
 
-                    },
+/*        
+
+verfügbare Settings 
+
+*/ 
+
+auth.getSettingsAvailable(token,haId).then(
+    (settingsAvailable)=>{
+        adapter.setState(name + '.General.settingsAvailableJSON', JSON.stringify(settingsAvailable));
+        let regex=/([^.]+)\.?$/gm;
+            let settingsAvailableArray=JSON.parse(JSON.stringify(settingsAvailable));
+            let settingsAvailableLength=settingsAvailableArray.data.settings.length;
+            let settingsAvailableCount=0;
+            
+            settingsAvailableSetDp();
+
+                function settingsAvailableSetDp(){
+                    if (settingsAvailableCount < settingsAvailableLength){
+                        let settingsAvailableDp=settingsAvailableArray.data.settings[settingsAvailableCount].key;
+                            let dp = settingsAvailableDp.match(regex);
+                            adapter.setObjectNotExists(name + '.Settings.' + dp, {
+                                type: 'state',
+                                common: {
+                                    name: settingsAvailable,
+                                    type: typeof(settingsAvailableArray.data.settings[settingsAvailableCount].value),
+                                    role: 'indicator',
+                                    write: true,
+                                    read: true
+                                },
+                                native: {}
+                            });
+                                adapter.setState(name + '.Settings.' + dp, settingsAvailableArray.data.settings[settingsAvailableCount].value);
+
+                                settingsAvailableCount++;
+                                settingsAvailableSetDp();
+                    }
+                }
+    },
+([statusGet,description])=>{
+if (statusGet=='400'){
+    adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+}else{
+    adapter.log.error('4: Fehlercode: ' + statusGet + '   haId: ' + haId);
+    adapter.log.error(description);
+}
+}
+);
+
+//////////////////
+
+},
                     err=>{
                         adapter.log.error('FEHLER: ' + err);
                     }
