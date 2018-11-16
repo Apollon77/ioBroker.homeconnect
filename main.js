@@ -390,7 +390,7 @@ auth.getSettingsAvailable(token,haId).then(
                                 common: {
                                     name: settingsAvailableDp,
                                     type: type,
-                                    role: 'indicator',
+                                    role: role,
                                     write: true,
                                     read: true
                                 },
