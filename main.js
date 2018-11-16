@@ -381,7 +381,7 @@ auth.getSettingsAvailable(token,haId).then(
                             adapter.setObjectNotExists(name + '.Settings.' + dp, {
                                 type: 'state',
                                 common: {
-                                    name: settingsAvailableDP,
+                                    name: settingsAvailableDp,
                                     type: typeof(settingsAvailableArray.data.settings[settingsAvailableCount].value),
                                     role: 'indicator',
                                     write: true,
