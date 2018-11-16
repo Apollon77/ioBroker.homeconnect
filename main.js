@@ -377,7 +377,9 @@ auth.getSettingsAvailable(token,haId).then(
                 function settingsAvailableSetDp(){
                     if (settingsAvailableCount < settingsAvailableLength){
                         let settingsAvailableDp=settingsAvailableArray.data.settings[settingsAvailableCount].key;
+                        let settingsAvailableDpValue=settingsAvailableArray.data.settings[settingsAvailableCount].value;
                             let dp = settingsAvailableDp.match(regex);
+                            let dpValue=settingsAvailableDpValue.match(regex);
                             //'BSH.Common.Setting.PowerState'
                             
                             adapter.setObjectNotExists(name + '.Settings.' + dp, {
@@ -391,7 +393,7 @@ auth.getSettingsAvailable(token,haId).then(
                                 },
                                 native: {}
                             });
-                                adapter.setState(name + '.Settings.' + dp, settingsAvailableArray.data.settings[settingsAvailableCount].value);
+                                adapter.setState(name + '.Settings.' + dp, dpValue);
 
                                 settingsAvailableCount++;
                                 settingsAvailableSetDp();
