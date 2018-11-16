@@ -378,19 +378,14 @@ auth.getSettingsAvailable(token,haId).then(
                     if (settingsAvailableCount < settingsAvailableLength){
                         let settingsAvailableDp=settingsAvailableArray.data.settings[settingsAvailableCount].key;
                             let dp = settingsAvailableDp.match(regex);
-                            if (settingsAvailableDp == 'BSH.Common.Setting.PowerState'){
-                                    let type='boolean';
-                                    let role='button';
-                            }else{
-                                let type=typeof(settingsAvailableArray.data.settings[settingsAvailableCount].value);
-                                let role='indicator';
-                            }
+                            //'BSH.Common.Setting.PowerState'
+                            
                             adapter.setObjectNotExists(name + '.Settings.' + dp, {
                                 type: 'state',
                                 common: {
                                     name: settingsAvailableDp,
-                                    type: type,
-                                    role: role,
+                                    type: typeof(settingsAvailableArray.data.settings[settingsAvailableCount].value),
+                                    role: 'indicator',
                                     write: true,
                                     read: true
                                 },
