@@ -386,7 +386,7 @@ auth.getSettingsAvailable(token,haId).then(
                                 type: 'state',
                                 common: {
                                     name: settingsAvailableDp,
-                                    type: typeof(settingsAvailableArray.data.settings[settingsAvailableCount].value),
+                                    type: typeof(dpValue),
                                     role: 'indicator',
                                     write: true,
                                     read: true
