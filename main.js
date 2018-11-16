@@ -160,7 +160,19 @@ adapter.on('stateChange', function (id, state) {
                     },
                     native: {}
                 });
-                                                
+                
+                adapter.setObjectNotExists(name + '.General.settingsAvailableJSON', {
+                    type: 'state',
+                    common: {
+                        name: 'settingsAvailableJSON',
+                        type: 'object',
+                        role: 'indicator',
+                        write: false,
+                        read: true
+                    },
+                    native: {}
+                });
+
                 adapter.setObjectNotExists(name, {
                     type: 'state',
                     common: {
@@ -642,7 +654,7 @@ stateGet(stat).then(
     });
 
     
-    //
+    //settingsAvailableJSON
 
     adapter.subscribeStates('*');
   
