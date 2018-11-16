@@ -380,7 +380,7 @@ auth.getSettingsAvailable(token,haId).then(
                         let settingsAvailableDpValue=settingsAvailableArray.data.settings[settingsAvailableCount].value;
                             let dp = settingsAvailableDp.match(regex);
                             let dpValue=settingsAvailableDpValue.match(regex);
-                            adapter.log.info('Value: ' + dpValue);
+                            
                                                        
                             adapter.setObjectNotExists(name + '.Settings.' + dp, {
                                 type: 'state',
@@ -393,6 +393,7 @@ auth.getSettingsAvailable(token,haId).then(
                                 },
                                 native: {}
                             });
+                                adapter.log.info('Value: ' + dpValue);
                                 adapter.setState(name + '.Settings.' + dp, dpValue);
 
                                 settingsAvailableCount++;
