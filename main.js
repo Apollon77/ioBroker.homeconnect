@@ -2,7 +2,8 @@
 'use strict';
 
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
-const BSHapi =   require(__dirname + '/lib/BSHapi.json');
+//const BSHapi =   require(__dirname + '/lib/BSHapi.json');
+const EventEmitter = require('events');
 const auth =     require(__dirname + '/lib/auth.js');
 const stream =   require(__dirname + '/lib/stream.js');
 
