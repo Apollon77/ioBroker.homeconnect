@@ -24,7 +24,9 @@
     "type": "git",
     "url": "https://github.com/dna909/ioBroker.homeconnect"
   },
-  "dependencies": {},
+  "dependencies": {
+    "eventsource": "^1.0.7"
+  },
   "devDependencies": {
     "gulp": "^3.9.1",
     "mocha": "^4.1.0",
