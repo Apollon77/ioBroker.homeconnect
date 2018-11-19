@@ -4,6 +4,7 @@
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
 const BSHapi =   require(__dirname + '/lib/BSHapi.json');
 const auth =     require(__dirname + '/lib/auth.js');
+const stream =   require(__dirname + '/lib/stream.js');
 
 const adapter = new utils.Adapter('homeconnect');
 let getTokenInterval;
@@ -435,6 +436,7 @@ if (statusGet=='400'){
                     adapter.setState(name + '.General.haId', haId);
                 }
                 appliancesCount ++;
+                stream.receive(token,haId);                   
                     inventorySub();
             }
         }
