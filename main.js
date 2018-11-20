@@ -441,6 +441,7 @@ if (statusGet=='400'){
                 stateGet(stat2).then(
                     (value)=>{
                          let token=value;
+                         adapter.log.info('token: ' + token);
                                 
                         stream.receive(token,haId);                   
                     },
