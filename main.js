@@ -437,8 +437,8 @@ if (statusGet=='400'){
                 }
                 appliancesCount ++;
  ///////                       
-                let stat=adapter.namespace + '.dev.token';
-                stateGet(stat).then(
+                let stat2=adapter.namespace + '.dev.token';
+                stateGet(stat2).then(
                     (value)=>{
                          let token=value;
                                 
