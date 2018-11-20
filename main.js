@@ -414,6 +414,7 @@ if (statusGet=='400'){
 );
 
 //////////////////
+                            stream.receive(token,haId);
 
 },
                     err=>{
