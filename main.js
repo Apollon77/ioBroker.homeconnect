@@ -413,8 +413,6 @@ if (statusGet=='400'){
 }
 );
 
-//////////////////
-                            stream.receive(token,haId);
 
 },
                     err=>{
@@ -438,7 +436,7 @@ if (statusGet=='400'){
                     adapter.setState(name + '.General.haId', haId);
                 }
                 appliancesCount ++;
-                //stream.receive(token,haId);                   
+                        stream.receive(token,haId);                   
                     inventorySub();
             }
         }
