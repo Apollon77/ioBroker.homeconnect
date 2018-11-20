@@ -269,7 +269,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
             let stat=adapter.namespace + '.dev.token';
                 stateGet(stat).then(
                     (value)=>{
-                        let token=value;
+                         token=value;
                         
                         auth.getCurrentStatus(token,haId).then(
                             (currentStatus)=>{
