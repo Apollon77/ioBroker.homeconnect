@@ -269,7 +269,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
             let stat=adapter.namespace + '.dev.token';
                 stateGet(stat).then(
                     (value)=>{
-                         token=value;
+                         let token=value;
                         
                         auth.getCurrentStatus(token,haId).then(
                             (currentStatus)=>{
@@ -436,8 +436,21 @@ if (statusGet=='400'){
                     adapter.setState(name + '.General.haId', haId);
                 }
                 appliancesCount ++;
+ ///////                       
+                let stat=adapter.namespace + '.dev.token';
+                stateGet(stat).then(
+                    (value)=>{
+                         let token=value;
+                                
                         stream.receive(token,haId);                   
-                    inventorySub();
+                    },
+                    err=>{
+                        adapter.log.error('FEHLER: ' + err);
+                    }
+                    );    
+                    
+/////////                    
+                        inventorySub();
             }
         }
         }
