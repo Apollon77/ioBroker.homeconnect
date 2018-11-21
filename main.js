@@ -138,10 +138,13 @@ function receive(token,haId){
         
 }
 
+//Auswertung Events ==>> Datenpunkte
+
 let processEvent = (msg) =>{
     adapter.log.info('vor Message');
-    let test=JSON.stringify(msg.data);
-    adapter.log.info('Message:' + test);
+    let message=JSON.stringify(msg.data)
+    let messageArray = message.replace("/\/g","");
+    adapter.log.info('Message:' + messageArray;
 }
 
 
