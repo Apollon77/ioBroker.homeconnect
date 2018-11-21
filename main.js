@@ -5,7 +5,8 @@ const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
 //const BSHapi =   require(__dirname + '/lib/BSHapi.json');
 const auth =     require(__dirname + '/lib/auth.js');
 const stream =   require(__dirname + '/lib/stream.js');
-
+const EventEmitter = require('events');
+const EventSource = require('eventsource');
 
 const adapter = new utils.Adapter('homeconnect');
 let getTokenInterval;
@@ -93,6 +94,47 @@ function stateGet(stat){
             }
         )
     }
+
+/* Eventstream
+*/
+function receive(token,haId){
+    
+    let openStream = () => {
+           let baseUrl="https://api.home-connect.com/api/homeappliances/"+haId+"/events";
+           let header = { headers: { Authorization: 'Bearer ' + token, Accept: 'text/event-stream' } }
+           adapter.log.info(header.headers.Authorization);
+          this.eventSource = new EventSource(baseUrl, header);
+    
+           // Error handling
+           this.eventSource.onerror = (err => {
+               adapter.log.error(err.status);
+             if (err.status !== undefined) {
+               adapter.log.error('Error (' + this.haId + ')', err)
+              if (err.status === 401) {
+                
+                // Most likely the token has expired, try to refresh the token
+              adapter.log.error("Token abgelaufen");
+                
+              } else {
+                throw(new Error(err.status))
+              }
+           }
+          });
+          this.eventSource.addEventListener('STATUS', (e) => processEvent(e), false)
+          this.eventSource.addEventListener('NOTIFY', (e) => processEvent(e), false)
+          this.eventSource.addEventListener('EVENT', (e) => processEvent(e), false)
+          this.eventSource.addEventListener('CONNECTED', (e) => processEvent(e), false)
+          this.eventSource.addEventListener('DISCONNECTED', (e) => processEvent(e), false)
+          //this.eventSource.addEventListener('KEEP-ALIVE', () => lastAlive = new Date(), false)
+        }
+    
+        // Open the event stream
+        openStream();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 adapter.on('unload', function (callback) {
     try {
@@ -443,7 +485,7 @@ if (statusGet=='400'){
                          let token=value;
                          adapter.log.info('token: ' + token);
                                 
-                        stream.receive(token,haId);                   
+                        receive(token,haId);                   
                     },
                     err=>{
                         adapter.log.error('FEHLER: ' + err);
