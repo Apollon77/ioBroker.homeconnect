@@ -195,7 +195,7 @@ adapter.on('stateChange', function (id, state) {
                 let enumber=appliancesArray.data.homeappliances[appliancesCount].enumber;
                 let haId=appliancesArray.data.homeappliances[appliancesCount].haId;
 
-                adapter.setObjectNotExists(name + '.General.currentStatusJSON', {
+                adapter.setObjectNotExists(haId + '.General.currentStatusJSON', {
                     type: 'state',
                     common: {
                         name: 'currentStatusJSON',
@@ -207,7 +207,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.General.programsAvailableJSON', {
+                adapter.setObjectNotExists(haId + '.General.programsAvailableJSON', {
                     type: 'state',
                     common: {
                         name: 'programsAvailableJSON',
@@ -219,7 +219,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
                 
-                adapter.setObjectNotExists(name + '.General.settingsAvailableJSON', {
+                adapter.setObjectNotExists(haId + '.General.settingsAvailableJSON', {
                     type: 'state',
                     common: {
                         name: 'settingsAvailableJSON',
@@ -231,10 +231,10 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name, {
+                adapter.setObjectNotExists(haId, {
                     type: 'state',
                     common: {
-                        name: 'Name',
+                        name: 'haId',
                         type: 'mixed',
                         role: 'indicator',
                         write: false,
@@ -243,7 +243,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.General.brand', {
+                adapter.setObjectNotExists(haId + '.General.brand', {
                     type: 'state',
                     common: {
                         name: 'brand',
@@ -255,7 +255,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.General.vib', {
+                adapter.setObjectNotExists(haId + '.General.vib', {
                     type: 'state',
                     common: {
                         name: 'vib',
@@ -267,7 +267,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.General.connected', {
+                adapter.setObjectNotExists(haId + '.General.connected', {
                     type: 'state',
                     common: {
                         name: 'connected',
@@ -279,7 +279,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.General.type', {
+                adapter.setObjectNotExists(haId + '.General.type', {
                     type: 'state',
                     common: {
                         name: 'type',
@@ -291,7 +291,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.General.enumber', {
+                adapter.setObjectNotExists(haId + '.General.enumber', {
                     type: 'state',
                     common: {
                         name: 'enumber',
@@ -303,7 +303,7 @@ adapter.on('stateChange', function (id, state) {
                     native: {}
                 });
 
-                adapter.setObjectNotExists(name + '.General.haId', {
+                adapter.setObjectNotExists(haId + '.General.haId', {
                     type: 'state',
                     common: {
                         name: 'haId',
@@ -329,7 +329,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
                         
                         auth.getCurrentStatus(token,haId).then(
                             (currentStatus)=>{
-                                adapter.setState(name + '.General.currentStatusJSON', JSON.stringify(currentStatus));
+                                adapter.setState(haId + '.General.currentStatusJSON', JSON.stringify(currentStatus));
                                     let regex=/([^.]+)\.?$/gm;
                                     let currentStatusArray=JSON.parse(JSON.stringify(currentStatus));
                                     let currentStatusLength=currentStatusArray.data.status.length;
@@ -341,7 +341,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
                                             if (currentStatusCount < currentStatusLength){
                                                 let currentStatusDp=currentStatusArray.data.status[currentStatusCount].key;
                                                     let dp = currentStatusDp.match(regex);
-                                                    adapter.setObjectNotExists(name + '.Status.' + dp, {
+                                                    adapter.setObjectNotExists(haId + '.Status.' + dp, {
                                                         type: 'state',
                                                         common: {
                                                             name: currentStatusDp,
@@ -352,7 +352,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
                                                         },
                                                         native: {}
                                                     });
-                                                        adapter.setState(name + '.Status.' + dp, currentStatusArray.data.status[currentStatusCount].value);
+                                                        adapter.setState(haId + '.Status.' + dp, currentStatusArray.data.status[currentStatusCount].value);
 
                                                 currentStatusCount++;
                                                 currentStatusSetDp();
@@ -376,7 +376,7 @@ verfügbare Programme
 */
                         auth.getProgramsAvailable(token,haId).then(
                             (programsAvailable)=>{
-                                adapter.setState(name + '.General.programsAvailableJSON', JSON.stringify(programsAvailable));
+                                adapter.setState(haId + '.General.programsAvailableJSON', JSON.stringify(programsAvailable));
                                 let regex=/([^.]+)\.?$/gm;
                                     let programsAvailableArray=JSON.parse(JSON.stringify(programsAvailable));
                                     let programsAvailableLength=programsAvailableArray.data.programs.length;
@@ -388,7 +388,7 @@ verfügbare Programme
                                             if (programsAvailableCount < programsAvailableLength){
                                                 let programsAvailableDp=programsAvailableArray.data.programs[programsAvailableCount].key;
                                                     let dp = programsAvailableDp.match(regex);
-                                                    adapter.setObjectNotExists(name + '.Programs.' + dp, {
+                                                    adapter.setObjectNotExists(haId + '.Programs.' + dp, {
                                                         type: 'state',
                                                         common: {
                                                             name: programsAvailableDp,
@@ -399,7 +399,7 @@ verfügbare Programme
                                                         },
                                                         native: {}
                                                     });
-                                                        adapter.setState(name + '.Programs.' + dp, false);
+                                                        adapter.setState(haId + '.Programs.' + dp, false);
 
                                                         programsAvailableCount++;
                                                         programsAvailableSetDp();
@@ -424,7 +424,7 @@ verfügbare Settings
 
 auth.getSettingsAvailable(token,haId).then(
     (settingsAvailable)=>{
-        adapter.setState(name + '.General.settingsAvailableJSON', JSON.stringify(settingsAvailable));
+        adapter.setState(haId + '.General.settingsAvailableJSON', JSON.stringify(settingsAvailable));
         let regex=/([^.]+)\.?$/gm;
             let settingsAvailableArray=JSON.parse(JSON.stringify(settingsAvailable));
             let settingsAvailableLength=settingsAvailableArray.data.settings.length;
@@ -440,7 +440,7 @@ auth.getSettingsAvailable(token,haId).then(
                             let dpValue=settingsAvailableDpValue.match(regex);
                             
                                                        
-                            adapter.setObjectNotExists(name + '.Settings.' + dp, {
+                            adapter.setObjectNotExists(haId + '.Settings.' + dp, {
                                 type: 'state',
                                 common: {
                                     name: settingsAvailableDp,
@@ -451,8 +451,8 @@ auth.getSettingsAvailable(token,haId).then(
                                 },
                                 native: {}
                             });
-                                adapter.log.info('Value: '+name + '.Settings.' + dp + ' : ' + dpValue);
-                                adapter.setState(name + '.Settings.' + dp,  {val: dpValue, ack: true});
+                                adapter.log.info('Value: '+haId + '.Settings.' + dp + ' : ' + dpValue);
+                                adapter.setState(haId + '.Settings.' + dp,  {val: dpValue, ack: true});
 
                                 settingsAvailableCount++;
                                 settingsAvailableSetDp();
@@ -484,12 +484,12 @@ if (statusGet=='400'){
                 },3000);
 
                 function appliancesStates(){
-                    adapter.setState(name + '.General.brand', brand);
-                    adapter.setState(name + '.General.vib', vib);
-                    adapter.setState(name + '.General.connected', connected);
-                    adapter.setState(name + '.General.type', type);
-                    adapter.setState(name + '.General.enumber', enumber);
-                    adapter.setState(name + '.General.haId', haId);
+                    adapter.setState(haId + '.General.brand', brand);
+                    adapter.setState(haId + '.General.vib', vib);
+                    adapter.setState(haId + '.General.connected', connected);
+                    adapter.setState(haId + '.General.type', type);
+                    adapter.setState(haId + '.General.enumber', enumber);
+                    adapter.setState(haId + '.General.haId', haId);
                 }
                 appliancesCount ++;
  ///////                       
