@@ -130,67 +130,71 @@ function receive(token,haId){
     
         // Open the event stream
         openStream();
-        
+        eventListen=setInterval(registerEvents,10000);  
+
+        function registerEvents() {
+            let lastAlive = new Date();
+            let source;
+        adapter.log.info('registerEvents');
+            // The following events can be received:
+            //   KEEP-ALIVE, STATUS, EVENT, NOTIFY, DISCONNECTED, CONNECTED
+            // For STATUS, EVENT and NOTIFY, the "data" field is populated
+            let processEvent = (msg) => {
+             lastAlive = new Date();
+             if (msg.type === 'CONNECTED' || msg.type === 'DISCONNECTED') {
+               // connect or disconnect
+               let result = msg.type === 'CONNECTED';
+               this.details.connected = result;
+               this.emit('connected', result);
+             } else if (msg.type === 'STATUS' || msg.type === 'EVENT' || msg.type === 'NOTIFY') {
+               // data events
+               let data = JSON.parse(msg.data);
+               if (data !== undefined && data.items !== undefined) {
+                 let items = data.items;
+                 for (let i in items) {
+                   let item = items[i];
+                   // The resulting object contains the data of the original object, plus:
+                   // type: type of event ('STATUS' / 'EVENT', / 'NOTIFY')
+                   // date: Javascript date object of the timestamp
+                   // summary: a summary string of the event
+                   let result = {
+                     type: msg.type,
+                     date: new Date(1000 * item.timestamp)
+                   }
+                   if (msg.type === 'STATUS') {
+                     // Update local status
+                     this.status[item.key] = item.value;
+                   }
+                   // Interpret the message and create a summary
+                   let last_key = item.key.split('.').pop() + '=';
+                   // Process values with a unit
+                   if (item.unit !== undefined) {
+                     if (item.unit === 'seconds') {
+                       let time = new Date(1000 * item.value);
+                       result.summary = last_key + time.toISOString().substr(11, 8);
+                     } else {
+                       result.summary = last_key + item.value + item.unit;
+                     }
+                   } else {
+                     let value = item.value;
+                     if (typeof value === 'string') {
+                       value = item.value.split('.').pop()
+                     }
+                     result.summary = last_key + value;
+                   }
+                   result = Object.assign(item, result);
+                   adapter.log.info('[' + msg.type + '] ' + this.details.name +': ' + result.summary);
+                   this.emit('event', result);
+                 }
+               }
+             }
+            }
+        }
+
+
 }
 
-function registerEvents() {
-    let lastAlive = new Date();
-    let source;
-adapter.log.info('registerEvents');
-    // The following events can be received:
-    //   KEEP-ALIVE, STATUS, EVENT, NOTIFY, DISCONNECTED, CONNECTED
-    // For STATUS, EVENT and NOTIFY, the "data" field is populated
-    let processEvent = (msg) => {
-     lastAlive = new Date();
-     if (msg.type === 'CONNECTED' || msg.type === 'DISCONNECTED') {
-       // connect or disconnect
-       let result = msg.type === 'CONNECTED';
-       this.details.connected = result;
-       this.emit('connected', result);
-     } else if (msg.type === 'STATUS' || msg.type === 'EVENT' || msg.type === 'NOTIFY') {
-       // data events
-       let data = JSON.parse(msg.data);
-       if (data !== undefined && data.items !== undefined) {
-         let items = data.items;
-         for (let i in items) {
-           let item = items[i];
-           // The resulting object contains the data of the original object, plus:
-           // type: type of event ('STATUS' / 'EVENT', / 'NOTIFY')
-           // date: Javascript date object of the timestamp
-           // summary: a summary string of the event
-           let result = {
-             type: msg.type,
-             date: new Date(1000 * item.timestamp)
-           }
-           if (msg.type === 'STATUS') {
-             // Update local status
-             this.status[item.key] = item.value;
-           }
-           // Interpret the message and create a summary
-           let last_key = item.key.split('.').pop() + '=';
-           // Process values with a unit
-           if (item.unit !== undefined) {
-             if (item.unit === 'seconds') {
-               let time = new Date(1000 * item.value);
-               result.summary = last_key + time.toISOString().substr(11, 8);
-             } else {
-               result.summary = last_key + item.value + item.unit;
-             }
-           } else {
-             let value = item.value;
-             if (typeof value === 'string') {
-               value = item.value.split('.').pop()
-             }
-             result.summary = last_key + value;
-           }
-           result = Object.assign(item, result);
-           adapter.log.info('[' + msg.type + '] ' + this.details.name +': ' + result.summary);
-           this.emit('event', result);
-         }
-       }
-     }
-    }
-}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -545,7 +549,7 @@ if (statusGet=='400'){
                          let token=value;
                                                        
                         receive(token,haId); 
-                        eventListen=setInterval(registerEvents,10000);                  
+                                        
                     },
                     err=>{
                         adapter.log.error('FEHLER: ' + err);
