@@ -137,6 +137,7 @@ function receive(token,haId){
 }
 
 function processEvent(msg){
+    adapter.log.info('vor Message');
     let test=JSON.stringify(msg);
     adapter.log.info('Message:' + test);
 }
