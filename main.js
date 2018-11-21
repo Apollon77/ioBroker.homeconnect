@@ -120,6 +120,7 @@ function receive(token,haId){
               }
            }
           });
+          adapter.log.info('Add Eventlistener');
           this.eventSource.addEventListener('STATUS', (e) => processEvent(e), false)
           this.eventSource.addEventListener('NOTIFY', (e) => processEvent(e), false)
           this.eventSource.addEventListener('EVENT', (e) => processEvent(e), false)
@@ -136,9 +137,9 @@ function receive(token,haId){
         
 }
 
-function processEvent(msg){
+let processEvent = (msg) =>{
     adapter.log.info('vor Message');
-    let test=JSON.stringify(msg);
+    let test=JSON.stringify(msg.data);
     adapter.log.info('Message:' + test);
 }
 
