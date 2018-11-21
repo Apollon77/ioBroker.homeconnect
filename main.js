@@ -104,7 +104,7 @@ function receive(token,haId){
            let header = { headers: { Authorization: 'Bearer ' + token, Accept: 'text/event-stream' } }
            adapter.log.info(header.headers.Authorization);
           this.eventSource = new EventSource(baseUrl, header);
-    
+    adapter.log.info('vor Errorhandling');
            // Error handling
            this.eventSource.onerror = (err => {
                adapter.log.error(err.status);
