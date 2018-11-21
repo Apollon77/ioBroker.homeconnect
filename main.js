@@ -116,6 +116,7 @@ function receive(token,haId){
               adapter.log.error("Token abgelaufen");
                 
               } else {
+                 adapter.log.error('FEHLER'); 
                 throw(new Error(err.status))
               }
            }
