@@ -136,6 +136,11 @@ function receive(token,haId){
         
 }
 
+function processEvent(msg){
+    let test=JSON.stringify(msg);
+    adapter.log.info('Message:' + test);
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
