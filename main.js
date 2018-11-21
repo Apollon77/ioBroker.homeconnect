@@ -130,7 +130,9 @@ function receive(token,haId){
     
         // Open the event stream
         openStream();
+        adapter.log.info('registerEvents1');
         eventListen=setInterval(registerEvents,10000);  
+        adapter.log.info('registerEvents2');
 
         function registerEvents() {
             let lastAlive = new Date();
