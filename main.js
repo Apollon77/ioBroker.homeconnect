@@ -133,8 +133,7 @@ function receive(token,haId){
         eventListen=setInterval(registerEvents,10000); 
         openStream();
          
-        adapter.log.info('registerEvents2');
-
+        
         function registerEvents() {
             let lastAlive = new Date();
             let source;
@@ -142,7 +141,7 @@ function receive(token,haId){
             // The following events can be received:
             //   KEEP-ALIVE, STATUS, EVENT, NOTIFY, DISCONNECTED, CONNECTED
             // For STATUS, EVENT and NOTIFY, the "data" field is populated
-            let processEvent = (msg) => {
+            processEvent = (msg) => {
              lastAlive = new Date();
              if (msg.type === 'CONNECTED' || msg.type === 'DISCONNECTED') {
                // connect or disconnect
