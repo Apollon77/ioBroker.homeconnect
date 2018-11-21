@@ -130,7 +130,7 @@ function receive(token,haId){
     
         // Open the event stream
         adapter.log.info('registerEvents1');
-        eventListen=setInterval(registerEvents,10000); 
+        setInterval(registerEvents,10000); 
         openStream();
          
         
