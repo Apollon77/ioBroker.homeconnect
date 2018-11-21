@@ -130,7 +130,7 @@ function receive(token,haId){
     
         // Open the event stream
         openStream();
-        eventListen=setInterval(registerEvents,10000);
+        
 }
 
 function registerEvents() {
@@ -544,7 +544,8 @@ if (statusGet=='400'){
                     (value)=>{
                          let token=value;
                                                        
-                        receive(token,haId);                   
+                        receive(token,haId); 
+                        eventListen=setInterval(registerEvents,10000);                  
                     },
                     err=>{
                         adapter.log.error('FEHLER: ' + err);
