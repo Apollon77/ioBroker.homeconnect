@@ -103,10 +103,10 @@ function receive(token,haId){
            let baseUrl="https://api.home-connect.com/api/homeappliances/"+haId+"/events";
            let header = { headers: { Authorization: 'Bearer ' + token, Accept: 'text/event-stream' } }
            adapter.log.info(header.headers.Authorization);
-          this.eventSource = new EventSource(baseUrl, header);
+           let eventSource = new EventSource(baseUrl, header);
     adapter.log.info('vor Errorhandling');
            // Error handling
-           this.eventSource.onerror = (err => {
+           eventSource.onerror = (err => {
                adapter.log.error(err.status);
              if (err.status !== undefined) {
                adapter.log.error('Error (' + this.haId + ')', err)
@@ -122,11 +122,11 @@ function receive(token,haId){
            }
           });
           adapter.log.info('Add Eventlistener');
-          this.eventSource.addEventListener('STATUS', (e) => processEvent(e), false)
-          this.eventSource.addEventListener('NOTIFY', (e) => processEvent(e), false)
-          this.eventSource.addEventListener('EVENT', (e) => processEvent(e), false)
-          this.eventSource.addEventListener('CONNECTED', (e) => processEvent(e), false)
-          this.eventSource.addEventListener('DISCONNECTED', (e) => processEvent(e), false)
+          eventSource.addEventListener('STATUS', (e) => processEvent(e), false)
+          eventSource.addEventListener('NOTIFY', (e) => processEvent(e), false)
+          eventSource.addEventListener('EVENT', (e) => processEvent(e), false)
+          eventSource.addEventListener('CONNECTED', (e) => processEvent(e), false)
+          eventSource.addEventListener('DISCONNECTED', (e) => processEvent(e), false)
           //this.eventSource.addEventListener('KEEP-ALIVE', () => lastAlive = new Date(), false)
         }
     
