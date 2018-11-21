@@ -143,9 +143,9 @@ function receive(token,haId){
 let processEvent = (msg) =>{
     adapter.log.info('vor Message');
     let message=JSON.stringify(msg.data)
-    let messageArray = message.replaceAll("\\"," ");
+    let messageArray = message.replace(/\\/g," ");
     adapter.log.info('Message:' + messageArray);
-    
+
 }
 
 
