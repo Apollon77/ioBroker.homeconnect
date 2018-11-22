@@ -141,8 +141,9 @@ function receive(token,haId){
 //Auswertung Events ==>> Datenpunkte
 
 let processEvent = (msg) =>{
-    let parseMsg=JSON.parse(msg);
-    adapter.log.debug('messageArray2 ' + msg);
+    adapter.log.debug(msg);
+    let parseMsg=JSON.parse(JSON.stringify(msg));
+    
     let haIdUri=parseMsg.data.items[0].uri;
     let string = haIdUri.split("/");
     let haId=string.slice(3,4);
