@@ -142,24 +142,9 @@ function receive(token,haId){
 
 let processEvent = (msg) =>{
     
-    adapter.setState(adapter.namespace + '.dev.EventStreamJSON', JSON.stringify(msg));
+    adapter.setState(adapter.namespace + '.dev.eventStreamJSON', JSON.stringify(msg));
 
-    /*
-    let parseMsg=JSON.parse(JSON.stringify(msg));
     
-    let haIdUri=parseMsg.data.items[0].uri;
-    let string = haIdUri.split("/");
-    let haId=string.slice(3,4);
-    let dpKey=parseMsg.data.items[0].key;
-    let string2=dpKey.split('.');
-    let dp=string2.slice(3,5);
-    let valueVal=parseMsg.data.items[0].value;
-    let string3=valueVal.split('.');
-    let value=string3.splice(5,6);
-    
-    
-    adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + value);
-*/
 }
 
 
