@@ -190,6 +190,8 @@ adapter.on('stateChange', function (id, state) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
 if (id==adapter.namespace + '.dev.eventStreamJSON'){
+        
+    adapter.log.debug('stateChange');
         let streamArray=state.val;
         let parseMsg=JSON.parse(streamArray);
         
@@ -778,7 +780,7 @@ stateGet(stat).then(
         native: {}
     });
 
-    adapter.setObjectNotExists('dev.EventStreamJSON', {
+    adapter.setObjectNotExists('dev.eventStreamJSON', {
         type: 'state',
         common: {
             name: 'Eventstream_JSON',
