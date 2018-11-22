@@ -191,7 +191,9 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
     let dp=string2.slice(3,5);
     let valueVal=parseMessage.items[0].value;
     let string3=valueVal.split('.');
-    let value=string3.splice(5,6);
+    let value=string3.splice(4,5);
+
+    adapter.setState(haId + '.' + dp , {val: value, ack: true});
     
     
     adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + value);
