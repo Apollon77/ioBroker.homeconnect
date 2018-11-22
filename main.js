@@ -178,16 +178,18 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
         
     adapter.log.debug('stateChange');
         let streamArray=state.val;
-        let parseMsg=JSON.parse(streamArray);
+        let stream=JSON.parse(streamArray);
+        let parseMsg=stream.data;
+        let parseMessage=JSON.parse(parseMsg);
         
     
-    let haIdUri=parseMsg.data.items[0].uri;
+    let haIdUri=parseMessage.items[0].uri;
     let string = haIdUri.split("/");
     let haId=string.slice(3,4);
-    let dpKey=parseMsg.data.items[0].key;
+    let dpKey=parseMessage.items[0].key;
     let string2=dpKey.split('.');
     let dp=string2.slice(3,5);
-    let valueVal=parseMsg.data.items[0].value;
+    let valueVal=parseMessage.items[0].value;
     let string3=valueVal.split('.');
     let value=string3.splice(5,6);
     
