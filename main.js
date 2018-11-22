@@ -152,9 +152,12 @@ let processEvent = (msg) =>{
     let dpKey=parseData.items.key;
     let string2=dpKey.split('.');
     let dp=string2.slice(3,5);
+    let valueVal=parseData.items.value;
+    let string3=valueVal.split('.');
+    let value=string3.splice(5,6);
     
     
-    adapter.log.debug("Datenpunkt: "+ haId + '.' + dp);
+    adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + value);
 
 }
 
