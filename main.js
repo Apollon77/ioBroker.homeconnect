@@ -102,9 +102,9 @@ function receive(token,haId){
     let openStream = () => {
            let baseUrl="https://api.home-connect.com/api/homeappliances/"+haId+"/events";
            let header = { headers: { Authorization: 'Bearer ' + token, Accept: 'text/event-stream' } }
-           adapter.log.info(header.headers.Authorization);
+           adapter.log.debug(header.headers.Authorization);
            let eventSource = new EventSource(baseUrl, header);
-    adapter.log.info('vor Errorhandling');
+    adapter.log.debug('vor Errorhandling');
            // Error handling
            eventSource.onerror = (err => {
                adapter.log.error(err.status);
@@ -121,7 +121,7 @@ function receive(token,haId){
               }
            }
           });
-          adapter.log.info('Add Eventlistener');
+          adapter.log.debug('Add Eventlistener');
           eventSource.addEventListener('STATUS', (e) => processEvent(e), false)
           eventSource.addEventListener('NOTIFY', (e) => processEvent(e), false)
           eventSource.addEventListener('EVENT', (e) => processEvent(e), false)
@@ -141,7 +141,10 @@ function receive(token,haId){
 //Auswertung Events ==>> Datenpunkte
 
 let processEvent = (msg) =>{
-    adapter.log.debug(msg);
+    
+    adapter.setState(adapter.namespace + '.dev.EventStreamJSON', JSON.stringify(msg));
+
+    /*
     let parseMsg=JSON.parse(JSON.stringify(msg));
     
     let haIdUri=parseMsg.data.items[0].uri;
@@ -156,7 +159,7 @@ let processEvent = (msg) =>{
     
     
     adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + value);
-
+*/
 }
 
 
@@ -466,7 +469,7 @@ auth.getSettingsAvailable(token,haId).then(
                                 },
                                 native: {}
                             });
-                                adapter.log.info('Value: '+haId + '.Setting.' + dp + ' : ' + dpValue);
+                                adapter.log.debug('Value: '+haId + '.Setting.' + dp + ' : ' + dpValue);
                                 adapter.setState(haId + '.Setting.' + dp,  {val: dpValue, ack: true});
 
                                 settingsAvailableCount++;
@@ -745,6 +748,17 @@ stateGet(stat).then(
         native: {}
     });
 
+    adapter.setObjectNotExists('dev.EventStreamJSON', {
+        type: 'state',
+        common: {
+            name: 'Eventstream_JSON',
+            type: 'object',
+            role: 'indicator',
+            write: false,
+            read: true
+        },
+        native: {}
+    });
     
     //settingsAvailableJSON
 
