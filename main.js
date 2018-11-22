@@ -144,8 +144,9 @@ let processEvent = (msg) =>{
     adapter.log.info('vor Message');
     let message=JSON.stringify(msg.data)
     let messageArray = message.replace(/\\/g," ");
+    let array=JSON.stringify(messageArray);
     adapter.log.info('Message:' + messageArray);
-    let parseData=JSON.parse(messageArray);
+    let parseData=JSON.parse(array);
     let haIdUri=parseData.items.uri;
     let string = haIdUri.split("/");
     let haId=string.slice(3,4);
