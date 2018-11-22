@@ -146,7 +146,7 @@ let processEvent = (msg) =>{
     adapter.log.debug('messageArray: ' + messageArray);
     //let array=JSON.stringify(messageArray);
     
-    let parseData=JSON.parse(JSON.stringify(messageArray);
+    let parseData=JSON.parse(JSON.stringify(messageArray));
     adapter.log.debug('messageArray2 ' + parseData);
     //let haIdUri=parseData.items[0].uri;
     
