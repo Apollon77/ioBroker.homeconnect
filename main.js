@@ -189,6 +189,36 @@ adapter.on('stateChange', function (id, state) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
+if (id==adapter.namespace + '.dev.eventStreamJSON'){
+        let streamArray=state.val;
+        let parseMsg=JSON.parse(streamArray);
+        
+    
+    let haIdUri=parseMsg.data.items[0].uri;
+    let string = haIdUri.split("/");
+    let haId=string.slice(3,4);
+    let dpKey=parseMsg.data.items[0].key;
+    let string2=dpKey.split('.');
+    let dp=string2.slice(3,5);
+    let valueVal=parseMsg.data.items[0].value;
+    let string3=valueVal.split('.');
+    let value=string3.splice(5,6);
+    
+    
+    adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + value);
+
+
+
+
+}
+
+
+
+
+
+
+
+
     if (id==adapter.namespace + '.dev.homeappliancesJSON'){
         let appliances=state.val;
         let appliancesArray=JSON.parse(appliances);
