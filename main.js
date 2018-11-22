@@ -145,6 +145,16 @@ let processEvent = (msg) =>{
     let message=JSON.stringify(msg.data)
     let messageArray = message.replace(/\\/g," ");
     adapter.log.info('Message:' + messageArray);
+    let parseData=JSON.parse(messageArray);
+    let haIdUri=parseData.items.uri;
+    let string = haIdUri.split("/");
+    let haId=string.slice(3,4);
+    let dpKey=parseData.items.key;
+    let string2=dpKey.split('.');
+    let dp=string2.slice(3,5);
+    
+    
+    adapter.log.debug("Datenpunkt: "+ haId + '.' + dp);
 
 }
 
@@ -444,7 +454,7 @@ auth.getSettingsAvailable(token,haId).then(
                             let dpValue=settingsAvailableDpValue.match(regex);
                             
                                                        
-                            adapter.setObjectNotExists(haId + '.Settings.' + dp, {
+                            adapter.setObjectNotExists(haId + '.Setting.' + dp, {
                                 type: 'state',
                                 common: {
                                     name: settingsAvailableDp,
@@ -455,8 +465,8 @@ auth.getSettingsAvailable(token,haId).then(
                                 },
                                 native: {}
                             });
-                                adapter.log.info('Value: '+haId + '.Settings.' + dp + ' : ' + dpValue);
-                                adapter.setState(haId + '.Settings.' + dp,  {val: dpValue, ack: true});
+                                adapter.log.info('Value: '+haId + '.Setting.' + dp + ' : ' + dpValue);
+                                adapter.setState(haId + '.Setting.' + dp,  {val: dpValue, ack: true});
 
                                 settingsAvailableCount++;
                                 settingsAvailableSetDp();
