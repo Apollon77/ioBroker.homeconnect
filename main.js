@@ -186,8 +186,8 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
         let haId=string.slice(3,4);
         let dpKey=parseMessage.items[0].key;
         let string2=dpKey.split('.');
-        let dp1=string2.slice(3,4);
-        let dp2=string2.slice(2,3);
+        let dp2=string2.slice(3,4);
+        let dp1=string2.slice(2,3);
         let dp=dp1+"."+dp2;
         ///let dp=string2.slice(3,5);
         let valueVal=parseMessage.items[0].value;
