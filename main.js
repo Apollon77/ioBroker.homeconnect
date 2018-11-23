@@ -191,16 +191,16 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
         if (typeof valueVal != 'boolean'){
     
             let string3=valueVal.split('.');
-            valueStream=string3.splice(4,5);
+            let valueVal=string3.splice(4,5);
             }else
             {
-                valueStream=valueVal;
+                let valueVal=valueVal;
             }
 
         
-    adapter.setState(haId + '.' + dp , {val: valueStream, ack: true});
+    adapter.setState(haId + '.' + dp , {val: valueVal, ack: true});
        
-    adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + valueStream);
+    adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + valueVal);
 }
 
     if (id==adapter.namespace + '.dev.homeappliancesJSON'){

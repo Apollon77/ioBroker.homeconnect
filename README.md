@@ -76,7 +76,7 @@ Log is displayed. Simply copy the URL and open it in your browser. Then enter th
 
 * (dna909) OAuth2 Deviceflow-Authorization, enumerate connected appliances
 
-### 0.0.1
+### 0.0.1  (09.10.2018)
 
 * (dna909) initial release
 
