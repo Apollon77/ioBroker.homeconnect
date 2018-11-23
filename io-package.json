@@ -4,22 +4,30 @@
         "version": "0.0.4",
         "news": {
             "0.0.4": {
-                "en": "Event-Listener hinzugefügt",
-                "de": "add event-listener",
+                "en": "add event-listener",
+                "de": "Event-Listener hinzugefügt",
                 "ru": "Первоначальный адаптер",
                 "pt": "Versão inicial",
                 "fr": "Version initiale",
                 "nl": "Eerste release"
             },
             "0.0.3": {
-                "en": "Abfrage Status und verfügbare Programme",
-                "de": "query State and available programs",
+                "en": "query State and available programs",
+                "de": "Abfrage Status und verfügbare Programme",
                 "ru": "Первоначальный адаптер",
                 "pt": "Versão inicial",
                 "fr": "Version initiale",
                 "nl": "Eerste release"
             },
-             "0.0.2": {
+            "0.0.2": {
+                "en": "OAuth2 Deviceflow-Authorization, enumerate connected appliances",
+                "de": "OAuth2 Deviceflow-Authorisation, Aufzählen der verbundenen Appliances",
+                "ru": "Первоначальный адаптер",
+                "pt": "Versão inicial",
+                "fr": "Version initiale",
+                "nl": "Eerste release"
+            },
+             "0.0.1": {
                 "en": "initial adapter",
                 "de": "Initiale Version",
                 "ru": "Первоначальный адаптер",
@@ -40,7 +48,7 @@
             "es": "Adaptador de plantilla basado en JavaScript / Node.js"
         },
         "desc": {
-            "en": "ioBroker homeconnect",
+            "en": "ioBroker Homeconnect",
             "de": "ioBroker Homeconnect",
             "ru": "ioBroker Homeconnect как образец",
             "pt": "Modelo de adaptador para o ioBroker",
