@@ -192,15 +192,19 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
     
             let string3=valueVal.split('.');
             let valueVal=string3.splice(4,5);
+            adapter.setState(haId + '.' + dp , {val: valueVal, ack: true});
+            adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + valueVal);
             }else
             {
                 let valueVal=valueVal;
+                adapter.setState(haId + '.' + dp , {val: valueVal, ack: true});
+                adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + valueVal);
             }
 
         
-    adapter.setState(haId + '.' + dp , {val: valueVal, ack: true});
+    //adapter.setState(haId + '.' + dp , {val: valueVal, ack: true});
        
-    adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + valueVal);
+    
 }
 
     if (id==adapter.namespace + '.dev.homeappliancesJSON'){
