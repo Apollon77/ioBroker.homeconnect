@@ -64,6 +64,10 @@ Log is displayed. Simply copy the URL and open it in your browser. Then enter th
 
 ## Changelog
 
+### 0.0.4  (23.11.2018)
+
+* (dna909) add event-listener
+
 ### 0.0.3  (14.11.2018)
 
 * (dna909) query States and available programs
