@@ -2,9 +2,7 @@
 'use strict';
 
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
-//const BSHapi =   require(__dirname + '/lib/BSHapi.json');
 const auth =     require(__dirname + '/lib/auth.js');
-const stream =   require(__dirname + '/lib/stream.js');
 const EventEmitter = require('events');
 const EventSource = require('eventsource');
 
@@ -138,7 +136,7 @@ function receive(token,haId){
         
 }
 
-//Auswertung Events ==>> Datenpunkte
+//Eventstream ==>> Datenpunkt
 
 let processEvent = (msg) =>{
     
@@ -175,40 +173,35 @@ adapter.on('stateChange', function (id, state) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
 if (id==adapter.namespace + '.dev.eventStreamJSON'){
-        
-    adapter.log.debug('stateChange');
+    
+    /*Auswertung des Eventstreams*/
+    
         let streamArray=state.val;
         let stream=JSON.parse(streamArray);
         let parseMsg=stream.data;
         let parseMessage=JSON.parse(parseMsg);
+            
+        let haIdUri=parseMessage.items[0].uri;
+        let string = haIdUri.split("/");
+        let haId=string.slice(3,4);
+        let dpKey=parseMessage.items[0].key;
+        let string2=dpKey.split('.');
+        let dp=string2.slice(3,5);
+        let valueVal=parseMessage.items[0].value;
+        if (typeof valueVal != 'boolean'){
+    
+            let string3=valueVal.split('.');
+            valueStream=string3.splice(4,5);
+            }else
+            {
+                valueStream=valueVal;
+            }
+
         
-    
-    let haIdUri=parseMessage.items[0].uri;
-    let string = haIdUri.split("/");
-    let haId=string.slice(3,4);
-    let dpKey=parseMessage.items[0].key;
-    let string2=dpKey.split('.');
-    let dp=string2.slice(3,5);
-    let valueVal=parseMessage.items[0].value;
-    let string3=valueVal.split('.');
-    let value=string3.splice(4,5);
-
-    adapter.setState(haId + '.' + dp , {val: value, ack: true});
-    
-    
-    adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + value);
-
-
-
-
+    adapter.setState(haId + '.' + dp , {val: valueStream, ack: true});
+       
+    adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + valueStream);
 }
-
-
-
-
-
-
-
 
     if (id==adapter.namespace + '.dev.homeappliancesJSON'){
         let appliances=state.val;
