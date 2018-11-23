@@ -188,20 +188,25 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
         let string2=dpKey.split('.');
         let dp=string2.slice(3,5);
         let valueVal=parseMessage.items[0].value;
+        
+        eventSetDp(valueVal);
+        
+        
+function eventSetDp(valueVal){        
         if (typeof valueVal != 'boolean'){
     
             let string3=valueVal.split('.');
-            let valueVal=string3.splice(4,5);
-            adapter.setState(haId + '.' + dp , {val: valueVal, ack: true});
-            adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + valueVal);
+            let value=string3.splice(4,5);
+            adapter.setState(haId + '.' + dp , {val: value, ack: true});
+            adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + value);
             }else
             {
-                let valueVal=valueVal;
-                adapter.setState(haId + '.' + dp , {val: valueVal, ack: true});
-                adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + valueVal);
+                let value=valueVal;
+                adapter.setState(haId + '.' + dp , {val: value, ack: true});
+                adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + value);
             }
 
-        
+        }    
     //adapter.setState(haId + '.' + dp , {val: valueVal, ack: true});
        
     
