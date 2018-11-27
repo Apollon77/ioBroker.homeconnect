@@ -505,7 +505,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 */
 
-let deviceArray=JSON.parse(device);
+deviceArray=JSON.parse(device);
 
 switch (type){
     case "Oven":
