@@ -510,6 +510,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 switch (type){
     case "Oven":
+    adapter.log.debug('CASE');
     devicesDp(deviceArray.Oven);
     break;
     
@@ -555,6 +556,7 @@ function devicesDp(deviceArrayDp){
     let deviceArrayDpLength=deviceArrayDp.length;
     let counterdeviceArrayDp=0;
 
+    devicesDpLoop();
     
     function devicesDpLoop(){
     
