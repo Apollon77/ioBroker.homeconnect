@@ -509,39 +509,39 @@ let deviceArray=JSON.parse(device);
 
 switch (type){
     case "Oven":
-    let deviceArrayDp=deviceArray.Oven;
+    deviceArrayDp=deviceArray.Oven;
     break;
     
     case "Washer":
-    let deviceArrayDp=deviceArray.Washer;
+    deviceArrayDp=deviceArray.Washer;
     break;
 
     case "Dishwasher":
-    let deviceArrayDp=deviceArray.Dishwasher;
+    deviceArrayDp=deviceArray.Dishwasher;
     break;
 
     case "Dryer":
-    let deviceArrayDp=deviceArray.Dryer;
+    deviceArrayDp=deviceArray.Dryer;
     break;
 
     case "WasherDryer":
-    let deviceArrayDp=deviceArray.WasherDryer;
+    deviceArrayDp=deviceArray.WasherDryer;
     break;
 
     case "FridgeFreezer":
-    let deviceArrayDp=deviceArray.FridgeFreezer;
+    deviceArrayDp=deviceArray.FridgeFreezer;
     break;
 
     case "Hob":
-    let deviceArrayDp=deviceArray.Hob;
+    deviceArrayDp=deviceArray.Hob;
     break;
 
     case "Hood":
-    let deviceArrayDp=deviceArray.Hood;
+    deviceArrayDp=deviceArray.Hood;
     break;
 
     case "CoffeeMaker":
-    let deviceArrayDp=deviceArray.CoffeeMaker;
+    deviceArrayDp=deviceArray.CoffeeMaker;
     break;
 
 }
