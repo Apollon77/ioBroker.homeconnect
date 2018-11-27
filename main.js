@@ -506,13 +506,62 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 */
 
 let deviceArray=JSON.parse(device);
-adapter.log.debug("TEST ===>>> " + deviceArray.Oven[0].name);
 
-if (type=='Oven'){
-    let deviceArrayLength=deviceArray.type.length;
-    adapter.log.debug("Type ====>>>> " + type + '   Länge: ' + deviceArrayLength);
-    adapter.log.debug('Datenpunkt ===>>> ' + adapter.namespace + '.' + haId + '.' + test.type[0].name);
+switch (type){
+    case "Oven":
+    let deviceArrayDp=deviceArray.Oven;
+    break;
+    
+    case "Washer":
+    let deviceArrayDp=deviceArray.Washer;
+    break;
+
+    case "Dishwasher":
+    let deviceArrayDp=deviceArray.Dishwasher;
+    break;
+
+    case "Dryer":
+    let deviceArrayDp=deviceArray.Dryer;
+    break;
+
+    case "WasherDryer":
+    let deviceArrayDp=deviceArray.WasherDryer;
+    break;
+
+    case "FridgeFreezer":
+    let deviceArrayDp=deviceArray.FridgeFreezer;
+    break;
+
+    case "Hob":
+    let deviceArrayDp=deviceArray.Hob;
+    break;
+
+    case "Hood":
+    let deviceArrayDp=deviceArray.Hood;
+    break;
+
+    case "CoffeeMaker":
+    let deviceArrayDp=deviceArray.CoffeeMaker;
+    break;
+
 }
+
+let deviceArrayDpLength=deviceArrayDp.length;
+let counterdeviceArrayDp=0;
+
+devicesDp();
+
+function devicesDp(){
+
+    if (counterdeviceArrayDp != deviceArrayDpLength){
+        let dp=adapter.namespace + '.' + haId + '.' + deviceArrayDp[counterdeviceArrayDp].name;
+        adapter.log.debug(' Datenpunkt : ' + dp );
+        counterdeviceArrayDp++;
+        devicesDp();
+    }
+        
+}
+
 
 /*
 let stat=adapter.namespace + '.dev.token';
