@@ -365,7 +365,8 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 */
 
-adapter.log.debug("TEST ===>>> " + device.Oven[0].name);
+let test=JSON.parse(device);
+adapter.log.debug("TEST ===>>> " + test.Oven[0].name);
 
 if (type=Oven){
     adapter.log.debug("Type ====>>>> " + type);
