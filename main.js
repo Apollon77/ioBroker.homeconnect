@@ -213,8 +213,8 @@ function eventSetDp(valueVal){
 }
 
     if (id==adapter.namespace + '.dev.homeappliancesJSON'){
-        let appliances=state.val;
-        let appliancesArray=JSON.parse(appliances);
+        this.appliances=state.val;
+        this.appliancesArray=JSON.parse(appliances);
         let appliancesLength=appliancesArray.data.homeappliances.length;
         let appliancesCount=0;
         
@@ -228,7 +228,7 @@ function eventSetDp(valueVal){
 
             if (appliancesCount < appliancesLength){
                 
-                //this.name=adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name;
+                this.name=adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name;
                 this.brand=appliancesArray.data.homeappliances[appliancesCount].brand;
                 this.vib=appliancesArray.data.homeappliances[appliancesCount].vib;
                 this.connected=appliancesArray.data.homeappliances[appliancesCount].connected;
