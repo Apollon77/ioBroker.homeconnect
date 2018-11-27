@@ -364,6 +364,11 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 */
 
+adapter.log.debug("TEST ===>>> " + datapoints.Oven[0].name);
+
+if (this.type=Oven){
+    adapter.log.debug("Type ====>>>> " + this.type);
+}
 
 /*
 let stat=adapter.namespace + '.dev.token';
