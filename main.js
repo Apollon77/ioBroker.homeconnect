@@ -505,12 +505,13 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 */
 
-let test=JSON.parse(device);
-adapter.log.debug("TEST ===>>> " + test.Oven[0].name);
+let deviceArray=JSON.parse(device);
+adapter.log.debug("TEST ===>>> " + deviceArray.Oven[0].name);
 
 if (type=='Oven'){
-    adapter.log.debug("Type ====>>>> " + type);
-    adapter.log.debug('Datenpunkt ===>>> ' + adapter.namespace + '.' + haId + '.' + test.Oven[0].name);
+    let deviceArrayLength=deviceArray.type.length;
+    adapter.log.debug("Type ====>>>> " + type + '   Länge: ' + deviceArrayLength);
+    adapter.log.debug('Datenpunkt ===>>> ' + adapter.namespace + '.' + haId + '.' + test.type[0].name);
 }
 
 /*
