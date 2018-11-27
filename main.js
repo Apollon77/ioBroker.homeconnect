@@ -189,7 +189,6 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
         let dp2=string2.slice(3,4);
         let dp1=string2.slice(2,3);
         let dp=dp1+"."+dp2;
-        ///let dp=string2.slice(3,5);
         let valueVal=parseMessage.items[0].value;
         
         eventSetDp(valueVal);
@@ -209,9 +208,7 @@ function eventSetDp(valueVal){
                 adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + value);
             }
 
-        }    
-    //adapter.setState(haId + '.' + dp , {val: valueVal, ack: true});
-       
+        }           
     
 }
 
@@ -231,13 +228,13 @@ function eventSetDp(valueVal){
 
             if (appliancesCount < appliancesLength){
                 
-                let name=adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name;
-                let brand=appliancesArray.data.homeappliances[appliancesCount].brand;
-                let vib=appliancesArray.data.homeappliances[appliancesCount].vib;
-                let connected=appliancesArray.data.homeappliances[appliancesCount].connected;
-                let type=appliancesArray.data.homeappliances[appliancesCount].type;
-                let enumber=appliancesArray.data.homeappliances[appliancesCount].enumber;
-                let haId=appliancesArray.data.homeappliances[appliancesCount].haId;
+                this.name=adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name;
+                this.brand=appliancesArray.data.homeappliances[appliancesCount].brand;
+                this.vib=appliancesArray.data.homeappliances[appliancesCount].vib;
+                this.connected=appliancesArray.data.homeappliances[appliancesCount].connected;
+                this.type=appliancesArray.data.homeappliances[appliancesCount].type;
+                this.enumber=appliancesArray.data.homeappliances[appliancesCount].enumber;
+                this.haId=appliancesArray.data.homeappliances[appliancesCount].haId;
 
                 adapter.setObjectNotExists(haId + '.General.currentStatusJSON', {
                     type: 'state',
@@ -366,7 +363,10 @@ function eventSetDp(valueVal){
 aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 */
-            let stat=adapter.namespace + '.dev.token';
+
+
+/*
+let stat=adapter.namespace + '.dev.token';
                 stateGet(stat).then(
                     (value)=>{
                          let token=value;
@@ -413,11 +413,13 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
             }
             }
         );
-/*
+
+
+        /*
 
 verfügbare Programme
 
-*/
+
                         auth.getProgramsAvailable(token,haId).then(
                             (programsAvailable)=>{
                                 adapter.setState(haId + '.General.programsAvailableJSON', JSON.stringify(programsAvailable));
@@ -464,7 +466,9 @@ verfügbare Programme
 
 verfügbare Settings 
 
-*/ 
+ 
+
+
 
 auth.getSettingsAvailable(token,haId).then(
     (settingsAvailable)=>{
@@ -514,12 +518,16 @@ if (statusGet=='400'){
 );
 
 
+///////////////////////////////////////////////////////////////////////////////////////////
+*/
+
+/*
 },
                     err=>{
                         adapter.log.error('FEHLER: ' + err);
                     }
                     );
-
+*/
 
 /////////////////////////////////////////////////////////////////////////////////////////////*/
 
