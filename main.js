@@ -510,48 +510,39 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 switch (type){
     case "Oven":
-    deviceArrayDp=deviceArray.Oven;
-    devicesDp(deviceArrayDp);
+    devicesDp(deviceArray.Oven);
     break;
     
     case "Washer":
-    deviceArrayDp=deviceArray.Washer;
-    devicesDp(deviceArrayDp);
+    devicesDp(deviceArray.Washer);
     break;
 
     case "Dishwasher":
-    deviceArrayDp=deviceArray.Dishwasher;
-    devicesDp(deviceArrayDp);
+    devicesDp(deviceArray.Dishwasher);
     break;
 
     case "Dryer":
-    deviceArrayDp=deviceArray.Dryer;
-    devicesDp(deviceArrayDp);
+    devicesDp(deviceArray.Dryer);
     break;
 
     case "WasherDryer":
-    deviceArrayDp=deviceArray.WasherDryer;
-    devicesDp(deviceArrayDp);
+    devicesDp(deviceArray.WasherDryer);
     break;
 
     case "FridgeFreezer":
-    deviceArrayDp=deviceArray.FridgeFreezer;
-    devicesDp(deviceArrayDp);
+    devicesDp(deviceArray.FridgeFreezer);
     break;
 
     case "Hob":
-    deviceArrayDp=deviceArray.Hob;
-    devicesDp(deviceArrayDp);
+    devicesDp(deviceArray.Hob);
     break;
 
     case "Hood":
-    deviceArrayDp=deviceArray.Hood;
-    devicesDp(deviceArrayDp);
+    devicesDp(deviceArray.Hood);
     break;
 
     case "CoffeeMaker":
-    deviceArrayDp=deviceArray.CoffeeMaker;
-    devicesDp(deviceArrayDp);
+    devicesDp(deviceArray.CoffeeMaker);
     break;
 
 }
