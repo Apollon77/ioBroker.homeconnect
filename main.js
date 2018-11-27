@@ -214,7 +214,7 @@ function eventSetDp(valueVal){
 
     if (id==adapter.namespace + '.dev.homeappliancesJSON'){
         let appliances=state.val;
-        this.appliancesArray=JSON.parse(appliances);
+        let appliancesArray=JSON.parse(appliances);
         let appliancesLength=appliancesArray.data.homeappliances.length;
         let appliancesCount=0;
         
