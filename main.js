@@ -3,7 +3,7 @@
 
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
 const auth =     require(__dirname + '/lib/auth.js');
-const auth =     require(__dirname + '/lib/datapoints.js');
+const datapoints =     require(__dirname + '/lib/datapoints.js');
 const EventEmitter = require('events');
 const EventSource = require('eventsource');
 
