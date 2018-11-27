@@ -3,7 +3,7 @@
 
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
 const auth =     require(__dirname + '/lib/auth.js');
-const datapoints =     require(__dirname + '/lib/datapoints.js');
+const device =     require(__dirname + '/lib/datapoints.js');
 const EventEmitter = require('events');
 const EventSource = require('eventsource');
 
@@ -365,7 +365,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 */
 
-adapter.log.debug("TEST ===>>> " + datapoints.Oven[0].name);
+adapter.log.debug("TEST ===>>> " + device.Oven[0].name);
 
 if (type=Oven){
     adapter.log.debug("Type ====>>>> " + type);
