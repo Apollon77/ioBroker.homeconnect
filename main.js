@@ -228,7 +228,7 @@ function eventSetDp(valueVal){
 
             if (appliancesCount < appliancesLength){
                 
-                this.name=adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name;
+                //this.name=adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name;
                 this.brand=appliancesArray.data.homeappliances[appliancesCount].brand;
                 this.vib=appliancesArray.data.homeappliances[appliancesCount].vib;
                 this.connected=appliancesArray.data.homeappliances[appliancesCount].connected;
