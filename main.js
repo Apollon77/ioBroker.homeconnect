@@ -228,13 +228,13 @@ function eventSetDp(valueVal){
 
             if (appliancesCount < appliancesLength){
                 
-                this.name=adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name;
-                this.brand=appliancesArray.data.homeappliances[appliancesCount].brand;
-                this.vib=appliancesArray.data.homeappliances[appliancesCount].vib;
-                this.connected=appliancesArray.data.homeappliances[appliancesCount].connected;
-                this.type=appliancesArray.data.homeappliances[appliancesCount].type;
-                this.enumber=appliancesArray.data.homeappliances[appliancesCount].enumber;
-                this.haId=appliancesArray.data.homeappliances[appliancesCount].haId;
+                let name=adapter.namespace + '.' + appliancesArray.data.homeappliances[appliancesCount].name;
+                let brand=appliancesArray.data.homeappliances[appliancesCount].brand;
+                let vib=appliancesArray.data.homeappliances[appliancesCount].vib;
+                let connected=appliancesArray.data.homeappliances[appliancesCount].connected;
+                let type=appliancesArray.data.homeappliances[appliancesCount].type;
+                let enumber=appliancesArray.data.homeappliances[appliancesCount].enumber;
+                let haId=appliancesArray.data.homeappliances[appliancesCount].haId;
 
                 adapter.setObjectNotExists(haId + '.General.currentStatusJSON', {
                     type: 'state',
@@ -366,8 +366,8 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 adapter.log.debug("TEST ===>>> " + datapoints.Oven[0].name);
 
-if (this.type=Oven){
-    adapter.log.debug("Type ====>>>> " + this.type);
+if (type=Oven){
+    adapter.log.debug("Type ====>>>> " + type);
 }
 
 /*
