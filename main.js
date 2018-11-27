@@ -213,7 +213,7 @@ function eventSetDp(valueVal){
 }
 
     if (id==adapter.namespace + '.dev.homeappliancesJSON'){
-        this.appliances=state.val;
+        let appliances=state.val;
         this.appliancesArray=JSON.parse(appliances);
         let appliancesLength=appliancesArray.data.homeappliances.length;
         let appliancesCount=0;
