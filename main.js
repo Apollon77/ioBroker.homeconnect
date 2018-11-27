@@ -508,7 +508,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 let test=JSON.parse(device);
 adapter.log.debug("TEST ===>>> " + test.Oven[0].name);
 
-if (type=Oven){
+if (type=='Oven'){
     adapter.log.debug("Type ====>>>> " + type);
     adapter.log.debug('Datenpunkt ===>>> ' + adapter.namespace + '.' + haId + '.' + test.Oven[0].name);
 }
