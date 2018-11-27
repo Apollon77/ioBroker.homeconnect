@@ -510,57 +510,70 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 switch (type){
     case "Oven":
-    let deviceArrayDp=deviceArray.Oven;
+    deviceArrayDp=deviceArray.Oven;
+    devicesDp(deviceArrayDp);
     break;
     
     case "Washer":
-    let deviceArrayDp=deviceArray.Washer;
+    deviceArrayDp=deviceArray.Washer;
+    devicesDp(deviceArrayDp);
     break;
 
     case "Dishwasher":
     deviceArrayDp=deviceArray.Dishwasher;
+    devicesDp(deviceArrayDp);
     break;
 
     case "Dryer":
     deviceArrayDp=deviceArray.Dryer;
+    devicesDp(deviceArrayDp);
     break;
 
     case "WasherDryer":
     deviceArrayDp=deviceArray.WasherDryer;
+    devicesDp(deviceArrayDp);
     break;
 
     case "FridgeFreezer":
     deviceArrayDp=deviceArray.FridgeFreezer;
+    devicesDp(deviceArrayDp);
     break;
 
     case "Hob":
     deviceArrayDp=deviceArray.Hob;
+    devicesDp(deviceArrayDp);
     break;
 
     case "Hood":
     deviceArrayDp=deviceArray.Hood;
+    devicesDp(deviceArrayDp);
     break;
 
     case "CoffeeMaker":
     deviceArrayDp=deviceArray.CoffeeMaker;
+    devicesDp(deviceArrayDp);
     break;
 
 }
 
-let deviceArrayDpLength=deviceArrayDp.length;
-let counterdeviceArrayDp=0;
 
-devicesDp();
 
-function devicesDp(){
 
+function devicesDp(deviceArrayDp){
+
+    let deviceArrayDpLength=deviceArrayDp.length;
+    let counterdeviceArrayDp=0;
+
+    
+    function devicesDpLoop(){
+    
     if (counterdeviceArrayDp != deviceArrayDpLength){
         let dp=adapter.namespace + '.' + haId + '.' + deviceArrayDp[counterdeviceArrayDp].name;
         adapter.log.debug(' Datenpunkt : ' + dp );
         counterdeviceArrayDp++;
-        devicesDp();
+        devicesDpLoop();
     }
-        
+}
 }
 
 
