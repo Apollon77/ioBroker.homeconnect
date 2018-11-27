@@ -563,6 +563,18 @@ function devicesDp(deviceArrayDp){
     if (counterdeviceArrayDp != deviceArrayDpLength){
         let dp=adapter.namespace + '.' + haId + '.' + deviceArrayDp[counterdeviceArrayDp].name;
         adapter.log.debug(' Datenpunkt : ' + dp );
+        adapter.setObjectNotExists(dp, {
+            type: 'state',
+            common: {
+                name: deviceArrayDp[counterdeviceArrayDp].name,
+                type: deviceArrayDp[counterdeviceArrayDp].type,
+                role: 'indicator',
+                write: false,
+                read: true
+            },
+            native: {}
+        });
+
         counterdeviceArrayDp++;
         devicesDpLoop();
     }
