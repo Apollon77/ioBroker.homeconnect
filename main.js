@@ -11,7 +11,7 @@ const adapter = new utils.Adapter('homeconnect');
 
 const device=JSON.stringify(
 
-    {"Oven":       				      [{"name" : "Setting.PowerState","type":"mixed"},
+    {"Oven":       				     [{"name" : "Setting.PowerState","type":"mixed"},
                                       {"name" : "Status.CurrentCavityTemperature","type":"number"},
                                       {"name" : "Status.DoorState","type":"mixed"},
                                       {"name" : "Status.LocalControlActive","type":"boolean"},
@@ -57,7 +57,7 @@ const device=JSON.stringify(
        
        ]},
        
-       {"Washer":					  [{"name" : "Root.ActiveProgram","type":"mixed"},
+       {"Washer":					 [{"name" : "Root.ActiveProgram","type":"mixed"},
                                       {"name" : "Root.SelectedProgram","type":"mixed"},
                                       {"name" : "Option.Temperature","type":"mixed"},
                                       {"name" : "Option.SpinSpeed","type":"mixed"},
@@ -73,7 +73,7 @@ const device=JSON.stringify(
        
        ]},
        
-       {"Dryer":					  [{"name" : "Root.ActiveProgram","type":"mixed"},
+       {"Dryer":					 [{"name" : "Root.ActiveProgram","type":"mixed"},
                                       {"name" : "Root.SelectedProgram","type":"mixed"},
                                       {"name" : "Option.DryingTarget","type":"mixed"},
                                       {"name" : "Option.ProgramProgress","type":"number"},
@@ -88,7 +88,7 @@ const device=JSON.stringify(
                                       
        ]},
        
-       {"WasherDryer":				  [{"name" : "Root.ActiveProgram","type":"mixed"},
+       {"WasherDryer":				 [{"name" : "Root.ActiveProgram","type":"mixed"},
                                       {"name" : "Root.SelectedProgram","type":"mixed"},
                                       {"name" : "Option.Temperature","type":"mixed"},
                                       {"name" : "Option.SpinSpeed","type":"mixed"},
@@ -105,7 +105,7 @@ const device=JSON.stringify(
        
        ]},
        
-       {"FridgeFreezer":			  [{"name" : "Setting.PowerState","type":"mixed"},
+       {"FridgeFreezer":			 [{"name" : "Setting.PowerState","type":"mixed"},
                                       {"name" : "Setting.SetpointTemperatureFreezer","type":"number"},
                                       {"name" : "Setting.SetpointTemperatureRefrigerator","type":"number"},
                                       {"name" : "Setting.SuperModeFreezer","type":"boolean"},
@@ -117,7 +117,7 @@ const device=JSON.stringify(
                                       
        ]},
        
-       {"Hob":					      [{"name" : "Root.ActiveProgram","type":"mixed"},
+       {"Hob":					     [{"name" : "Root.ActiveProgram","type":"mixed"},
                                       {"name" : "Root.SelectedProgram","type":"mixed"},
                                       {"name" : "Setting.PowerState","type":"mixed"},
                                       {"name" : "Status.RemoteControlActive","type":"boolean"},
@@ -128,7 +128,7 @@ const device=JSON.stringify(
                                       
        ]},
        
-       {"Hood":					  [{"name" : "Root.ActiveProgram","type":"mixed"},
+       {"Hood":					     [{"name" : "Root.ActiveProgram","type":"mixed"},
                                       {"name" : "Option.Duration","type":"number"},
                                       {"name" : "Option.Hood.VentingLevel","type":"mixed"},
                                       {"name" : "Option.Hood.IntensiveLevel","type":"mixed"},
@@ -505,7 +505,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 */
 
-deviceArray=JSON.parse(device);
+this.deviceArray=JSON.parse(device);
 
 switch (type){
     case "Oven":
