@@ -147,6 +147,7 @@ const device=JSON.stringify(
        
    );
 
+let deviceArray=JSON.parse(device);   
 
 let getTokenInterval;
 
@@ -505,7 +506,7 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 */
 
-this.deviceArray=JSON.parse(device);
+
 
 switch (type){
     case "Oven":
