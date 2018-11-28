@@ -352,7 +352,7 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
         
         function notify (notifyCounterArray){
             
-            notifyCounter=0;
+            let notifyCounter=0;
             notifyLoop();
             
             function notifyLoop(){
