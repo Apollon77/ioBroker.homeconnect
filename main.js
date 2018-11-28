@@ -333,9 +333,7 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
 
 
         if (stream.type =='EVENT' || stream.type == 'STATUS'){
-        //let haIdUri=parseMessage.items[0].uri;
-        //let string = haIdUri.split("/");
-        //let haId=string.slice(3,4);
+
         let haId=stream.lastEventId;
         let dpKey=parseMessage.items[0].key;
         let string2=dpKey.split('.');
@@ -359,10 +357,6 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
             function notifyLoop(){
                     adapter.log.debug('notifyCounter ===>>>  ' + notifyCounter);
             if (notifyCounter != notifyCounterArray){
-                
-                //let haIdUri=parseMessage.items[notifyCounter].uri;
-                //let string = haIdUri.split("/");
-                //let haId=string.slice(3,4);
                 let haId=stream.lastEventId;
                 let dpKey=parseMessage.items[notifyCounter].key;
                 let string2=dpKey.split('.');

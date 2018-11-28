@@ -1,8 +1,16 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.4",
+        "version": "0.0.5",
         "news": {
+            "0.0.5": {
+                "en": "add eventstream handling",
+                "de": "Auswertung Eventstream",
+                "ru": "Первоначальный адаптер",
+                "pt": "Versão inicial",
+                "fr": "Version initiale",
+                "nl": "Eerste release"
+            },
             "0.0.4": {
                 "en": "add event-listener",
                 "de": "Event-Listener hinzugefügt",

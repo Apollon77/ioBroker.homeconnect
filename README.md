@@ -64,6 +64,10 @@ Log is displayed. Simply copy the URL and open it in your browser. Then enter th
 
 ## Changelog
 
+### 0.0.5  (28.11.2018)
+
+* (dna909) add eventstream handling
+
 ### 0.0.4  (23.11.2018)
 
 * (dna909) add event-listener
