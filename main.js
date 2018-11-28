@@ -3,7 +3,6 @@
 
 const utils =    require(__dirname + '/lib/utils'); // Get common adapter utils
 const auth =     require(__dirname + '/lib/auth.js');
-//const device =     require(__dirname + '/lib/datapoints.js');
 const EventEmitter = require('events');
 const EventSource = require('eventsource');
 
@@ -322,7 +321,17 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
         let stream=JSON.parse(streamArray);
         let parseMsg=stream.data;
         let parseMessage=JSON.parse(parseMsg);
-            
+        
+
+
+        if (stream.type=='NOTIFY'){
+            adapter.log.info('NOTIFY');
+            let notifyCounterArray=parseMessage.items.length;
+            notify(notifyCounterArray);
+        }
+
+
+        if (stream.type =='EVENT' || stream.type == 'STATUS'){
         let haIdUri=parseMessage.items[0].uri;
         let string = haIdUri.split("/");
         let haId=string.slice(3,4);
@@ -332,11 +341,47 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
         let dp1=string2.slice(2,3);
         let dp=dp1+"."+dp2;
         let valueVal=parseMessage.items[0].value;
+
+        adapter.log.debug("Datenpunkt: " + dp + "   Value: " + valueVal );
         
-        eventSetDp(valueVal);
+        eventSetDp(valueVal,dp,haId);
+        
+        }
         
         
-function eventSetDp(valueVal){        
+        function notify (notifyCounterArray){
+            
+            notifyCounter=0;
+            notifyLoop();
+            
+            function notifyLoop(){
+            
+            if (notifyCounter!= notifyCounterArray){
+                
+                let haIdUri=parseMessage.items[notifyCounter].uri;
+                let string = haIdUri.split("/");
+                let haId=string.slice(3,4);
+                let dpKey=parseMessage.items[notifyCounter].key;
+                let string2=dpKey.split('.');
+                let dp2=string2.slice(3,4);
+                let dp1=string2.slice(2,3);
+                let dp=dp1+"."+dp2;
+                let valueVal=parseMessage.items[notifyCounter].value;
+                
+                adapter.log.debug("Datenpunkt: " + dp + "   Value: " + valueVal );
+
+                notifySetDp(valueVal,dp,haId);
+
+                notifyCounter++;
+                notifyLoop();   
+            }
+            
+            }
+            
+            }
+        
+        
+function eventSetDp(valueVal,dp,haId){        
         if (typeof valueVal != 'boolean'){
     
             let string3=valueVal.split('.');
@@ -349,12 +394,35 @@ function eventSetDp(valueVal){
                 adapter.setState(haId + '.' + dp , {val: value, ack: true});
                 adapter.log.debug("Datenpunkt: "+ haId + '.' + dp + '    Value: ' + value);
             }
+    }           
+
+
+    function notifySetDp(valueVal,dp,haId){        
+        if (typeof valueVal == 'string' || typeof valueVal == 'boolean'){
+    
+            let string3=valueVal.split('.');
+            let value=string3.splice(4,5);
+            adapter.setState(haId + '.' + dp , {val: value, ack: true});
+                        
+            }else
+            if (typeof valueVal == 'number')
+            {
+            let value=valueVal;
+            adapter.setState(haId + '.' + dp , {val: value, ack: true});
+                            
+            }
 
         }           
+
     
 }
 
-    if (id==adapter.namespace + '.dev.homeappliancesJSON'){
+    
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+if (id==adapter.namespace + '.dev.homeappliancesJSON'){
         let appliances=state.val;
         let appliancesArray=JSON.parse(appliances);
         let appliancesLength=appliancesArray.data.homeappliances.length;
