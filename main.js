@@ -327,8 +327,8 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
 
         if (stream.type=='NOTIFY'){
             adapter.log.info('NOTIFY');
-            let notifyCounterArray=parseMessage.items.length;
-            notify(notifyCounterArray);
+            
+            notify();
         }
 
 
@@ -350,14 +350,14 @@ if (id==adapter.namespace + '.dev.eventStreamJSON'){
         }
         
         
-        function notify (notifyCounterArray){
-            
+        function notify (){
+            let notifyCounterArray=parseMessage.items.length;
             let notifyCounter=0;
             notifyLoop();
             
             function notifyLoop(){
-            
-            if (notifyCounter!= notifyCounterArray){
+                    adapter.log.debug('notifyCounter ===>>>  ' + notifyCounter);
+            if (notifyCounter != notifyCounterArray){
                 
                 let haIdUri=parseMessage.items[notifyCounter].uri;
                 let string = haIdUri.split("/");
