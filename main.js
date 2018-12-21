@@ -10,7 +10,7 @@ const adapter = new utils.Adapter('homeconnect');
 
 const device=JSON.stringify(
 
-    {"Oven":       				     [{"name" : "Setting.PowerState","type":"mixed","unit":""},
+        {"Oven":   				     [{"name" : "Setting.PowerState","type":"mixed","unit":""},
                                       {"name" : "Status.CurrentCavityTemperature","type":"number","unit":""},
                                       {"name" : "Status.DoorState","type":"mixed","unit":""},
                                       {"name" : "Status.LocalControlActive","type":"boolean","unit":""},
@@ -29,6 +29,7 @@ const device=JSON.stringify(
                                       {"name" : "Event.PreheatFinished","type":"mixed","unit":""}
        
        ]},
+
        {"Dishwasher":                [{"name" : "Setting.PowerState","type":"mixed","unit":""},
                                       {"name" : "Status.DoorState","type":"mixed","unit":""},
                                       {"name" : "Status.OperationState","type":"mixed","unit":""},
@@ -52,6 +53,8 @@ const device=JSON.stringify(
                                       {"name" : "Root.SelectedProgram","type":"mixed","unit":""},
                                       {"name" : "Option.ProgramProgress","type":"number","unit":"%"},
                                       {"name" : "Option.RemainingProgramTime","type":"number","unit":"sec."},
+                                      {"name" : "Option.BeanAmount","type":"mixed","unit":""},
+                                      {"name" : "Option.FillQuantity","type":"number","unit":"ml"},
                                       {"name" : "Setting.PowerState","type":"mixed","unit":""}
        
        ]},
@@ -249,7 +252,7 @@ function receive(token,haId){
            eventSource.onerror = (err => {
                adapter.log.error(err.status);
              if (err.status !== undefined) {
-               adapter.log.error('Error (' + this.haId + ')', err)
+               adapter.log.error('Error (' + haId + ')', err)
               if (err.status === 401) {
                 
                 // Most likely the token has expired, try to refresh the token
@@ -575,39 +578,47 @@ aktuellen Status abfragen und Datenpunkte anlegen und States setzen
 
 switch (type){
     case "Oven":
-    adapter.log.debug('CASE');
+    adapter.log.debug('Type= ' + type);
     devicesDp(deviceArray.Oven);
     break;
     
     case "Washer":
+    adapter.log.debug('Type= ' + type);
     devicesDp(deviceArray.Washer);
     break;
 
     case "Dishwasher":
+    adapter.log.debug('Type= ' + type);
     devicesDp(deviceArray.Dishwasher);
     break;
 
     case "Dryer":
+    adapter.log.debug('Type= ' + type);
     devicesDp(deviceArray.Dryer);
     break;
 
     case "WasherDryer":
+    adapter.log.debug('Type= ' + type);
     devicesDp(deviceArray.WasherDryer);
     break;
 
     case "FridgeFreezer":
+    adapter.log.debug('Type= ' + type);
     devicesDp(deviceArray.FridgeFreezer);
     break;
 
     case "Hob":
+    adapter.log.debug('Type= ' + type);
     devicesDp(deviceArray.Hob);
     break;
 
     case "Hood":
+    adapter.log.debug('Type= ' + type);
     devicesDp(deviceArray.Hood);
     break;
 
     case "CoffeeMaker":
+    adapter.log.debug('Type= ' + type);
     devicesDp(deviceArray.CoffeeMaker);
     break;
 
