@@ -12,6 +12,9 @@
       "email": "dna909@googlemail.com"
     }
   ],
+  "engines" : { 
+      "node" : ">=6" 
+  },
   "homepage": "https://github.com/dna909/ioBroker.homeconnect",
   "license": "MIT",
   "keywords": [
