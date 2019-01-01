@@ -21,6 +21,7 @@ const devices = {
         {"name": "Option.RemainingProgramTime", "type": "number", "unit": "sec."},
         {"name": "Option.SetpointTemperature", "type": "number", "unit": "°C"},
         {"name": "Option.Duration", "type": "number", "unit": "sec."},
+        {"name": "Option.StartInRelative", "type": "number", "unit": "sec."},
         {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
         {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
         {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""},
