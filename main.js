@@ -145,8 +145,6 @@ const devices = {
     ]
 };
 
-let deviceArray = devices;
-
 let getTokenInterval;
 
 function stateGet(stat) {
@@ -562,78 +560,78 @@ adapter.on('stateChange', function (id, state) {
                     switch (type) {
                         case "Oven":
                             adapter.log.debug('Type= ' + type);
-                            devicesDp(deviceArray.Oven);
+                            devicesDp(devices.Oven);
                             break;
 
                         case "Washer":
                             adapter.log.debug('Type= ' + type);
-                            devicesDp(deviceArray.Washer);
+                            devicesDp(devices.Washer);
                             break;
 
                         case "Dishwasher":
                             adapter.log.debug('Type= ' + type);
-                            devicesDp(deviceArray.Dishwasher);
+                            devicesDp(devices.Dishwasher);
                             break;
 
                         case "Dryer":
                             adapter.log.debug('Type= ' + type);
-                            devicesDp(deviceArray.Dryer);
+                            devicesDp(devices.Dryer);
                             break;
 
                         case "WasherDryer":
                             adapter.log.debug('Type= ' + type);
-                            devicesDp(deviceArray.WasherDryer);
+                            devicesDp(devices.WasherDryer);
                             break;
 
                         case "FridgeFreezer":
                             adapter.log.debug('Type= ' + type);
-                            devicesDp(deviceArray.FridgeFreezer);
+                            devicesDp(devices.FridgeFreezer);
                             break;
 
                         case "Hob":
                             adapter.log.debug('Type= ' + type);
-                            devicesDp(deviceArray.Hob);
+                            devicesDp(devices.Hob);
                             break;
 
                         case "Hood":
                             adapter.log.debug('Type= ' + type);
-                            devicesDp(deviceArray.Hood);
+                            devicesDp(devices.Hood);
                             break;
 
                         case "CoffeeMaker":
                             adapter.log.debug('Type= ' + type);
-                            devicesDp(deviceArray.CoffeeMaker);
+                            devicesDp(devices.CoffeeMaker);
                             break;
 
                     }
 
 
-                    function devicesDp(deviceArrayDp) {
+                    function devicesDp(deviceDp) {
 
-                        let deviceArrayDpLength = deviceArrayDp.length;
-                        let counterdeviceArrayDp = 0;
+                        let deviceDpLength = deviceDp.length;
+                        let deviceDpCounter = 0;
 
                         devicesDpLoop();
 
                         function devicesDpLoop() {
 
-                            if (counterdeviceArrayDp != deviceArrayDpLength) {
-                                let dp = adapter.namespace + '.' + haId + '.' + deviceArrayDp[counterdeviceArrayDp].name;
+                            if (deviceDpCounter != deviceDpLength) {
+                                let dp = adapter.namespace + '.' + haId + '.' + deviceDp[deviceDpCounter].name;
                                 adapter.log.debug(' Datenpunkt : ' + dp);
                                 adapter.setObjectNotExists(dp, {
                                     type: 'state',
                                     common: {
-                                        name: deviceArrayDp[counterdeviceArrayDp].name,
-                                        type: deviceArrayDp[counterdeviceArrayDp].type,
+                                        name: deviceDp[deviceDpCounter].name,
+                                        type: deviceDp[deviceDpCounter].type,
                                         role: 'indicator',
-                                        unit: deviceArrayDp[counterdeviceArrayDp].unit,
+                                        unit: deviceDp[deviceDpCounter].unit,
                                         write: false,
                                         read: true
                                     },
                                     native: {}
                                 });
 
-                                counterdeviceArrayDp++;
+                                deviceDpCounter++;
                                 devicesDpLoop();
                             }
                         }
