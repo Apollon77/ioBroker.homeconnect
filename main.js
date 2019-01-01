@@ -8,149 +8,145 @@ const EventSource = require('eventsource');
 
 const adapter = new utils.Adapter('homeconnect');
 
-const device=JSON.stringify(
+const devices = {
+  "Oven": [
+    {"name": "Setting.PowerState", "type": "mixed", "unit": ""},
+    {"name": "Status.CurrentCavityTemperature", "type": "number", "unit": ""},
+    {"name": "Status.DoorState", "type": "mixed", "unit": ""},
+    {"name": "Status.LocalControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.RemoteControlStartAllowed", "type": "boolean", "unit": ""},
+    {"name": "Status.RemoteControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.OperationState", "type": "mixed", "unit": ""},
+    {"name": "Option.ProgramProgress", "type": "number", "unit": "%"},
+    {"name": "Option.ElapsedProgramTime", "type": "number", "unit": "sec."},
+    {"name": "Option.RemainingProgramTime", "type": "number", "unit": "sec."},
+    {"name": "Option.SetpointTemperature", "type": "number", "unit": "°C"},
+    {"name": "Option.Duration", "type": "number", "unit": "sec."},
+    {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
+    {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
+    {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""},
+    {"name": "Event.AlarmClockElapsed", "type": "mixed", "unit": ""},
+    {"name": "Event.PreheatFinished", "type": "mixed", "unit": ""}
+  ],
 
-        {"Oven":   				     [{"name" : "Setting.PowerState","type":"mixed","unit":""},
-                                      {"name" : "Status.CurrentCavityTemperature","type":"number","unit":""},
-                                      {"name" : "Status.DoorState","type":"mixed","unit":""},
-                                      {"name" : "Status.LocalControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.RemoteControlStartAllowed","type":"boolean","unit":""},
-                                      {"name" : "Status.RemoteControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.OperationState","type":"mixed","unit":""},
-                                      {"name" : "Option.ProgramProgress","type":"number","unit":"%"},
-                                      {"name" : "Option.ElapsedProgramTime","type":"number","unit":"sec."},
-                                      {"name" : "Option.RemainingProgramTime","type":"number","unit":"sec."},
-                                      {"name" : "Option.SetpointTemperature","type":"number","unit":"°C"},
-                                      {"name" : "Option.Duration","type":"number","unit":"sec."},
-                                      {"name" : "Root.ActiveProgram","type":"mixed","unit":""},
-                                      {"name" : "Root.SelectedProgram","type":"mixed","unit":""},
-                                      {"name" : "Event.ProgramFinished","type":"mixed","unit":""},
-                                      {"name" : "Event.AlarmClockElapsed","type":"mixed","unit":""},
-                                      {"name" : "Event.PreheatFinished","type":"mixed","unit":""}
-       
-       ]},
+  "Dishwasher": [
+    {"name": "Setting.PowerState", "type": "mixed", "unit": ""},
+    {"name": "Status.DoorState", "type": "mixed", "unit": ""},
+    {"name": "Status.OperationState", "type": "mixed", "unit": ""},
+    {"name": "Status.RemoteControlStartAllowed", "type": "boolean", "unit": ""},
+    {"name": "Status.RemoteControlActive", "type": "boolean", "unit": ""},
+    {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
+    {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
+    {"name": "Option.StartInRelative", "type": "number", "unit": "sec."},
+    {"name": "Option.ProgramProgress", "type": "number", "unit": "%"},
+    {"name": "Option.RemainingProgramTime", "type": "number", "unit": "sec."},
+    {"name": "Event.ProgramAborted", "type": "mixed", "unit": ""},
+    {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""}
+  ],
 
-       {"Dishwasher":                [{"name" : "Setting.PowerState","type":"mixed","unit":""},
-                                      {"name" : "Status.DoorState","type":"mixed","unit":""},
-                                      {"name" : "Status.OperationState","type":"mixed","unit":""},
-                                      {"name" : "Status.RemoteControlStartAllowed","type":"boolean","unit":""},
-                                      {"name" : "Status.RemoteControlActive","type":"boolean","unit":""},
-                                      {"name" : "Root.ActiveProgram","type":"mixed","unit":""},
-                                      {"name" : "Root.SelectedProgram","type":"mixed","unit":""},
-                                      {"name" : "Option.StartInRelative","type":"number","unit":"sec."},
-                                      {"name" : "Option.ProgramProgress","type":"number","unit":"%"},
-                                      {"name" : "Option.RemainingProgramTime","type":"number","unit":"sec."},
-                                      {"name" : "Event.ProgramAborted","type":"mixed","unit":""},
-                                      {"name" : "Event.ProgramFinished","type":"mixed","unit":""}
-                                      
-                                      
-       ]},
-       
-       {"CoffeeMaker":               [{"name" : "Status.OperationState","type":"mixed","unit":""},
-                                      {"name" : "Status.RemoteControlStartAllowed","type":"boolean","unit":""},
-                                      {"name" : "Status.RemoteControlActive","type":"boolean","unit":""},
-                                      {"name" : "Root.ActiveProgram","type":"mixed","unit":""},
-                                      {"name" : "Root.SelectedProgram","type":"mixed","unit":""},
-                                      {"name" : "Option.ProgramProgress","type":"number","unit":"%"},
-                                      {"name" : "Option.RemainingProgramTime","type":"number","unit":"sec."},
-                                      {"name" : "Option.BeanAmount","type":"mixed","unit":""},
-                                      {"name" : "Option.FillQuantity","type":"number","unit":"ml"},
-                                      {"name" : "Setting.PowerState","type":"mixed","unit":""}
-       
-       ]},
-       
-       {"Washer":					 [{"name" : "Root.ActiveProgram","type":"mixed","unit":""},
-                                      {"name" : "Root.SelectedProgram","type":"mixed","unit":""},
-                                      {"name" : "Option.Temperature","type":"mixed","unit":"°C"},
-                                      {"name" : "Option.SpinSpeed","type":"mixed","unit":""},
-                                      {"name" : "Option.ProgramProgress","type":"number","unit":"%"},
-                                      {"name" : "Option.RemainingProgramTime","type":"number","unit":"sec."},
-                                      {"name" : "Setting.PowerState","type":"mixed","unit":""},
-                                      {"name" : "Status.RemoteControlStartAllowed","type":"boolean","unit":""},
-                                      {"name" : "Status.RemoteControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.LocalControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.DoorState","type":"mixed","unit":""},
-                                      {"name" : "Status.OperationState","type":"mixed","unit":""},
-                                      {"name" : "Event.ProgramFinished","type":"mixed","unit":""}
-       
-       ]},
-       
-       {"Dryer":					 [{"name" : "Root.ActiveProgram","type":"mixed","unit":""},
-                                      {"name" : "Root.SelectedProgram","type":"mixed","unit":""},
-                                      {"name" : "Option.DryingTarget","type":"mixed","unit":""},
-                                      {"name" : "Option.ProgramProgress","type":"number","unit":"%"},
-                                      {"name" : "Option.RemainingProgramTime","type":"number","unit":"sec."},
-                                      {"name" : "Setting.PowerState","type":"mixed","unit":""},
-                                      {"name" : "Status.RemoteControlStartAllowed","type":"boolean","unit":""},
-                                      {"name" : "Status.RemoteControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.LocalControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.DoorState","type":"mixed","unit":""},
-                                      {"name" : "Status.OperationState","type":"mixed","unit":""},
-                                      {"name" : "Event.ProgramFinished","type":"mixed","unit":""}
-                                      
-       ]},
-       
-       {"WasherDryer":				 [{"name" : "Root.ActiveProgram","type":"mixed","unit":""},
-                                      {"name" : "Root.SelectedProgram","type":"mixed","unit":""},
-                                      {"name" : "Option.Temperature","type":"mixed","unit":"°C"},
-                                      {"name" : "Option.SpinSpeed","type":"mixed","unit":""},
-                                      {"name" : "Option.DryingTarget","type":"mixed","unit":""},
-                                      {"name" : "Option.ProgramProgress","type":"number","unit":"%"},
-                                      {"name" : "Option.RemainingProgramTime","type":"number","unit":"sec."},
-                                      {"name" : "Setting.PowerState","type":"mixed","unit":""},
-                                      {"name" : "Status.RemoteControlStartAllowed","type":"boolean","unit":""},
-                                      {"name" : "Status.RemoteControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.LocalControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.DoorState","type":"mixed","unit":""},
-                                      {"name" : "Status.OperationState","type":"mixed","unit":""},
-                                      {"name" : "Event.ProgramFinished","type":"mixed","unit":""}
-       
-       ]},
-       
-       {"FridgeFreezer":			 [{"name" : "Setting.PowerState","type":"mixed","unit":""},
-                                      {"name" : "Setting.SetpointTemperatureFreezer","type":"number","unit":"°C"},
-                                      {"name" : "Setting.SetpointTemperatureRefrigerator","type":"number","unit":"°C"},
-                                      {"name" : "Setting.SuperModeFreezer","type":"boolean","unit":""},
-                                      {"name" : "Setting.SuperModeRefrigerator","type":"boolean","unit":""},
-                                      {"name" : "Status.DoorState","type":"mixed","unit":""},
-                                      {"name" : "Event.DoorAlarmFreezer","type":"mixed","unit":""},
-                                      {"name" : "Event.DoorAlarmRefrigerator","type":"mixed","unit":""},
-                                      {"name" : "Event.TemperatureAlarmFreezer","type":"mixed","unit":""}
-                                      
-       ]},
-       
-       {"Hob":					     [{"name" : "Root.ActiveProgram","type":"mixed","unit":""},
-                                      {"name" : "Root.SelectedProgram","type":"mixed","unit":""},
-                                      {"name" : "Setting.PowerState","type":"mixed","unit":""},
-                                      {"name" : "Status.RemoteControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.LocalControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.OperationState","type":"mixed","unit":""},
-                                      {"name" : "Event.ProgramFinished","type":"mixed","unit":""},
-                                      {"name" : "Event.AlarmClockElapsed","type":"mixed","unit":""},
-                                      {"name" : "Event.PreheatFinished","type":"mixed","unit":""}
-                                      
-       ]},
-       
-       {"Hood":					     [{"name" : "Root.ActiveProgram","type":"mixed","unit":""},
-                                      {"name" : "Option.Duration","type":"number","unit":"sec."},
-                                      {"name" : "Option.Hood.VentingLevel","type":"mixed","unit":""},
-                                      {"name" : "Option.Hood.IntensiveLevel","type":"mixed","unit":""},
-                                      {"name" : "Option.ProgramProgress","type":"number","unit":"%"},
-                                      {"name" : "Option.ElapsedProgramTime","type":"number","unit":"sec."},
-                                      {"name" : "Option.RemainingProgramTime","type":"number","unit":"sec."},
-                                      {"name" : "Setting.PowerState","type":"mixed","unit":""},
-                                      {"name" : "Status.RemoteControlStartAllowed","type":"boolean","unit":""},
-                                      {"name" : "Status.RemoteControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.LocalControlActive","type":"boolean","unit":""},
-                                      {"name" : "Status.OperationState","type":"mixed","unit":""},
-                                      {"name" : "Event.ProgramFinished","type":"mixed","unit":""}
-                               
-       ]}
-                           
-       
-   );
+  "CoffeeMaker": [
+    {"name": "Status.OperationState", "type": "mixed", "unit": ""},
+    {"name": "Status.RemoteControlStartAllowed", "type": "boolean", "unit": ""},
+    {"name": "Status.RemoteControlActive", "type": "boolean", "unit": ""},
+    {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
+    {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
+    {"name": "Option.ProgramProgress", "type": "number", "unit": "%"},
+    {"name": "Option.RemainingProgramTime", "type": "number", "unit": "sec."},
+    {"name": "Option.BeanAmount", "type": "mixed", "unit": ""},
+    {"name": "Option.FillQuantity", "type": "number", "unit": "ml"},
+    {"name": "Setting.PowerState", "type": "mixed", "unit": ""}
+  ],
 
-let deviceArray=JSON.parse(device);   
+  "Washer": [
+    {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
+    {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
+    {"name": "Option.Temperature", "type": "mixed", "unit": "°C"},
+    {"name": "Option.SpinSpeed", "type": "mixed", "unit": ""},
+    {"name": "Option.ProgramProgress", "type": "number", "unit": "%"},
+    {"name": "Option.RemainingProgramTime", "type": "number", "unit": "sec."},
+    {"name": "Setting.PowerState", "type": "mixed", "unit": ""},
+    {"name": "Status.RemoteControlStartAllowed", "type": "boolean", "unit": ""},
+    {"name": "Status.RemoteControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.LocalControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.DoorState", "type": "mixed", "unit": ""},
+    {"name": "Status.OperationState", "type": "mixed", "unit": ""},
+    {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""}
+  ],
+
+  "Dryer": [
+    {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
+    {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
+    {"name": "Option.DryingTarget", "type": "mixed", "unit": ""},
+    {"name": "Option.ProgramProgress", "type": "number", "unit": "%"},
+    {"name": "Option.RemainingProgramTime", "type": "number", "unit": "sec."},
+    {"name": "Setting.PowerState", "type": "mixed", "unit": ""},
+    {"name": "Status.RemoteControlStartAllowed", "type": "boolean", "unit": ""},
+    {"name": "Status.RemoteControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.LocalControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.DoorState", "type": "mixed", "unit": ""},
+    {"name": "Status.OperationState", "type": "mixed", "unit": ""},
+    {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""}
+  ],
+
+  "WasherDryer": [
+    {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
+    {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
+    {"name": "Option.Temperature", "type": "mixed", "unit": "°C"},
+    {"name": "Option.SpinSpeed", "type": "mixed", "unit": ""},
+    {"name": "Option.DryingTarget", "type": "mixed", "unit": ""},
+    {"name": "Option.ProgramProgress", "type": "number", "unit": "%"},
+    {"name": "Option.RemainingProgramTime", "type": "number", "unit": "sec."},
+    {"name": "Setting.PowerState", "type": "mixed", "unit": ""},
+    {"name": "Status.RemoteControlStartAllowed", "type": "boolean", "unit": ""},
+    {"name": "Status.RemoteControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.LocalControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.DoorState", "type": "mixed", "unit": ""},
+    {"name": "Status.OperationState", "type": "mixed", "unit": ""},
+    {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""}
+  ],
+
+  "FridgeFreezer": [
+    {"name": "Setting.PowerState", "type": "mixed", "unit": ""},
+    {"name": "Setting.SetpointTemperatureFreezer", "type": "number", "unit": "°C"},
+    {"name": "Setting.SetpointTemperatureRefrigerator", "type": "number", "unit": "°C"},
+    {"name": "Setting.SuperModeFreezer", "type": "boolean", "unit": ""},
+    {"name": "Setting.SuperModeRefrigerator", "type": "boolean", "unit": ""},
+    {"name": "Status.DoorState", "type": "mixed", "unit": ""},
+    {"name": "Event.DoorAlarmFreezer", "type": "mixed", "unit": ""},
+    {"name": "Event.DoorAlarmRefrigerator", "type": "mixed", "unit": ""},
+    {"name": "Event.TemperatureAlarmFreezer", "type": "mixed", "unit": ""}
+  ],
+
+  "Hob": [
+    {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
+    {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
+    {"name": "Setting.PowerState", "type": "mixed", "unit": ""},
+    {"name": "Status.RemoteControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.LocalControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.OperationState", "type": "mixed", "unit": ""},
+    {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""},
+    {"name": "Event.AlarmClockElapsed", "type": "mixed", "unit": ""},
+    {"name": "Event.PreheatFinished", "type": "mixed", "unit": ""}
+  ],
+
+  "Hood": [
+    {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
+    {"name": "Option.Duration", "type": "number", "unit": "sec."},
+    {"name": "Option.Hood.VentingLevel", "type": "mixed", "unit": ""},
+    {"name": "Option.Hood.IntensiveLevel", "type": "mixed", "unit": ""},
+    {"name": "Option.ProgramProgress", "type": "number", "unit": "%"},
+    {"name": "Option.ElapsedProgramTime", "type": "number", "unit": "sec."},
+    {"name": "Option.RemainingProgramTime", "type": "number", "unit": "sec."},
+    {"name": "Setting.PowerState", "type": "mixed", "unit": ""},
+    {"name": "Status.RemoteControlStartAllowed", "type": "boolean", "unit": ""},
+    {"name": "Status.RemoteControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.LocalControlActive", "type": "boolean", "unit": ""},
+    {"name": "Status.OperationState", "type": "mixed", "unit": ""},
+    {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""}
+  ]
+};
+
+let deviceArray=devices;
 
 let getTokenInterval;
 
