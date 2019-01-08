@@ -388,7 +388,7 @@ adapter.on('stateChange', function (id, state) {
 
         function notifySetDp(valueVal, dp, haId) {
             if (typeof valueVal == 'string' || typeof valueVal == 'boolean') {
-
+                    adapter.log.debug("Type: " + typeof valueVal);                  // Logging zu Issue TypeError: valueVal.split is not a function
                 let string3 = valueVal.split('.');
                 let value = string3.splice(4, 5);
                 adapter.setState(haId + '.' + dp, {val: value, ack: true});
