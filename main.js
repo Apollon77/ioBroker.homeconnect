@@ -319,6 +319,12 @@ adapter.on('stateChange', function (id, state) {
         let parseMessage = JSON.parse(parseMsg);
 
 
+        if (stream.type == 'DISCONNECTED') {
+            adapter.log.info('DISCONNECTED');
+           
+        }
+
+
         if (stream.type == 'NOTIFY') {
             adapter.log.info('NOTIFY');
 
