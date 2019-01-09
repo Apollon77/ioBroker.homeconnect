@@ -3,6 +3,14 @@
         "name": "homeconnect",
         "version": "0.0.5",
         "news": {
+            "0.0.6": {
+                "en": "bugfixing",
+                "de": "Fehlerbereinigung",
+                "ru": "Первоначальный адаптер",
+                "pt": "Versão inicial",
+                "fr": "Version initiale",
+                "nl": "Eerste release"
+            },
             "0.0.5": {
                 "en": "add eventstream handling",
                 "de": "Auswertung Eventstream",

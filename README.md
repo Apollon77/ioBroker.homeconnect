@@ -66,25 +66,31 @@ Log is displayed. Simply copy the URL and open it in your browser. Then enter th
 
 ## Changelog
 
+### 0.0.6  (09.01.2019)
+
+* (dna909)   Oven: add Option.FastPreHeat, Logging, query stream.type DISCONNECTED
+* (tFaster)  code format and cleanups,fixed devices data structure,renamed deviceArray to devices,
+             added startInRelative for Oven
+
 ### 0.0.5  (28.11.2018)
 
-* (dna909) add eventstream handling
+* (dna909)   add eventstream handling
 
 ### 0.0.4  (23.11.2018)
 
-* (dna909) add event-listener
+* (dna909)   add event-listener
 
 ### 0.0.3  (14.11.2018)
 
-* (dna909) query States and available programs
+* (dna909)   query States and available programs
 
 ### 0.0.2  (08.11.2018)
 
-* (dna909) OAuth2 Deviceflow-Authorization, enumerate connected appliances
+* (dna909)   OAuth2 Deviceflow-Authorization, enumerate connected appliances
 
 ### 0.0.1  (09.10.2018)
 
-* (dna909) initial release
+* (dna909)   initial release
 
 ## License
 The MIT License (MIT)
