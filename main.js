@@ -27,7 +27,8 @@ const devices = {
         {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
         {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""},
         {"name": "Event.AlarmClockElapsed", "type": "mixed", "unit": ""},
-        {"name": "Event.PreheatFinished", "type": "mixed", "unit": ""}
+        {"name": "Event.PreheatFinished", "type": "mixed", "unit": ""},
+        {"name": "Event.ProgramAborted", "type": "mixed", "unit": ""}
     ],
 
     "Dishwasher": [
@@ -55,7 +56,10 @@ const devices = {
         {"name": "Option.RemainingProgramTime", "type": "number", "unit": "sec."},
         {"name": "Option.BeanAmount", "type": "mixed", "unit": ""},
         {"name": "Option.FillQuantity", "type": "number", "unit": "ml"},
-        {"name": "Setting.PowerState", "type": "mixed", "unit": ""}
+        {"name": "Option.CoffeeTemperature", "type": "mixed", "unit":""},
+        {"name": "Setting.PowerState", "type": "mixed", "unit": ""},
+        {"name": "Event.BeanContainerEmpty", "type": "mixed", "unit": ""},
+        {"name": "Event.WaterTankEmpty", "type": "mixed", "unit": ""}
     ],
 
     "Washer": [
@@ -71,7 +75,8 @@ const devices = {
         {"name": "Status.LocalControlActive", "type": "boolean", "unit": ""},
         {"name": "Status.DoorState", "type": "mixed", "unit": ""},
         {"name": "Status.OperationState", "type": "mixed", "unit": ""},
-        {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""}
+        {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""},
+        {"name": "Event.ProgramAborted", "type": "mixed", "unit": ""}
     ],
 
     "Dryer": [
@@ -86,7 +91,8 @@ const devices = {
         {"name": "Status.LocalControlActive", "type": "boolean", "unit": ""},
         {"name": "Status.DoorState", "type": "mixed", "unit": ""},
         {"name": "Status.OperationState", "type": "mixed", "unit": ""},
-        {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""}
+        {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""},
+        {"name": "Event.ProgramAborted", "type": "mixed", "unit": ""}
     ],
 
     "WasherDryer": [
@@ -103,7 +109,8 @@ const devices = {
         {"name": "Status.LocalControlActive", "type": "boolean", "unit": ""},
         {"name": "Status.DoorState", "type": "mixed", "unit": ""},
         {"name": "Status.OperationState", "type": "mixed", "unit": ""},
-        {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""}
+        {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""},
+        {"name": "Event.ProgramAborted", "type": "mixed", "unit": ""}
     ],
 
     "FridgeFreezer": [
