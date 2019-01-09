@@ -22,6 +22,7 @@ const devices = {
         {"name": "Option.SetpointTemperature", "type": "number", "unit": "°C"},
         {"name": "Option.Duration", "type": "number", "unit": "sec."},
         {"name": "Option.StartInRelative", "type": "number", "unit": "sec."},
+        {"name": "Option.FastPreHeat", "type": "boolean", "unit": ""},
         {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
         {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
         {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""},
