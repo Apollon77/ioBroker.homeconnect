@@ -401,18 +401,18 @@ adapter.on('stateChange', function (id, state) {
 
 
         function notifySetDp(valueVal, dp, haId) {
-            if (typeof valueVal == 'string' || typeof valueVal == 'boolean') {
+            if (typeof valueVal == 'string') {
                     adapter.log.debug("Type: " + typeof valueVal);                  // Logging zu Issue TypeError: valueVal.split is not a function
                     adapter.log.debug("valueVal: " + valueVal);
                     let string3 = valueVal.split('.');
                 let value = string3.splice(4, 5);
                 adapter.setState(haId + '.' + dp, {val: value, ack: true});
 
-            } else if (typeof valueVal == 'number') {
+            } else if (typeof valueVal == 'number' || typeof valueVal == 'boolean') {
                 let value = valueVal;
                 adapter.setState(haId + '.' + dp, {val: value, ack: true});
 
-            }
+            } 
 
         }
 
