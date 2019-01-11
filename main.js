@@ -9,13 +9,13 @@ const adapter = new utils.Adapter('homeconnect');
 
 const devices = {
     "Oven": [
-        {"name": "Setting.PowerState", "type": "mixed", "unit": ""},
+        {"name": "Setting.PowerState", "type": "string", "unit": ""},
         {"name": "Status.CurrentCavityTemperature", "type": "number", "unit": ""},
-        {"name": "Status.DoorState", "type": "mixed", "unit": ""},
+        {"name": "Status.DoorState", "type": "string", "unit": ""},
         {"name": "Status.LocalControlActive", "type": "boolean", "unit": ""},
         {"name": "Status.RemoteControlStartAllowed", "type": "boolean", "unit": ""},
         {"name": "Status.RemoteControlActive", "type": "boolean", "unit": ""},
-        {"name": "Status.OperationState", "type": "mixed", "unit": ""},
+        {"name": "Status.OperationState", "type": "string", "unit": ""},
         {"name": "Option.ProgramProgress", "type": "number", "unit": "%"},
         {"name": "Option.ElapsedProgramTime", "type": "number", "unit": "sec."},
         {"name": "Option.RemainingProgramTime", "type": "number", "unit": "sec."},
@@ -23,12 +23,12 @@ const devices = {
         {"name": "Option.Duration", "type": "number", "unit": "sec."},
         {"name": "Option.StartInRelative", "type": "number", "unit": "sec."},
         {"name": "Option.FastPreHeat", "type": "boolean", "unit": ""},
-        {"name": "Root.ActiveProgram", "type": "mixed", "unit": ""},
-        {"name": "Root.SelectedProgram", "type": "mixed", "unit": ""},
-        {"name": "Event.ProgramFinished", "type": "mixed", "unit": ""},
-        {"name": "Event.AlarmClockElapsed", "type": "mixed", "unit": ""},
-        {"name": "Event.PreheatFinished", "type": "mixed", "unit": ""},
-        {"name": "Event.ProgramAborted", "type": "mixed", "unit": ""}
+        {"name": "Root.ActiveProgram", "type": "string", "unit": ""},
+        {"name": "Root.SelectedProgram", "type": "string", "unit": ""},
+        {"name": "Event.ProgramFinished", "type": "string", "unit": ""},
+        {"name": "Event.AlarmClockElapsed", "type": "string", "unit": ""},
+        {"name": "Event.PreheatFinished", "type": "string", "unit": ""},
+        {"name": "Event.ProgramAborted", "type": "string", "unit": ""}
     ],
 
     "Dishwasher": [
