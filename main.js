@@ -391,10 +391,12 @@ adapter.on('stateChange', function (id, state) {
                 let string3 = valueVal.split('.');
                 let value = string3.splice(4, 5);
                 adapter.setState(haId + '.' + dp, {val: value, ack: true});
+                adapter.subscribeStates('*');
                 adapter.log.debug("Datenpunkt: " + haId + '.' + dp + '    Value: ' + value);
             } else {
                 let value = valueVal;
                 adapter.setState(haId + '.' + dp, {val: value, ack: true});
+                adapter.subscribeStates('*');
                 adapter.log.debug("Datenpunkt: " + haId + '.' + dp + '    Value: ' + value);
             }
         }
@@ -407,10 +409,12 @@ adapter.on('stateChange', function (id, state) {
                     let string3 = valueVal.split('.');
                 let value = string3.splice(4, 5);
                 adapter.setState(haId + '.' + dp, {val: value, ack: true});
+                adapter.subscribeStates('*');
 
             } else if (typeof valueVal == 'number' || typeof valueVal == 'boolean') {
                 let value = valueVal;
                 adapter.setState(haId + '.' + dp, {val: value, ack: true});
+                adapter.subscribeStates('*');
 
             } 
 
