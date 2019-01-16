@@ -187,7 +187,7 @@ function getToken() {
                 let deviceCode = value;
                 auth.tokenGet(deviceCode, clientID).then(
                         ([token, refreshToken, expires, tokenScope]) => {
-                            adapter.log.info('Accestoken generiert!');
+                            adapter.log.info('Accestoken created...');
                             adapter.setState('dev.token', {val: token, ack: true});
                             adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
                             adapter.setState('dev.expires', {val: expires, ack: true});
@@ -199,7 +199,7 @@ function getToken() {
                             function getRefreshToken() {
                                 auth.tokenRefresh(refreshToken).then(
                                         ([token, refreshToken, expires, tokenScope]) => {
-                                            adapter.log.info('Accestoken erneuert...');
+                                            adapter.log.info('Accestoken renewed...');
                                             adapter.setState('dev.token', {val: token, ack: true});
                                             adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
                                             adapter.setState('dev.expires', {val: expires, ack: true});
@@ -249,7 +249,7 @@ function receive(token, haId) {
         let header = {headers: {Authorization: 'Bearer ' + token, Accept: 'text/event-stream'}}
         adapter.log.debug(header.headers.Authorization);
         let eventSource = new EventSource(baseUrl, header);
-        adapter.log.debug('vor Errorhandling');
+        //adapter.log.debug('vor Errorhandling');
         // Error handling
         eventSource.onerror = (err => {
             adapter.log.error(err.status);
@@ -349,7 +349,7 @@ adapter.on('stateChange', function (id, state) {
             let dp = dp1 + "." + dp2;
             let valueVal = parseMessage.items[0].value;
 
-            adapter.log.debug("Datenpunkt: " + dp + "   Value: " + valueVal);
+            adapter.log.debug("ID:  " + dp + "   Value: " + valueVal);
 
             eventSetDp(valueVal, dp, haId);
 
@@ -372,7 +372,7 @@ adapter.on('stateChange', function (id, state) {
                     let dp = dp1 + "." + dp2;
                     let valueVal = parseMessage.items[notifyCounter].value;
 
-                    adapter.log.debug("Datenpunkt: " + dp + "   Value: " + valueVal);
+                    adapter.log.debug("ID:  " + dp + "   Value: " + valueVal);
 
                     notifySetDp(valueVal, dp, haId);
 
@@ -392,20 +392,20 @@ adapter.on('stateChange', function (id, state) {
                 let value = string3.splice(4, 5);
                 adapter.setState(haId + '.' + dp, {val: value, ack: true});
                 
-                adapter.log.debug("Datenpunkt: " + haId + '.' + dp + '    Value: ' + value);
+                adapter.log.debug("ID:  " + haId + '.' + dp + '    Value: ' + value);
             } else {
                 let value = valueVal;
                 adapter.setState(haId + '.' + dp, {val: value, ack: true});
                 
-                adapter.log.debug("Datenpunkt: " + haId + '.' + dp + '    Value: ' + value);
+                adapter.log.debug("ID:  " + haId + '.' + dp + '    Value: ' + value);
             }
         }
 
 
         function notifySetDp(valueVal, dp, haId) {
             if (typeof valueVal == 'string') {
-                    adapter.log.debug("Type: " + typeof valueVal);                  // Logging zu Issue TypeError: valueVal.split is not a function
-                    adapter.log.debug("valueVal: " + valueVal);
+                    adapter.log.debug("state of Type:  " + typeof valueVal);                  // Logging zu Issue TypeError: valueVal.split is not a function
+                    adapter.log.debug("state of valueVal:  " + valueVal);
                     let string3 = valueVal.split('.');
                 let value = string3.splice(4, 5);
                 adapter.setState(haId + '.' + dp, {val: value, ack: true});
@@ -637,7 +637,7 @@ adapter.on('stateChange', function (id, state) {
 
                             if (deviceDpCounter != deviceDpLength) {
                                 let dp = adapter.namespace + '.' + haId + '.' + deviceDp[deviceDpCounter].name;
-                                adapter.log.debug(' Datenpunkt : ' + dp);
+                                adapter.log.debug('ID :  ' + dp);
                                 adapter.setObjectNotExists(dp, {
                                     type: 'state',
                                     common: {
