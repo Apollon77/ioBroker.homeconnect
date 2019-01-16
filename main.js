@@ -327,13 +327,13 @@ adapter.on('stateChange', function (id, state) {
 
 
         if (stream.type == 'DISCONNECTED') {
-            adapter.log.info('DISCONNECTED');
+            adapter.log.debug('DISCONNECTED');
            
         }
 
 
         if (stream.type == 'NOTIFY') {
-            adapter.log.info('NOTIFY');
+            adapter.log.debug('NOTIFY');
 
             notify();
         }
