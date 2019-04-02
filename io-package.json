@@ -91,7 +91,9 @@
     },
     "native": {
            "clientID": "",
-           "scope": ""
+           "scope": "",
+           "authUri":"",
+           "resetAccess": false
             },
     "objects": [
 

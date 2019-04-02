@@ -750,59 +750,96 @@ function main() {
         adapter.log.error('Client ID not specified!');
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+
+    if (adapter.config.resetAccess) {
+        adapter.log.info("Reset access");
+        adapter.setState('dev.authUriComplete', "");
+        adapter.setState('dev.devCode', "");
+        adapter.setState('dev.access', false);
+        adapter.setState('dev.token', "");
+        adapter.setState('dev.refreshToken', "");
+        adapter.setState('dev.expires',"");
+        adapter.setState('dev.tokenScope', "");
+        let adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
+        adapter.getForeignObject(adapterConfig,(error,obj)=>{
+            obj.native.authUri = "";
+            obj.native.clientID = "";
+            obj.native.resetAccess = false;
+            adapter.setForeignObject(adapterConfig,obj);
+        })
+        return;
+    }
 //OAuth2 Deviceflow
 //Get Authorization-URI to grant access ===> User interaction    
 
     let scope = adapter.config.scope;
     let clientID = adapter.config.clientID;
-    let stat = adapter.namespace + '.dev.access';
 
-    stateGet(stat).then(
-            (value) => {
-                if (value == false) {
 
-                    auth.authUriGet(scope, clientID).then(
-                            ([authUri, devCode, pollInterval]) => {
-                                adapter.setState('dev.authUriComplete', authUri);
-                                adapter.setState('dev.devCode', devCode);
-                                adapter.setState('dev.pollInterval', pollInterval);
-                            },
-                            statusPost => {
-                                if (statusPost == '400') {
-                                    adapter.log.error('400 Bad Request (invalid or missing request parameters)');
-                                } else {
-                                    adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost);
+    let stat = adapter.namespace + '.dev.devCode';
+
+    stateGet(stat).then((value) => {
+        if (value) {
+            getTokenInterval = setInterval(getToken, 10000); 
+        } else {
+
+        let stat = adapter.namespace + '.dev.access';
+        stateGet(stat).then(
+                (value) => {
+                    if (value == false) {
+
+                        auth.authUriGet(scope, clientID).then(
+                                ([authUri, devCode, pollInterval]) => {
+                                    adapter.setState('dev.authUriComplete', authUri);
+                                    adapter.setState('dev.devCode', devCode);
+                                    adapter.setState('dev.pollInterval', pollInterval);
+                                    let adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
+                                    adapter.getForeignObject(adapterConfig,(error,obj)=>{
+                                        if (!obj.native.authUri) {
+                                            obj.native.authUri = authUri
+                                            adapter.setForeignObject(adapterConfig,obj);
+                                        }  
+                                    })
+                                
+                                },
+                                statusPost => {
+                                    if (statusPost == '400') {
+                                        adapter.log.error('400 Bad Request (invalid or missing request parameters)');
+                                    } else {
+                                        adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost);
+                                    }
                                 }
-                            }
-                    );
-                } else if (value == true) {
-                    let stat = adapter.namespace + '.dev.token';
-                    stateGet(stat).then(
-                            (value) => {
-                                let token = value;
-                                auth.getAppliances(token).then(
-                                        (appliances) => {
-                                            adapter.setState(adapter.namespace + '.dev.homeappliancesJSON', JSON.stringify(appliances));
-                                        },
-                                        (statusGet) => {
-                                            if (statusGet == '400') {
-                                                adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
-                                            } else {
-                                                adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet);
+                        );
+                    } else if (value == true) {
+                        let stat = adapter.namespace + '.dev.token';
+                        stateGet(stat).then(
+                                (value) => {
+                                    let token = value;
+                                    auth.getAppliances(token).then(
+                                            (appliances) => {
+                                                adapter.setState(adapter.namespace + '.dev.homeappliancesJSON', JSON.stringify(appliances));
+                                            },
+                                            (statusGet) => {
+                                                if (statusGet == '400') {
+                                                    adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+                                                } else {
+                                                    adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet);
+                                                }
                                             }
-                                        }
-                                )
-                            },
-                            err => {
-                                adapter.log.error('FEHLER: ' + err);
-                            }
-                    )
+                                    )
+                                },
+                                err => {
+                                    adapter.log.error('FEHLER: ' + err);
+                                }
+                        )
+                    }
+                },
+                err => {
+                    adapter.log.error('FEHLER: ' + err);
                 }
-            },
-            err => {
-                adapter.log.error('FEHLER: ' + err);
-            }
-    );
+        );
+    }})
 
     adapter.setObjectNotExists('dev.authUriComplete', {
         type: 'state',
@@ -863,7 +900,7 @@ function main() {
         },
         native: {}
     });
-
+    
     adapter.setObjectNotExists('dev.access', {
         type: 'state',
         common: {
