@@ -155,6 +155,7 @@ const devices = {
 };
 
 let getTokenInterval;
+let getTokenRefreshInterval;
 
 function stateGet(stat) {
 
@@ -176,6 +177,29 @@ function stateGet(stat) {
         });
     });
 }
+function getRefreshToken() {
+    let stat = adapter.namespace + '.dev.refreshToken';
+    stateGet(stat).then(
+        (value) => {
+            auth.tokenRefresh(value).then(
+                    ([token, refreshToken, expires, tokenScope]) => {
+                        adapter.log.info('Accestoken renewed...');
+                        adapter.setState('dev.token', {val: token, ack: true});
+                        adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
+                        adapter.setState('dev.expires', {val: expires, ack: true});
+                        adapter.setState('dev.tokenScope', {val: tokenScope, ack: true});
+                    },
+                    statusPost => {
+                        if (statusPost == '400') {
+                            adapter.log.error('FEHLER beim Refresh-Token!');
+                        } else {
+                            adapter.log.error("Irgendwas stimmt da wohl nicht!! Refresh-Token!!    Fehlercode: " + statusPost);
+                        }
+                    }
+            )
+        }
+    );
+}
 
 function getToken() {
 
@@ -187,33 +211,16 @@ function getToken() {
                 let deviceCode = value;
                 auth.tokenGet(deviceCode, clientID).then(
                         ([token, refreshToken, expires, tokenScope]) => {
-                            adapter.log.info('Accestoken created...');
+                            adapter.log.info('Accestoken created: ' + token);
                             adapter.setState('dev.token', {val: token, ack: true});
                             adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
                             adapter.setState('dev.expires', {val: expires, ack: true});
                             adapter.setState('dev.tokenScope', {val: tokenScope, ack: true});
                             clearInterval(getTokenInterval);
-
+                            adapter.log.info("Start Refreshinterval")
                             getTokenRefreshInterval = setInterval(getRefreshToken, 3600000);
 
-                            function getRefreshToken() {
-                                auth.tokenRefresh(refreshToken).then(
-                                        ([token, refreshToken, expires, tokenScope]) => {
-                                            adapter.log.info('Accestoken renewed...');
-                                            adapter.setState('dev.token', {val: token, ack: true});
-                                            adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
-                                            adapter.setState('dev.expires', {val: expires, ack: true});
-                                            adapter.setState('dev.tokenScope', {val: tokenScope, ack: true});
-                                        },
-                                        statusPost => {
-                                            if (statusPost == '400') {
-                                                adapter.log.error('FEHLER beim Refresh-Token!');
-                                            } else {
-                                                adapter.log.error("Irgendwas stimmt da wohl nicht!! Refresh-Token!!    Fehlercode: " + statusPost);
-                                            }
-                                        }
-                                )
-                            }
+
                         },
                         statusPost => {
                             if (statusPost == '400') {
@@ -228,7 +235,7 @@ function getToken() {
                                         }
                                 );
                             } else {
-                                adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost);
+                                adapter.log.error("Irgendwas stimmt da wohl nicht!! GetToken!!    Fehlercode: " + statusPost);
                                 clearInterval(getTokenInterval);
                             }
                         });
@@ -256,10 +263,12 @@ function receive(token, haId) {
             if (err.status !== undefined) {
                 adapter.log.error('Error (' + haId + ')', err);
                 if (err.status === 401) {
-
+                    getRefreshToken()    
                     // Most likely the token has expired, try to refresh the token
-                    adapter.log.error("Token abgelaufen");
+                    adapter.log.info("Token abgelaufen");
 
+                } else if(err.status === 429) {
+                    adapter.log.warn("Too many requests. Adapter sends too many requests per minute.");
                 } else {
                     adapter.log.error('FEHLER');
                     throw(new Error(err.status))
@@ -750,35 +759,70 @@ function main() {
         adapter.log.error('Client ID not specified!');
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+
+    if (adapter.config.resetAccess) {
+        adapter.log.info("Reset access");
+        adapter.setState('dev.authUriComplete', "");
+        adapter.setState('dev.devCode', "");
+        adapter.setState('dev.access', false);
+        adapter.setState('dev.token', "");
+        adapter.setState('dev.refreshToken', "");
+        adapter.setState('dev.expires',"");
+        adapter.setState('dev.tokenScope', "");
+        let adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
+        adapter.getForeignObject(adapterConfig,(error,obj)=>{
+            obj.native.authUri = "";
+            obj.native.clientID = "";
+            obj.native.resetAccess = false;
+            adapter.setForeignObject(adapterConfig,obj);
+        })
+        return;
+    }
 //OAuth2 Deviceflow
 //Get Authorization-URI to grant access ===> User interaction    
 
     let scope = adapter.config.scope;
     let clientID = adapter.config.clientID;
-    let stat = adapter.namespace + '.dev.access';
 
-    stateGet(stat).then(
-            (value) => {
+
+   //devcode 
+   //devtoken
+   //devaccess
+
+   let stat = adapter.namespace + '.dev.devCode';
+   stateGet(stat).then(
+           (value) => {
                 if (value == false) {
-
                     auth.authUriGet(scope, clientID).then(
-                            ([authUri, devCode, pollInterval]) => {
-                                adapter.setState('dev.authUriComplete', authUri);
-                                adapter.setState('dev.devCode', devCode);
-                                adapter.setState('dev.pollInterval', pollInterval);
-                            },
-                            statusPost => {
-                                if (statusPost == '400') {
-                                    adapter.log.error('400 Bad Request (invalid or missing request parameters)');
-                                } else {
-                                    adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost);
-                                }
+                        ([authUri, devCode, pollInterval]) => {
+                            adapter.setState('dev.authUriComplete', authUri);
+                            adapter.setState('dev.devCode', devCode);
+                            adapter.setState('dev.pollInterval', pollInterval);
+                            let adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
+                            adapter.getForeignObject(adapterConfig,(error,obj)=>{
+                                if (!obj.native.authUri) {
+                                    obj.native.authUri = authUri
+                                    adapter.setForeignObject(adapterConfig,obj);
+                                }  
+                            })
+                        
+                        },
+                        statusPost => {
+                            if (statusPost == '400') {
+                                adapter.log.error('400 Bad Request (invalid or missing request parameters)');
+                            } else {
+                                adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost);
                             }
+                        }
                     );
-                } else if (value == true) {
+                } else {
                     let stat = adapter.namespace + '.dev.token';
                     stateGet(stat).then(
                             (value) => {
+                                if (!value) {
+                                    getTokenInterval = setInterval(getToken, 10000); 
+                                } else {
                                 let token = value;
                                 auth.getAppliances(token).then(
                                         (appliances) => {
@@ -788,21 +832,27 @@ function main() {
                                             if (statusGet == '400') {
                                                 adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                                             } else {
-                                                adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet);
+                                                adapter.log.error("Error getting homeapplianceJSON with Token. Fehlercode: " + statusGet);
                                             }
                                         }
                                 )
+                                let stat = adapter.namespace + '.dev.refreshToken';
+                                stateGet(stat).then(
+                                    (value) => {
+                                        let refreshToken = value;
+                                        getTokenRefreshInterval = setInterval(getRefreshToken, 3600000);
+                                    });
+                                }
                             },
                             err => {
                                 adapter.log.error('FEHLER: ' + err);
                             }
                     )
                 }
-            },
-            err => {
-                adapter.log.error('FEHLER: ' + err);
             }
-    );
+    )
+
+            
 
     adapter.setObjectNotExists('dev.authUriComplete', {
         type: 'state',
@@ -863,7 +913,7 @@ function main() {
         },
         native: {}
     });
-
+    
     adapter.setObjectNotExists('dev.access', {
         type: 'state',
         common: {
