@@ -155,6 +155,7 @@ const devices = {
 };
 
 let getTokenInterval;
+let getTokenRefreshInterval;
 
 function stateGet(stat) {
 
@@ -176,23 +177,28 @@ function stateGet(stat) {
         });
     });
 }
-function getRefreshToken(refreshToken) {
-    auth.tokenRefresh(refreshToken).then(
-            ([token, refreshToken, expires, tokenScope]) => {
-                adapter.log.info('Accestoken renewed...');
-                adapter.setState('dev.token', {val: token, ack: true});
-                adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
-                adapter.setState('dev.expires', {val: expires, ack: true});
-                adapter.setState('dev.tokenScope', {val: tokenScope, ack: true});
-            },
-            statusPost => {
-                if (statusPost == '400') {
-                    adapter.log.error('FEHLER beim Refresh-Token!');
-                } else {
-                    adapter.log.error("Irgendwas stimmt da wohl nicht!! Refresh-Token!!    Fehlercode: " + statusPost);
-                }
-            }
-    )
+function getRefreshToken() {
+    let stat = adapter.namespace + '.dev.refreshToken';
+    stateGet(stat).then(
+        (value) => {
+            auth.tokenRefresh(value).then(
+                    ([token, refreshToken, expires, tokenScope]) => {
+                        adapter.log.info('Accestoken renewed...');
+                        adapter.setState('dev.token', {val: token, ack: true});
+                        adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
+                        adapter.setState('dev.expires', {val: expires, ack: true});
+                        adapter.setState('dev.tokenScope', {val: tokenScope, ack: true});
+                    },
+                    statusPost => {
+                        if (statusPost == '400') {
+                            adapter.log.error('FEHLER beim Refresh-Token!');
+                        } else {
+                            adapter.log.error("Irgendwas stimmt da wohl nicht!! Refresh-Token!!    Fehlercode: " + statusPost);
+                        }
+                    }
+            )
+        }
+    );
 }
 
 function getToken() {
@@ -205,14 +211,14 @@ function getToken() {
                 let deviceCode = value;
                 auth.tokenGet(deviceCode, clientID).then(
                         ([token, refreshToken, expires, tokenScope]) => {
-                            adapter.log.info('Accestoken created...');
+                            adapter.log.info('Accestoken created: ' + token);
                             adapter.setState('dev.token', {val: token, ack: true});
                             adapter.setState('dev.refreshToken', {val: refreshToken, ack: true});
                             adapter.setState('dev.expires', {val: expires, ack: true});
                             adapter.setState('dev.tokenScope', {val: tokenScope, ack: true});
                             clearInterval(getTokenInterval);
-
-                            getTokenRefreshInterval = setInterval(getRefreshToken(refreshToken), 3600000);
+                            adapter.log.info("Start Refreshinterval")
+                            getTokenRefreshInterval = setInterval(getRefreshToken, 3600000);
 
 
                         },
@@ -229,7 +235,7 @@ function getToken() {
                                         }
                                 );
                             } else {
-                                adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusPost);
+                                adapter.log.error("Irgendwas stimmt da wohl nicht!! GetToken!!    Fehlercode: " + statusPost);
                                 clearInterval(getTokenInterval);
                             }
                         });
@@ -257,15 +263,12 @@ function receive(token, haId) {
             if (err.status !== undefined) {
                 adapter.log.error('Error (' + haId + ')', err);
                 if (err.status === 401) {
-                    let stat = adapter.namespace + '.dev.refreshToken';
-					stateGet(stat).then(
-						(value) => {
-                            getRefreshToken(value)
-                        }
-                    )
+                    getRefreshToken()    
                     // Most likely the token has expired, try to refresh the token
                     adapter.log.info("Token abgelaufen");
 
+                } else if(err.status === 429) {
+                    adapter.log.warn("Too many requests. Adapter sends too many requests per minute.");
                 } else {
                     adapter.log.error('FEHLER');
                     throw(new Error(err.status))
@@ -814,7 +817,7 @@ function main() {
                         }
                     );
                 } else {
-                    let stat = adapter.namespace + '.dev.access';
+                    let stat = adapter.namespace + '.dev.token';
                     stateGet(stat).then(
                             (value) => {
                                 if (!value) {
@@ -829,7 +832,7 @@ function main() {
                                             if (statusGet == '400') {
                                                 adapter.log.error('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                                             } else {
-                                                adapter.log.error("Irgendwas stimmt da wohl nicht!! Token!!    Fehlercode: " + statusGet);
+                                                adapter.log.error("Error getting homeapplianceJSON with Token. Fehlercode: " + statusGet);
                                             }
                                         }
                                 )
@@ -837,7 +840,7 @@ function main() {
                                 stateGet(stat).then(
                                     (value) => {
                                         let refreshToken = value;
-                                        getTokenRefreshInterval = setInterval(getRefreshToken(refreshToken), 3600000);
+                                        getTokenRefreshInterval = setInterval(getRefreshToken, 3600000);
                                     });
                                 }
                             },
