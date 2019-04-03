@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.6",
+        "version": "0.0.7",
         "news": {
+            "0.0.7": {
+                "en": "fix refreshToken, add register process"
+            },
             "0.0.6": {
                 "en": "bugfixing",
                 "de": "Fehlerbereinigung",
