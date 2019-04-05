@@ -99,7 +99,7 @@ Log is displayed. Simply copy the URL and open it in your browser. Then enter th
 ## License
 The MIT License (MIT)
 
-Copyright (c) 2018 dna909 <dna909@googlemail.com>
+Copyright (c) 2019 dna909 <dna909@googlemail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
