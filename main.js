@@ -194,7 +194,7 @@ function getToken() {
                             adapter.setState('dev.tokenScope', {val: tokenScope, ack: true});
                             clearInterval(getTokenInterval);
 
-                            getTokenRefreshInterval = setInterval(getRefreshToken, 3600000);
+                            getTokenRefreshInterval = setInterval(getRefreshToken, 21600000);
 
                             function getRefreshToken() {
                                 auth.tokenRefresh(refreshToken).then(
