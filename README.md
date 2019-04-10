@@ -66,6 +66,10 @@ Log is displayed. Simply copy the URL and open it in your browser. Then enter th
 
 ## Changelog
 
+### 0.0.7  (03.04.2019)
+
+* (TA2k)     Improve refreshToken and add Register process in instance option
+
 ### 0.0.6  (09.01.2019)
 
 * (dna909)   Oven: add Option.FastPreHeat, Logging, query stream.type DISCONNECTED
@@ -95,7 +99,7 @@ Log is displayed. Simply copy the URL and open it in your browser. Then enter th
 ## License
 The MIT License (MIT)
 
-Copyright (c) 2018 dna909 <dna909@googlemail.com>
+Copyright (c) 2019 dna909 <dna909@googlemail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
