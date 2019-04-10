@@ -66,6 +66,10 @@ Log is displayed. Simply copy the URL and open it in your browser. Then enter th
 
 ## Changelog
 
+### 0.0.8  (10.04.2019)
+
+* (dna909)   increase refreshTokenInterval
+
 ### 0.0.7  (03.04.2019)
 
 * (TA2k)     Improve refreshToken and add Register process in instance option

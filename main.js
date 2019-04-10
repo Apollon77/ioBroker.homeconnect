@@ -217,13 +217,8 @@ function getToken() {
                             adapter.setState('dev.expires', {val: expires, ack: true});
                             adapter.setState('dev.tokenScope', {val: tokenScope, ack: true});
                             clearInterval(getTokenInterval);
-<<<<<<< HEAD
-
-                            getTokenRefreshInterval = setInterval(getRefreshToken, 21600000);
-=======
                             adapter.log.info("Start Refreshinterval")
-                            getTokenRefreshInterval = setInterval(getRefreshToken, 3600000);
->>>>>>> e77e3f5c182443e8ec8e2ce6858779c4a0613670
+                            getTokenRefreshInterval = setInterval(getRefreshToken, 21600000);
 
 
                         },

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.homeconnect",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "homeconnect",
   "author": {
     "name": "dna909",
@@ -12,8 +12,8 @@
       "email": "dna909@googlemail.com"
     }
   ],
-  "engines": {
-    "node": ">=6"
+  "engines" : { 
+      "node" : ">=6" 
   },
   "homepage": "https://github.com/dna909/ioBroker.homeconnect",
   "license": "MIT",
