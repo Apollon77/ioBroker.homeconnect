@@ -840,7 +840,7 @@ function main() {
                                 stateGet(stat).then(
                                     (value) => {
                                         let refreshToken = value;
-                                        getTokenRefreshInterval = setInterval(getRefreshToken, 3600000);
+                                        getTokenRefreshInterval = setInterval(getRefreshToken, 21600000);
                                     });
                                 }
                             },
