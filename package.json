@@ -1,35 +1,44 @@
 {
-  "name": "iobroker.homeconnect",
-  "version": "0.0.8",
-  "description": "homeconnect",
+  "_from": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
+  "_id": "iobroker.homeconnect@0.0.8",
+  "_inBundle": false,
+  "_integrity": "sha512-AF5BQGiPXEe0iSRY3EgUNYn2thGXTW+LUL8SKRjOOiSHJqF/ARhukfTowFJuYNUwVRK4SHqOnTSMmUScNZ1R/Q==",
+  "_location": "/iobroker.homeconnect",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "remote",
+    "raw": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
+    "rawSpec": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
+    "saveSpec": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
+    "fetchSpec": "https://github.com/dna909/ioBroker.homeconnect/tarball/master"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
+  "_shasum": "89579dbd5d0fdde3fb3a6d5e944368f6b3d12c37",
+  "_spec": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
+  "_where": "/Users/d057119/Development/hanaBackup",
   "author": {
     "name": "dna909",
     "email": "dna909@googlemail.com"
   },
+  "bugs": {
+    "url": "https://github.com/dna909/ioBroker.homeconnect/issues"
+  },
+  "bundleDependencies": false,
   "contributors": [
     {
       "name": "dna909",
       "email": "dna909@googlemail.com"
     }
   ],
-  "engines" : { 
-      "node" : ">=6" 
-  },
-  "homepage": "https://github.com/dna909/ioBroker.homeconnect",
-  "license": "MIT",
-  "keywords": [
-    "ioBroker",
-    "homeconnect",
-    "Smart Home",
-    "home automation"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/dna909/ioBroker.homeconnect"
-  },
   "dependencies": {
     "eventsource": "^1.0.7"
   },
+  "deprecated": false,
+  "description": "homeconnect",
   "devDependencies": {
     "@iobroker/testing": "^1.2.0",
     "@types/chai": "^4.1.7",
@@ -50,17 +59,30 @@
     "sinon": "^7.3.2",
     "sinon-chai": "^3.3.0"
   },
+  "engines": {
+    "node": ">=6"
+  },
+  "homepage": "https://github.com/dna909/ioBroker.homeconnect",
+  "keywords": [
+    "ioBroker",
+    "homeconnect",
+    "Smart Home",
+    "home automation"
+  ],
+  "license": "MIT",
   "main": "main.js",
+  "name": "iobroker.homeconnect",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dna909/ioBroker.homeconnect.git"
+  },
   "scripts": {
+    "lint": "eslint",
+    "test": "npm run test:js && npm run test:package",
+    "test:integration": "mocha test/integration --exit",
     "test:js": "mocha --opts test/mocha.custom.opts",
     "test:package": "mocha test/package --exit",
-    "test:unit": "mocha test/unit --exit",
-    "test:integration": "mocha test/integration --exit",
-    "test": "npm run test:js && npm run test:package",
-    "lint": "eslint"
+    "test:unit": "mocha test/unit --exit"
   },
-  "bugs": {
-    "url": "https://github.com/dna909/ioBroker.homeconnect/issues"
-  },
-  "readmeFilename": "README.md"
+  "version": "0.0.9"
 }

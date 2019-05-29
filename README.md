@@ -1,5 +1,7 @@
 ![Logo](admin/homeconnect.png)
+
 # ioBroker.homeconnect
+
 =================
 
 [![NPM version](http://img.shields.io/npm/v/iobroker.homeconnect.svg)](https://www.npmjs.com/package/iobroker.homeconnect)
@@ -8,13 +10,13 @@
 
 ## Voraussetzungen vor der Installation
 
-Es muß mindestens Node.js Version 6 installiert sein!!
+Es muß mindestens Node.js Version 8 installiert sein!!
 
 Für den Adapter wird eine ClientID benötigt. Dazu muss man sich ersteinmal im Developer-Portal von Home-Connect registrieren.
 
 ## Requirements before installation
 
-At least Node.js version 6 must be installed!
+At least Node.js version 8 must be installed!
 
 A ClientID is required for the adapter. You have to register first in the developer portal of Home-Connect.
 
@@ -42,65 +44,64 @@ Then go to **Applications** and then to **Register Application**.
 
 ![Screenshot](img/application2.JPG)
 
-Bei **Application ID** einen Namen für die Application eintragen, z.B. ioBroker. Bei **OAuth Flow** Device Flow selektieren das 
+Bei **Application ID** einen Namen für die Application eintragen, z.B. ioBroker. Bei **OAuth Flow** Device Flow selektieren das
 letzte Feld kann leer bleiben. Dann Speichern und dann hat man die benötigte ClientID.
 
-For **Application ID** enter a name for the application, e.g. ioBroker. With **OAuth Flow** Device Flow select the 
+For **Application ID** enter a name for the application, e.g. ioBroker. With **OAuth Flow** Device Flow select the
 The last field can remain empty. Then save and you have the required ClientID.
 
+## Konfiguration
 
-
-##  Konfiguration
-
-In der Adapter-Config muss nur die ClientID eingetragen werden. Wenn der Adapter läuft, wird eine Authorization-URL generiert, diese wird im 
+In der Adapter-Config muss nur die ClientID eingetragen werden. Wenn der Adapter läuft, wird eine Authorization-URL generiert, diese wird im
 Log angezeigt. Die URL einfach kopieren und im Browser öffnen. Dann die Logindaten vom Home-Connect-Account (nicht vom Developer-Account) eingeben und bestätigen. Dann die Authorisierung bestätigen. Fertig.
 
 ## Configuration
 
-Only the ClientID must be entered in the adapter configuration. If the adapter is running, an authorization URL is generated; this is specified in the 
+Only the ClientID must be entered in the adapter configuration. If the adapter is running, an authorization URL is generated; this is specified in the
 Log is displayed. Simply copy the URL and open it in your browser. Then enter the login data from the Home Connect account (not from the Developer account) and confirm. Then confirm the authorization. Done.
-
-
-
-
 
 ## Changelog
 
-### 0.0.8  (10.04.2019)
+### 0.0.9 (29.05.2019)
 
-* (dna909)   increase refreshTokenInterval
+-   (ta2k) clean up code and receive event notifications
 
-### 0.0.7  (03.04.2019)
+### 0.0.8 (10.04.2019)
 
-* (TA2k)     Improve refreshToken and add Register process in instance option
+-   (dna909) increase refreshTokenInterval
 
-### 0.0.6  (09.01.2019)
+### 0.0.7 (03.04.2019)
 
-* (dna909)   Oven: add Option.FastPreHeat, Logging, query stream.type DISCONNECTED
-* (tFaster)  code format and cleanups,fixed devices data structure,renamed deviceArray to devices,
-             added startInRelative for Oven
+-   (TA2k) Improve refreshToken and add Register process in instance option
 
-### 0.0.5  (28.11.2018)
+### 0.0.6 (09.01.2019)
 
-* (dna909)   add eventstream handling
+-   (dna909) Oven: add Option.FastPreHeat, Logging, query stream.type DISCONNECTED
+-   (tFaster) code format and cleanups,fixed devices data structure,renamed deviceArray to devices,
+    added startInRelative for Oven
 
-### 0.0.4  (23.11.2018)
+### 0.0.5 (28.11.2018)
 
-* (dna909)   add event-listener
+-   (dna909) add eventstream handling
 
-### 0.0.3  (14.11.2018)
+### 0.0.4 (23.11.2018)
 
-* (dna909)   query States and available programs
+-   (dna909) add event-listener
 
-### 0.0.2  (08.11.2018)
+### 0.0.3 (14.11.2018)
 
-* (dna909)   OAuth2 Deviceflow-Authorization, enumerate connected appliances
+-   (dna909) query States and available programs
 
-### 0.0.1  (09.10.2018)
+### 0.0.2 (08.11.2018)
 
-* (dna909)   initial release
+-   (dna909) OAuth2 Deviceflow-Authorization, enumerate connected appliances
+
+### 0.0.1 (09.10.2018)
+
+-   (dna909) initial release
 
 ## License
+
 The MIT License (MIT)
 
 Copyright (c) 2019 dna909 <dna909@googlemail.com>

@@ -48,7 +48,8 @@
                 }
             });
             onChange(false);
-            M.updateTextFields(); // function Materialize.updateTextFields(); to reinitialize all the Materialize labels on the page if you are dynamically adding inputs.
+            M
+                .updateTextFields(); // function Materialize.updateTextFields(); to reinitialize all the Materialize labels on the page if you are dynamically adding inputs.
         }
         // ... and the function save has to exist.
         // you have to make sure the callback is called with the settings object as first param!
@@ -102,21 +103,25 @@
                 </div>
 
                 <div class="row">
-                    <div class="col s12">Schritt #2: Registrieren der ioBroker App. <br>Application ID = ioBroker. <br>OAuth
+                    <div class="col s12">Schritt #2: Registrieren der ioBroker App. <br>Application ID = ioBroker.
+                        <br>OAuth
                         Flow = Device Flow. <br>Default Home Connect User Account for Testing = Deine E-Mail in der
                         HomeConnect App.</div>
                 </div>
 
                 <div class="row">
                     <div class="col s4">
-                        <a type="button" id="getClintIDButton" class="btn float-buttons" href="https://developer.home-connect.com/applications" target="_blank">Schritt #2 Erzeuge
+                        <a type="button" id="getClintIDButton" class="btn float-buttons"
+                            href="https://developer.home-connect.com/applications" target="_blank">Schritt #2 Erzeuge
                             App für Client ID</a>
                     </div>
                 </div>
 
                 <div class="row">
-                        <div class="col s12">Schritt #3: App aktiviern<br>Hier Client ID einfügen. <br>Speichern und schließen drücken<br>Warten bis der Adapter grün ist und wieder in die Optionen gehen<br>Die Auth Url besuchen und die Zugangsdaten deiner Homeconnect App eingeben.</div>
-                    </div>
+                    <div class="col s12">Schritt #3: App aktiviern<br>Hier Client ID einfügen. <br>Speichern und
+                        schließen drücken<br>Warten bis der Adapter grün ist und wieder in die Optionen gehen<br>Die
+                        Auth Url besuchen und die Zugangsdaten deiner Homeconnect App eingeben.</div>
+                </div>
                 <div class="row">
                     <div class="col s12">
                         <input class="value" id="clientID" size="60" maxlength="96" />
@@ -130,14 +135,16 @@
                         <label for="authUri" class="translate">Activation URL</label>
                     </div>
                     <div class="col s2">
-                        <a type="button" class="btn float-buttons" id="activateButton" onClick="javascript: window.open(document.getElementById('authUri').value);">Auth URL besuchen</a>
+                        <a type="button" class="btn float-buttons" id="activateButton"
+                            onClick="javascript: window.open(document.getElementById('authUri').value);">Auth URL
+                            besuchen</a>
                     </div>
 
                     <div class="col s2">
-                            <input class="value" id="resetAccess" type="checkbox"/>
-                        <label class="translate" for="resetAccess">Zugang zurücksetzen</label>
-                        
-                          </div> 
+                        <input class="value" id="resetAccess" type="checkbox" />
+                        <label class="translate" for="resetAccess">Zugang/Token zurücksetzen </label>
+
+                    </div>
                 </div>
 
                 <div class="row">

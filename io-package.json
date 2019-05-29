@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.8",
+        "version": "0.0.9",
         "news": {
+            "0.0.9": {
+                "en": "clean up code and receive event notifications"
+            },
             "0.0.8": {
                 "en": "increase refreshTokenInterval"
             },
@@ -49,7 +52,7 @@
                 "fr": "Version initiale",
                 "nl": "Eerste release"
             },
-             "0.0.1": {
+            "0.0.1": {
                 "en": "initial adapter",
                 "de": "Initiale Version",
                 "ru": "Первоначальный адаптер",
@@ -58,7 +61,7 @@
                 "nl": "Eerste release"
             }
         },
-		"title": "Home Connect",
+        "title": "Home Connect",
         "titleLang": {
             "en": "BSH Home-Connect Adapter",
             "de": "BSH Home-Connect Adapter",
@@ -88,13 +91,19 @@
         "materialize": true,
         "enabled": true,
         "extIcon": "https://raw.githubusercontent.com/dna909/ioBroker.homeconnect/master/admin/homeconnect.png",
-        "keywords": ["homeconnect", "vis", "GUI", "graphical", "scada"],
+        "keywords": [
+            "homeconnect",
+            "vis",
+            "GUI",
+            "graphical",
+            "scada"
+        ],
         "readme": "https://github.com/dna909/ioBroker.homeconnect/blob/master/README.md",
         "loglevel": "info",
         "type": "household",
         "license": "MIT",
         "messagebox": false,
-	    "supportCustoms": true,
+        "supportCustoms": true,
         "dependencies": [
             {
                 "admin": ">=3.0.0"
@@ -105,12 +114,10 @@
         ]
     },
     "native": {
-           "clientID": "",
-           "scope": "",
-           "authUri":"",
-           "resetAccess": false
-            },
-    "objects": [
-
-    ]
+        "clientID": "",
+        "scope": "",
+        "authUri": "",
+        "resetAccess": false
+    },
+    "objects": []
 }
