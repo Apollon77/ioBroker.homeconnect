@@ -174,13 +174,19 @@ let processEvent = msg => {
 
         parseMessage.items.forEach(element => {
             let haId = parseMessage.haId
-            const folder = element.uri.split("/")[4]
+            let folder = element.uri.split("/").splice(4)
+            if (folder[folder.length - 1].indexOf(".") != -1) {
+                folder.pop();
+            }
+            folder = folder.join(".");
+            const key = element.key.replace(/\./g, '_')
 
-            adapter.log.debug(haId + "." + folder.toLowerCase() + "." + element.key.replace(/\./g, '_') + " " + element.value);
-            adapter.setObjectNotExists(haId + "." + folder.toLowerCase() + "." + element.key.replace(/\./g, '_'), {
+            //
+            adapter.log.debug(haId + "." + folder + "." + key + ":" + element.value);
+            adapter.setObjectNotExists(haId + "." + folder + "." + key, {
                 type: "state",
                 common: {
-                    name: element.name ? element.name : element.key,
+                    name: key,
                     type: "object",
                     role: "indicator",
                     write: true,
@@ -188,7 +194,7 @@ let processEvent = msg => {
                 },
                 native: {}
             });
-            adapter.setState(haId + "." + folder.toLowerCase() + "." + element.key.replace(/\./g, '_'), element.value, true);
+            adapter.setState(haId + "." + folder + "." + key, element.value, true);
 
         });
 
@@ -239,9 +245,13 @@ adapter.on("stateChange", function (id, state) {
             stateGet(tokenID).then(
                 value => {
                     let token = value;
-                    getAPIValues(token, haId, "/status", "status");
-                    getAPIValues(token, haId, '/programs/available', "programs");
-                    getAPIValues(token, haId, '/settings', "settings");
+                    getAPIValues(token, haId, "/status");
+                    getAPIValues(token, haId, '/programs/available');
+                    getAPIValues(token, haId, '/settings');
+                    getAPIValues(token, haId, "/programs/active");
+                    getAPIValues(token, haId, "/programs/active/options");
+                    getAPIValues(token, haId, "/programs/selected");
+                    getAPIValues(token, haId, "/programs/selected/options");
                     startEventStream(token, haId);
                 },
                 err => {
@@ -292,25 +302,41 @@ adapter.on("ready", function () {
     main();
 });
 
-function getAPIValues(token, haId, url, folder) {
-    auth.getRequest(token, haId, url).then(states => {
-        states.data[folder.toLowerCase()].forEach(subElement => {
-            adapter.setObjectNotExists(haId + "." + folder + "." + subElement.key.replace(/\./g, '_'), {
-                type: "state",
-                common: {
-                    name: subElement.name,
-                    type: "object",
-                    role: "indicator",
-                    write: true,
-                    read: true
-                },
-                native: {}
+function getAPIValues(token, haId, url) {
+    auth.getRequest(token, haId, url).then(returnValue => {
+        adapter.log.debug(url);
+        adapter.log.debug(JSON.stringify(returnValue))
+        if ("key" in returnValue.data) {
+            returnValue.data = {
+                items: [returnValue.data]
+            };
+        }
+        for (const item in returnValue.data) {
+            returnValue.data[item].forEach(subElement => {
+                if (url === '/programs/active') {
+                    subElement.key = 'BSH_Common_Root_ActiveProgram'
+                    subElement.name = 'BSH_Common_Root_ActiveProgram'
+                }
+                const folder = url.replace(/\//g, ".");
+                adapter.log.debug(haId + folder + "." + subElement.key.replace(/\./g, '_'))
+
+                adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, '_'), {
+                    type: "state",
+                    common: {
+                        name: subElement.name,
+                        type: "object",
+                        role: "indicator",
+                        write: false,
+                        read: true
+                    },
+                    native: {}
+                });
+                adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, '_'), subElement.value, true);
             });
-            adapter.setState(haId + "." + folder + "." + subElement.key.replace(/\./g, '_'), subElement.value, true);
-        });
+        }
     }, ([statusGet, description]) => {
-        adapter.log.error("Error getting Status Error: " + statusGet);
-        adapter.log.error(description);
+        // adapter.log.info("Error getting API Values Error: " + statusGet);
+        adapter.log.info(haId + ": " + description);
     });
 }
 
