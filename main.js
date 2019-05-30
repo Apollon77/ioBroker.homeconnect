@@ -71,7 +71,7 @@ function getToken() {
             let deviceCode = value;
             auth.tokenGet(deviceCode, clientID).then(
                 ([token, refreshToken, expires, tokenScope]) => {
-                    adapter.log.info("Accestoken created: " + token);
+                    adapter.log.debug("Accestoken created: " + token);
                     adapter.setState("dev.token", {
                         val: token,
                         ack: true
@@ -89,7 +89,20 @@ function getToken() {
                         ack: true
                     });
                     clearInterval(getTokenInterval);
-                    adapter.log.info("Start Refreshinterval");
+
+                    adapter.setState("dev.access", true);
+                    auth.getAppliances(token).then(
+                        appliances => {
+                            parseHomeappliances(appliances);
+
+                        },
+                        ([statusGet, description]) => {
+                            adapter.log.error("Error getting Aplliances Error: " + statusGet);
+                            adapter.log.error(description);
+                        }
+                    );
+
+                    adapter.log.debug("Start Refreshinterval");
                     getTokenRefreshInterval = setInterval(getRefreshToken, 21600000);
                 },
                 statusPost => {
@@ -98,14 +111,14 @@ function getToken() {
 
                         stateGet(stat).then(
                             value => {
-                                adapter.log.error("Bitte ioBroker authorisieren!!  =====>>>   " + value);
+                                adapter.log.error("Please visit this url:  " + value);
                             },
                             err => {
                                 adapter.log.error("FEHLER: " + err);
                             }
                         );
                     } else {
-                        adapter.log.error("Irgendwas stimmt da wohl nicht!! GetToken!!    Fehlercode: " + statusPost);
+                        adapter.log.error("Error GetToken: " + statusPost);
                         clearInterval(getTokenInterval);
                     }
                 }
@@ -121,7 +134,6 @@ function getToken() {
 /* Eventstream
  */
 function startEventStream(token, haId) {
-
     let baseUrl = "https://api.home-connect.com/api/homeappliances/" + haId + "/events";
     let header = {
         headers: {
@@ -174,14 +186,20 @@ let processEvent = msg => {
 
         parseMessage.items.forEach(element => {
             let haId = parseMessage.haId
-            let folder = element.uri.split("/").splice(4)
-            if (folder[folder.length - 1].indexOf(".") != -1) {
-                folder.pop();
-            }
-            folder = folder.join(".");
-            const key = element.key.replace(/\./g, '_')
+            let folder;
+            let key;
+            if (stream.type === "EVENT") {
+                folder = "events"
+                key = element.key.replace(/\./g, '_')
 
-            //
+            } else {
+                folder = element.uri.split("/").splice(4)
+                if (folder[folder.length - 1].indexOf(".") != -1) {
+                    folder.pop();
+                }
+                folder = folder.join(".");
+                key = element.key.replace(/\./g, '_')
+            }
             adapter.log.debug(haId + "." + folder + "." + key + ":" + element.value);
             adapter.setObjectNotExists(haId + "." + folder + "." + key, {
                 type: "state",
@@ -197,6 +215,7 @@ let processEvent = msg => {
             adapter.setState(haId + "." + folder + "." + key, element.value, true);
 
         });
+
 
     } catch (error) {
         adapter.log.error(error)
@@ -220,60 +239,8 @@ adapter.on("objectChange", function (id, obj) {
 });
 
 adapter.on("stateChange", function (id, state) {
-    if (id == adapter.namespace + ".dev.homeappliancesJSON") {
-        let appliances = state.val;
-        let appliancesArray = JSON.parse(appliances);
-        appliancesArray.data.homeappliances.forEach(element => {
-            let haId = element.haId;
-            for (const key in element) {
-                adapter.setObjectNotExists(haId + ".general." + key, {
-                    type: "state",
-                    common: {
-                        name: key,
-                        type: "object",
-                        role: "indicator",
-                        write: false,
-                        read: true
-                    },
-                    native: {}
-                });
-                adapter.setState(haId + ".general." + key, element[key]);
-            }
 
 
-            let tokenID = adapter.namespace + ".dev.token";
-            stateGet(tokenID).then(
-                value => {
-                    let token = value;
-                    getAPIValues(token, haId, "/status");
-                    getAPIValues(token, haId, '/programs/available');
-                    getAPIValues(token, haId, '/settings');
-                    getAPIValues(token, haId, "/programs/active");
-                    getAPIValues(token, haId, "/programs/active/options");
-                    getAPIValues(token, haId, "/programs/selected");
-                    getAPIValues(token, haId, "/programs/selected/options");
-                    startEventStream(token, haId);
-                },
-                err => {
-                    adapter.log.error("FEHLER: " + err);
-                }
-            );
-        });
-    }
-
-    if (id == adapter.namespace + ".dev.token") {
-        let token = state.val;
-        adapter.setState("dev.access", true);
-        auth.getAppliances(token).then(
-            appliances => {
-                adapter.setState(adapter.namespace + ".dev.homeappliancesJSON", JSON.stringify(appliances));
-            },
-            ([statusGet, description]) => {
-                adapter.log.error("Error getting Aplliances Error: " + statusGet);
-                adapter.log.error(description);
-            }
-        );
-    }
 
     if (id == adapter.namespace + ".dev.devCode") {
         getTokenInterval = setInterval(getToken, 10000); // Polling bis Authorisation erfolgt ist
@@ -302,6 +269,40 @@ adapter.on("ready", function () {
     main();
 });
 
+function parseHomeappliances(appliancesArray) {
+    appliancesArray.data.homeappliances.forEach(element => {
+        let haId = element.haId;
+        for (const key in element) {
+            adapter.setObjectNotExists(haId + ".general." + key, {
+                type: "state",
+                common: {
+                    name: key,
+                    type: "object",
+                    role: "indicator",
+                    write: false,
+                    read: true
+                },
+                native: {}
+            });
+            adapter.setState(haId + ".general." + key, element[key]);
+        }
+        let tokenID = adapter.namespace + ".dev.token";
+        stateGet(tokenID).then(value => {
+            let token = value;
+            getAPIValues(token, haId, "/status");
+            getAPIValues(token, haId, '/programs/available');
+            getAPIValues(token, haId, '/settings');
+            getAPIValues(token, haId, "/programs/active");
+            getAPIValues(token, haId, "/programs/active/options");
+            getAPIValues(token, haId, "/programs/selected");
+            getAPIValues(token, haId, "/programs/selected/options");
+            startEventStream(token, haId);
+        }, err => {
+            adapter.log.error("FEHLER: " + err);
+        });
+    });
+}
+
 function getAPIValues(token, haId, url) {
     auth.getRequest(token, haId, url).then(returnValue => {
         adapter.log.debug(url);
@@ -314,8 +315,11 @@ function getAPIValues(token, haId, url) {
         for (const item in returnValue.data) {
             returnValue.data[item].forEach(subElement => {
                 if (url === '/programs/active') {
+                    subElement.value = subElement.key
                     subElement.key = 'BSH_Common_Root_ActiveProgram'
                     subElement.name = 'BSH_Common_Root_ActiveProgram'
+
+
                 }
                 const folder = url.replace(/\//g, ".");
                 adapter.log.debug(haId + folder + "." + subElement.key.replace(/\./g, '_'))
@@ -326,7 +330,7 @@ function getAPIValues(token, haId, url) {
                         name: subElement.name,
                         type: "object",
                         role: "indicator",
-                        write: false,
+                        write: true,
                         read: true
                     },
                     native: {}
@@ -344,8 +348,6 @@ function main() {
     if (!adapter.config.clientID) {
         adapter.log.error("Client ID not specified!");
     }
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if (adapter.config.resetAccess) {
         adapter.log.info("Reset access");
@@ -388,11 +390,7 @@ function main() {
                     });
                 },
                 statusPost => {
-                    if (statusPost == "400") {
-                        adapter.log.error("400 Bad Request (invalid or missing request parameters)");
-                    } else {
-                        adapter.log.error("Irgendwas stimmt da wohl nicht!!    Fehlercode: " + statusPost);
-                    }
+                    adapter.log.error("Error AuthUriGet: " + statusPost);
                 }
             );
         } else {
@@ -405,11 +403,11 @@ function main() {
                         let token = value;
                         auth.getAppliances(token).then(
                             appliances => {
-                                adapter.setState(adapter.namespace + ".dev.homeappliancesJSON", JSON.stringify(appliances));
+                                parseHomeappliances(appliances);
                             },
                             statusGet => {
                                 adapter.log.error(
-                                    "Error getting homeapplianceJSON with Token please reset Token. Fehlercode: " + statusGet
+                                    "Error getting homeapplianceJSON with Token. Please reset Token in settings. " + statusGet
                                 );
                             }
                         );
@@ -494,18 +492,6 @@ function main() {
             type: "boolean",
             role: "indicator",
             write: true,
-            read: true
-        },
-        native: {}
-    });
-
-    adapter.setObjectNotExists("dev.homeappliancesJSON", {
-        type: "state",
-        common: {
-            name: "Homeappliances_JSON",
-            type: "object",
-            role: "indicator",
-            write: false,
             read: true
         },
         native: {}
