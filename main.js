@@ -307,7 +307,7 @@ function parseHomeappliances(appliancesArray) {
             getAPIValues(token, haId, "/programs/selected");
             getAPIValues(token, haId, "/programs/selected/options");
             startEventStream(token, haId);
-            reconnectEventStreamInterval = setInterval(() => startEventStream, 50 * 60 * 1000) //each 50min reconnect eventstream;
+            reconnectEventStreamInterval = setInterval(() => startEventStream, 59 * 60 * 1000) //each 59min reconnect eventstream;
         }, err => {
             adapter.log.error("FEHLER: " + err);
         });
