@@ -9,6 +9,8 @@ const adapter = new utils.Adapter("homeconnect");
 
 let getTokenInterval;
 let getTokenRefreshInterval;
+let reconnectEventStreamInterval;
+let eventSource;
 
 function stateGet(stat) {
     return new Promise((resolve, reject) => {
@@ -141,7 +143,14 @@ function startEventStream(token, haId) {
             Accept: "text/event-stream"
         }
     };
-    let eventSource = new EventSource(baseUrl, header);
+    if (eventSource) {
+        eventSource.removeEventListener("STATUS", e => processEvent(e), false);
+        eventSource.removeEventListener("NOTIFY", e => processEvent(e), false);
+        eventSource.removeEventListener("EVENT", e => processEvent(e), false);
+        eventSource.removeEventListener("CONNECTED", e => processEvent(e), false);
+        eventSource.removeEventListener("DISCONNECTED", e => processEvent(e), false);
+    }
+    eventSource = new EventSource(baseUrl, header);
     // Error handling
     eventSource.onerror = err => {
         adapter.log.error(err.status);
@@ -154,7 +163,7 @@ function startEventStream(token, haId) {
             } else if (err.status === 429) {
                 adapter.log.warn("Too many requests. Adapter sends too many requests per minute.");
             } else {
-                adapter.log.error("FEHLER");
+                adapter.log.error("Error: " + err.status);
                 throw new Error(err.status);
             }
         }
@@ -228,6 +237,7 @@ adapter.on("unload", function (callback) {
         adapter.log.info("cleaned everything up...");
         clearInterval(getTokenRefreshInterval);
         clearInterval(getTokenInterval);
+        clearInterval(reconnectEventStreamInterval);
         callback();
     } catch (e) {
         callback();
@@ -297,6 +307,7 @@ function parseHomeappliances(appliancesArray) {
             getAPIValues(token, haId, "/programs/selected");
             getAPIValues(token, haId, "/programs/selected/options");
             startEventStream(token, haId);
+            reconnectEventStreamInterval = setInterval(() => startEventStream, 50 * 60 * 1000) //each 50min reconnect eventstream;
         }, err => {
             adapter.log.error("FEHLER: " + err);
         });
