@@ -11,6 +11,7 @@ let getTokenInterval;
 let getTokenRefreshInterval;
 let reconnectEventStreamInterval;
 let eventSource;
+let availablePrograms = {};
 
 function stateGet(stat) {
     return new Promise((resolve, reject) => {
@@ -186,13 +187,18 @@ let processEvent = msg => {
 
         adapter.log.debug("event: " + JSON.stringify(msg))
         let stream = msg
-        let parseMsg = msg.data;
-        let parseMessage = JSON.parse(parseMsg);
 
         if (stream.type == "DISCONNECTED") {
-            adapter.log.debug("DISCONNECTED");
+            adapter.setState(stream.lastEventId + ".general.connected", false, true);
+            return;
+        }
+        if (stream.type == "CONNECTED") {
+            adapter.setState(stream.lastEventId + ".general.connected", true, true);
+            return;
         }
 
+        let parseMsg = msg.data;
+        let parseMessage = JSON.parse(parseMsg);
         parseMessage.items.forEach(element => {
             let haId = parseMessage.haId
             let folder;
@@ -228,6 +234,7 @@ let processEvent = msg => {
 
     } catch (error) {
         adapter.log.error(error)
+        adapter.log.error("event: " + msg)
     }
 
 };
@@ -258,8 +265,80 @@ adapter.on("stateChange", function (id, state) {
 
     // you can use the ack flag to detect if it is status (true) or command (false)
     if (state && !state.ack) {
-        //adapter.log.info('ack is not set!');
+        const idArray = id.split(".");
+        const command = idArray.pop().replace(/_/g, ".");
+        const haId = idArray[2]
+        if (id.indexOf(".commands.") !== -1) {
+            adapter.log.debug(id);
+
+            const data = {
+                data: {
+                    key: command,
+                    value: state.val
+                }
+            }
+            stateGet(adapter.namespace + ".dev.token").then(token => {
+                putAPIValues(token, haId, "/commands/" + command, data);
+            })
+        }
+        if (id.indexOf(".settings.") !== -1) {
+
+
+            let data = {
+                data: {
+                    key: command,
+                    value: state.val
+                }
+            }
+            data = {
+                "data": {
+                    "key": "BSH.Common.Setting.PowerState",
+                    "value": "BSH.Common.EnumType.PowerState.On",
+                    "type": "BSH.Common.EnumType.PowerState",
+                    "constraints": {
+                        "allowedvalues": [
+                            "BSH.Common.EnumType.PowerState.On",
+                            "BSH.Common.EnumType.PowerState.Standby"
+                        ]
+                    }
+                }
+            }
+            stateGet(adapter.namespace + ".dev.token").then(token => {
+                putAPIValues(token, haId, "/settings/" + command, data);
+            })
+        }
+        if (id.indexOf("BSH_Common_Root_") !== -1) {
+            const data = {
+                data: {
+                    key: state.val,
+                    "options": [{
+                            "key": "Cooking.Oven.Option.SetpointTemperature",
+                            "value": 230,
+                            "unit": "°C"
+                        },
+                        {
+                            "key": "BSH.Common.Option.Duration",
+                            "value": 1200,
+                            "unit": "seconds"
+                        }
+                    ]
+                }
+            }
+            if (id.indexOf("Active") !== -1) {
+
+                stateGet(adapter.namespace + ".dev.token").then(token => {
+                    putAPIValues(token, haId, "/programs/active", data);
+                })
+            }
+            if (id.indexOf("Selected") !== -1) {
+
+                stateGet(adapter.namespace + ".dev.token").then(token => {
+                    putAPIValues(token, haId, "/programs/selected", data);
+                })
+            }
+        }
     }
+    //adapter.log.info('ack is not set!');
 });
 
 // Some message was sent to adapter instance over message box. Used by email, pushover, text2speech, ...
@@ -296,26 +375,69 @@ function parseHomeappliances(appliancesArray) {
             });
             adapter.setState(haId + ".general." + key, element[key]);
         }
+        adapter.setObjectNotExists(haId + ".commands.BSH_Common_Command_PauseProgram", {
+            type: "state",
+            common: {
+                name: "Pause Program",
+                type: "boolean",
+                role: "button",
+                write: false,
+                read: true
+            },
+            native: {}
+        });
+        adapter.setObjectNotExists(haId + ".commands.BSH_Common_Command_ResumeProgram", {
+            type: "state",
+            common: {
+                name: "Resume Program",
+                type: "boolean",
+                role: "button",
+                write: false,
+                read: true
+            },
+            native: {}
+        });
         let tokenID = adapter.namespace + ".dev.token";
         stateGet(tokenID).then(value => {
             let token = value;
-            getAPIValues(token, haId, "/status");
             getAPIValues(token, haId, '/programs/available');
+            getAPIValues(token, haId, "/status");
             getAPIValues(token, haId, '/settings');
-            getAPIValues(token, haId, "/programs/active");
             getAPIValues(token, haId, "/programs/active/options");
-            getAPIValues(token, haId, "/programs/selected");
             getAPIValues(token, haId, "/programs/selected/options");
+            getAPIValues(token, haId, "/programs/active");
+            getAPIValues(token, haId, "/programs/selected");
             startEventStream(token, haId);
-            reconnectEventStreamInterval = setInterval(() => startEventStream, 59 * 60 * 1000) //each 59min reconnect eventstream;
+            reconnectEventStreamInterval = setInterval(() => startEventStream, 12 * 60 * 60 * 1000) //each 12h reconnect eventstream;
         }, err => {
             adapter.log.error("FEHLER: " + err);
         });
     });
 }
 
+function putAPIValues(token, haId, url, data) {
+    adapter.log.debug(haId + url)
+    adapter.log.debug(JSON.stringify(data))
+    auth.sendRequest(token, haId, url, "PUT", JSON.stringify(data)).then(returnValue => {
+        adapter.log.debug((returnValue))
+        adapter.log.debug(JSON.stringify(returnValue))
+    }, ([statusGet, description]) => {
+        if (statusGet === 403) {
+            adapter.log.info("Homeconnect API has not the rights for this command and device")
+        }
+        adapter.log.info(statusGet + ": " + description);
+    });
+}
+
+function deleteAPIValues(token, haId, url) {
+    auth.sendRequest(token, haId, url, "DELETE").then(returnValue => {
+        adapter.log.debug(url);
+        adapter.log.debug(JSON.stringify(returnValue))
+    })
+}
+
 function getAPIValues(token, haId, url) {
-    auth.getRequest(token, haId, url).then(returnValue => {
+    auth.sendRequest(token, haId, url).then(returnValue => {
         adapter.log.debug(url);
         adapter.log.debug(JSON.stringify(returnValue))
         if ("key" in returnValue.data) {
@@ -329,25 +451,77 @@ function getAPIValues(token, haId, url) {
                     subElement.value = subElement.key
                     subElement.key = 'BSH_Common_Root_ActiveProgram'
                     subElement.name = 'BSH_Common_Root_ActiveProgram'
-
-
                 }
+                if (url === '/programs/selected') {
+                    subElement.value = subElement.key
+                    subElement.key = 'BSH_Common_Root_SelectedProgram'
+                    subElement.name = 'BSH_Common_Root_SelectedProgram'
+                }
+                if (url === '/programs/available') {
+                    adapter.log.debug(haId + ": " + JSON.stringify(subElement))
+                    if (availablePrograms[haId]) {
+                        availablePrograms[haId].push({
+                            key: subElement.key,
+                            name: subElement.name
+                        })
+                    } else {
+                        availablePrograms[haId] = [{
+                            key: subElement.key,
+                            name: subElement.name
+                        }]
+                    }
+                }
+
                 const folder = url.replace(/\//g, ".");
                 adapter.log.debug(haId + folder + "." + subElement.key.replace(/\./g, '_'))
+                let common = {
+                    name: subElement.name,
+                    type: "object",
+                    role: "indicator",
+                    write: true,
+                    read: true
+                }
 
                 adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, '_'), {
                     type: "state",
-                    common: {
-                        name: subElement.name,
-                        type: "object",
-                        role: "indicator",
-                        write: true,
-                        read: true
-                    },
+                    common: common,
                     native: {}
                 });
                 adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, '_'), subElement.value, true);
             });
+        }
+        if (url === '/programs/available') {
+            const rootItems = [{
+                key: "BSH_Common_Root_ActiveProgram",
+                folder: '.programs.active'
+            }, {
+                key: "BSH_Common_Root_SelectedProgram",
+                folder: '.programs.selected'
+            }]
+            rootItems.forEach((rootItem) => {
+
+                let common = {
+                    name: rootItem.key,
+                    type: "string",
+                    role: "indicator",
+                    write: true,
+                    read: true,
+                    states: {}
+                }
+                availablePrograms[haId].forEach((program) => {
+                    common.states[program.key] = program.name;
+                });
+                adapter.setObjectNotExists(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, '_'), {
+                    type: "state",
+                    common: common,
+                    native: {}
+                });
+                adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, '_'), {
+                    type: "state",
+                    common: common,
+                    native: {}
+                });
+            })
         }
     }, ([statusGet, description]) => {
         // adapter.log.info("Error getting API Values Error: " + statusGet);
@@ -425,7 +599,7 @@ function main() {
                         let stat = adapter.namespace + ".dev.refreshToken";
                         stateGet(stat).then(value => {
                             let refreshToken = value;
-                            getTokenRefreshInterval = setInterval(getRefreshToken, 21600000);
+                            getTokenRefreshInterval = setInterval(getRefreshToken, 12 * 60 * 60 * 1000); //every 12h 
                         });
                     }
                 },
@@ -544,7 +718,7 @@ function main() {
         native: {}
     });
 
-    //settingsAvailableJSON
+
 
     adapter.subscribeStates("*");
 }
