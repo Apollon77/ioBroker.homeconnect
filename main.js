@@ -458,7 +458,7 @@ function getAPIValues(token, haId, url) {
                     subElement.name = 'BSH_Common_Root_SelectedProgram'
                 }
                 if (url === '/programs/available') {
-                    adapter.log.debug(haId + ": " + JSON.stringify(subElement))
+                    adapter.log.debug(haId + " available: " + JSON.stringify(subElement))
                     if (availablePrograms[haId]) {
                         availablePrograms[haId].push({
                             key: subElement.key,
