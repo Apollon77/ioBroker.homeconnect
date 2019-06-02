@@ -233,8 +233,8 @@ let processEvent = msg => {
 
 
     } catch (error) {
-        adapter.log.error(error)
-        adapter.log.error("event: " + msg)
+        adapter.log.error("Parsemessage:" + error)
+        adapter.log.error("Error Event: " + msg)
     }
 
 };
@@ -311,17 +311,17 @@ adapter.on("stateChange", function (id, state) {
             const data = {
                 data: {
                     key: state.val,
-                    "options": [{
-                            "key": "Cooking.Oven.Option.SetpointTemperature",
-                            "value": 230,
-                            "unit": "°C"
-                        },
-                        {
-                            "key": "BSH.Common.Option.Duration",
-                            "value": 1200,
-                            "unit": "seconds"
-                        }
-                    ]
+                    // "options": [{
+                    //         "key": "Cooking.Oven.Option.SetpointTemperature",
+                    //         "value": 230,
+                    //         "unit": "°C"
+                    //     },
+                    //     {
+                    //         "key": "BSH.Common.Option.Duration",
+                    //         "value": 1200,
+                    //         "unit": "seconds"
+                    //     }
+                    // ]
                 }
             }
             if (id.indexOf("Active") !== -1) {
@@ -440,6 +440,28 @@ function getAPIValues(token, haId, url) {
     auth.sendRequest(token, haId, url).then(returnValue => {
         adapter.log.debug(url);
         adapter.log.debug(JSON.stringify(returnValue))
+        if (url.indexOf('/settings/') !== -1) {
+            let common = {
+                name: returnValue.data.name,
+                type: "string",
+                role: "indicator",
+                write: true,
+                read: true,
+                states: {}
+
+            }
+            returnValue.data.constraints.allowedvalues.forEach((element, index) => {
+                common.states[element] = returnValue.data.constraints.displayvalues[index]
+
+            });
+            const folder = ".settings." + returnValue.data.key.replace(/\./g, '_');
+            adapter.extendObject(haId + folder, {
+                type: "state",
+                common: common,
+                native: {}
+            });
+            return;
+        }
         if ("key" in returnValue.data) {
             returnValue.data = {
                 items: [returnValue.data]
@@ -471,7 +493,9 @@ function getAPIValues(token, haId, url) {
                         }]
                     }
                 }
-
+                if (url === '/settings') {
+                    getAPIValues(token, haId, '/settings/' + subElement.key)
+                }
                 const folder = url.replace(/\//g, ".");
                 adapter.log.debug(haId + folder + "." + subElement.key.replace(/\./g, '_'))
                 let common = {
