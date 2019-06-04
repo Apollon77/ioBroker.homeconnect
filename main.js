@@ -534,7 +534,8 @@ function getAPIValues(token, haId, url) {
                     type: "object",
                     role: "indicator",
                     write: true,
-                    read: true
+                    read: true,
+                    unit: subElement.unit || ""
                 }
 
                 adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, '_'), {
