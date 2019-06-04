@@ -62,6 +62,10 @@ Log is displayed. Simply copy the URL and open it in your browser. Then enter th
 
 ## Changelog
 
+### 0.0.10 (04.06.2019)
+
+-   (ta2k) add settings and commands, add options to available and fix bugs
+
 ### 0.0.9 (29.05.2019)
 
 -   (ta2k) clean up code and receive event notifications

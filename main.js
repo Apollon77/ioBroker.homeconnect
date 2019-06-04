@@ -187,7 +187,10 @@ let processEvent = msg => {
 
         adapter.log.debug("event: " + JSON.stringify(msg))
         let stream = msg
-
+        if (!stream) {
+            adapter.log.debug("No Return: " + stream);
+            return;
+        }
         if (stream.type == "DISCONNECTED") {
             adapter.setState(stream.lastEventId + ".general.connected", false, true);
             return;
@@ -198,6 +201,7 @@ let processEvent = msg => {
         }
 
         let parseMsg = msg.data;
+
         let parseMessage = JSON.parse(parseMsg);
         parseMessage.items.forEach(element => {
             let haId = parseMessage.haId
@@ -223,7 +227,8 @@ let processEvent = msg => {
                     type: "object",
                     role: "indicator",
                     write: true,
-                    read: true
+                    read: true,
+                    unit: element.unit || ""
                 },
                 native: {}
             });
@@ -233,7 +238,7 @@ let processEvent = msg => {
 
 
     } catch (error) {
-        adapter.log.error("Parsemessage:" + error)
+        adapter.log.error("Parsemessage: " + error)
         adapter.log.error("Error Event: " + msg)
     }
 
@@ -282,25 +287,11 @@ adapter.on("stateChange", function (id, state) {
             })
         }
         if (id.indexOf(".settings.") !== -1) {
-
-
             let data = {
                 data: {
                     key: command,
-                    value: state.val
-                }
-            }
-            data = {
-                "data": {
-                    "key": "BSH.Common.Setting.PowerState",
-                    "value": "BSH.Common.EnumType.PowerState.On",
-                    "type": "BSH.Common.EnumType.PowerState",
-                    "constraints": {
-                        "allowedvalues": [
-                            "BSH.Common.EnumType.PowerState.On",
-                            "BSH.Common.EnumType.PowerState.Standby"
-                        ]
-                    }
+                    value: state.val,
+                    type: command
                 }
             }
             stateGet(adapter.namespace + ".dev.token").then(token => {
@@ -462,6 +453,45 @@ function getAPIValues(token, haId, url) {
             });
             return;
         }
+
+        if (url.indexOf('/programs/available/') !== -1) {
+            if (returnValue.data.options) {
+                returnValue.data.options.forEach((option) => {
+                    let common = {
+                        name: option.name,
+                        type: "string",
+                        role: "indicator",
+                        unit: option.unit || "",
+                        write: true,
+                        read: true,
+                        min: option.constraints.min || null,
+                        max: option.constraints.max || null,
+
+                    }
+
+                    if (option.constraints.allowedvalues) {
+                        common.states = {}
+                        option.constraints.allowedvalues.forEach((element, index) => {
+                            common.states[element] = option.constraints.displayvalues[index]
+
+                        });
+                    }
+                    const folder = ".programs.available.options." + option.key.replace(/\./g, '_');
+
+
+                    adapter.extendObject(haId + folder, {
+                        type: "state",
+                        common: common,
+                        native: {}
+                    });
+                    adapter.setState(haId + folder, option.constraints.default, true);
+
+                })
+            }
+            return;
+        }
+
+
         if ("key" in returnValue.data) {
             returnValue.data = {
                 items: [returnValue.data]
@@ -492,12 +522,13 @@ function getAPIValues(token, haId, url) {
                             name: subElement.name
                         }]
                     }
+                    getAPIValues(token, haId, '/programs/available/' + subElement.key)
                 }
                 if (url === '/settings') {
                     getAPIValues(token, haId, '/settings/' + subElement.key)
                 }
                 const folder = url.replace(/\//g, ".");
-                adapter.log.debug(haId + folder + "." + subElement.key.replace(/\./g, '_'))
+                adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, '_'))
                 let common = {
                     name: subElement.name,
                     type: "object",
