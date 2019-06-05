@@ -99,8 +99,8 @@ function getToken() {
                             parseHomeappliances(appliances);
 
                         },
-                        ([statusGet, description]) => {
-                            adapter.log.error("Error getting Aplliances Error: " + statusGet);
+                        ([statusCode, description]) => {
+                            adapter.log.error("Error getting Aplliances Error: " + statusCode);
                             adapter.log.error(description);
                         }
                     );
@@ -232,6 +232,7 @@ let processEvent = msg => {
                 },
                 native: {}
             });
+
             adapter.setState(haId + "." + folder + "." + key, element.value, true);
 
         });
@@ -275,16 +276,23 @@ adapter.on("stateChange", function (id, state) {
         const haId = idArray[2]
         if (id.indexOf(".commands.") !== -1) {
             adapter.log.debug(id);
+            if (id.indexOf("StopProgram")) {
+                stateGet(adapter.namespace + ".dev.token").then(token => {
+                    deleteAPIValues(token, haId, "/programs/active");
+                })
 
-            const data = {
-                data: {
-                    key: command,
-                    value: state.val
+            } else {
+
+                const data = {
+                    data: {
+                        key: command,
+                        value: state.val
+                    }
                 }
+                stateGet(adapter.namespace + ".dev.token").then(token => {
+                    putAPIValues(token, haId, "/commands/" + command, data);
+                })
             }
-            stateGet(adapter.namespace + ".dev.token").then(token => {
-                putAPIValues(token, haId, "/commands/" + command, data);
-            })
         }
         if (id.indexOf(".settings.") !== -1) {
             let data = {
@@ -298,38 +306,57 @@ adapter.on("stateChange", function (id, state) {
                 putAPIValues(token, haId, "/settings/" + command, data);
             })
         }
+        if (id.indexOf(".options.") !== -1) {
+            let data = {
+                data: {
+                    key: command,
+                    value: state.val
+                }
+            }
+            const folder = idArray.slice(3, idArray.length).join("/");
+            stateGet(adapter.namespace + ".dev.token").then(token => {
+                putAPIValues(token, haId, "/" + folder + "/" + command, data);
+            })
+        }
         if (id.indexOf("BSH_Common_Root_") !== -1) {
             const data = {
                 data: {
-                    key: state.val,
-                    // "options": [{
-                    //         "key": "Cooking.Oven.Option.SetpointTemperature",
-                    //         "value": 230,
-                    //         "unit": "°C"
-                    //     },
-                    //     {
-                    //         "key": "BSH.Common.Option.Duration",
-                    //         "value": 1200,
-                    //         "unit": "seconds"
-                    //     }
-                    // ]
+                    key: state.val
                 }
             }
             if (id.indexOf("Active") !== -1) {
 
                 stateGet(adapter.namespace + ".dev.token").then(token => {
-                    putAPIValues(token, haId, "/programs/active", data);
+                    putAPIValues(token, haId, "/programs/active", data).then(() => updateOptions(token, haId, "/programs/active"));
                 })
             }
             if (id.indexOf("Selected") !== -1) {
 
                 stateGet(adapter.namespace + ".dev.token").then(token => {
-                    putAPIValues(token, haId, "/programs/selected", data);
+                    putAPIValues(token, haId, "/programs/selected", data).then(() => updateOptions(token, haId, "/programs/selected"));
                 })
             }
         }
+    } else {
+        const idArray = id.split(".");
+        const haId = idArray[2]
+        if (id.indexOf("BSH_Common_Root_") !== -1) {
+            if (id.indexOf("Active") !== -1) {
+                stateGet(adapter.namespace + ".dev.token").then(token => {
+                    updateOptions(token, haId, "/programs/active");
+
+                })
+
+            }
+            if (id.indexOf("Selected") !== -1) {
+                stateGet(adapter.namespace + ".dev.token").then(token => {
+                    updateOptions(token, haId, "/programs/selected");
+
+                })
+
+            }
+        }
     }
-    //adapter.log.info('ack is not set!');
 });
 
 // Some message was sent to adapter instance over message box. Used by email, pushover, text2speech, ...
@@ -349,6 +376,14 @@ adapter.on("ready", function () {
     main();
 });
 
+function updateOptions(token, haId, url) {
+    adapter.delObject(haId + url.replace(/\//g, ".") + ".options", function (res, err) {
+        adapter.log.debug(res, err)
+        getAPIValues(token, haId, url + "/options");
+    })
+    adapter.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options")
+}
+
 function parseHomeappliances(appliancesArray) {
     appliancesArray.data.homeappliances.forEach(element => {
         let haId = element.haId;
@@ -366,6 +401,17 @@ function parseHomeappliances(appliancesArray) {
             });
             adapter.setState(haId + ".general." + key, element[key]);
         }
+        adapter.setObjectNotExists(haId + ".commands.BSH_Common_Command_StopProgram", {
+            type: "state",
+            common: {
+                name: "Stop Program",
+                type: "boolean",
+                role: "button",
+                write: false,
+                read: true
+            },
+            native: {}
+        });
         adapter.setObjectNotExists(haId + ".commands.BSH_Common_Command_PauseProgram", {
             type: "state",
             common: {
@@ -394,10 +440,11 @@ function parseHomeappliances(appliancesArray) {
             getAPIValues(token, haId, '/programs/available');
             getAPIValues(token, haId, "/status");
             getAPIValues(token, haId, '/settings');
-            getAPIValues(token, haId, "/programs/active/options");
-            getAPIValues(token, haId, "/programs/selected/options");
             getAPIValues(token, haId, "/programs/active");
             getAPIValues(token, haId, "/programs/selected");
+
+            updateOptions(token, haId, "/programs/active");
+            updateOptions(token, haId, "/programs/selected");
             startEventStream(token, haId);
             reconnectEventStreamInterval = setInterval(() => startEventStream, 12 * 60 * 60 * 1000) //each 12h reconnect eventstream;
         }, err => {
@@ -407,28 +454,32 @@ function parseHomeappliances(appliancesArray) {
 }
 
 function putAPIValues(token, haId, url, data) {
-    adapter.log.debug(haId + url)
-    adapter.log.debug(JSON.stringify(data))
-    auth.sendRequest(token, haId, url, "PUT", JSON.stringify(data)).then(returnValue => {
-        adapter.log.debug((returnValue))
-        adapter.log.debug(JSON.stringify(returnValue))
-    }, ([statusGet, description]) => {
-        if (statusGet === 403) {
-            adapter.log.info("Homeconnect API has not the rights for this command and device")
-        }
-        adapter.log.info(statusGet + ": " + description);
+    return new Promise((resolve, reject) => {
+        adapter.log.debug(haId + url)
+        adapter.log.debug(JSON.stringify(data))
+        auth.sendRequest(token, haId, url, "PUT", JSON.stringify(data)).then(([statusCode, returnValue]) => {
+            adapter.log.debug((statusCode + " " + returnValue))
+            adapter.log.debug(JSON.stringify(returnValue))
+            resolve();
+        }, ([statusCode, description]) => {
+            if (statusCode === 403) {
+                adapter.log.info("Homeconnect API has not the rights for this command and device")
+            }
+            adapter.log.info(statusCode + ": " + description);
+            reject();
+        });
     });
 }
 
 function deleteAPIValues(token, haId, url) {
-    auth.sendRequest(token, haId, url, "DELETE").then(returnValue => {
+    auth.sendRequest(token, haId, url, "DELETE").then(([statusCode, returnValue]) => {
         adapter.log.debug(url);
         adapter.log.debug(JSON.stringify(returnValue))
     })
 }
 
 function getAPIValues(token, haId, url) {
-    auth.sendRequest(token, haId, url).then(returnValue => {
+    auth.sendRequest(token, haId, url).then(([statusCode, returnValue]) => {
         adapter.log.debug(url);
         adapter.log.debug(JSON.stringify(returnValue))
         if (url.indexOf('/settings/') !== -1) {
@@ -579,7 +630,7 @@ function getAPIValues(token, haId, url) {
                 });
             })
         }
-    }, ([statusGet, description]) => {
+    }, ([statusCode, description]) => {
         // adapter.log.info("Error getting API Values Error: " + statusGet);
         adapter.log.info(haId + ": " + description);
     });
