@@ -35,7 +35,8 @@
     }
   ],
   "dependencies": {
-    "eventsource": "^1.0.7"
+    "eventsource": "^1.0.7",
+    "request": "^2.88.0"
   },
   "deprecated": false,
   "description": "homeconnect",
@@ -60,7 +61,7 @@
     "sinon-chai": "^3.3.0"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=8"
   },
   "homepage": "https://github.com/dna909/ioBroker.homeconnect",
   "keywords": [
