@@ -1,6 +1,6 @@
 "use strict";
 
-const utils = require(__dirname + "/lib/utils"); // Get common adapter utils
+const utils = require('@iobroker/adapter-core');
 const auth = require(__dirname + "/lib/auth.js");
 const EventEmitter = require("events");
 const EventSource = require("eventsource");
@@ -262,27 +262,21 @@ adapter.on("objectChange", function (id, obj) {
 });
 
 adapter.on("stateChange", function (id, state) {
-
-
-
     if (id == adapter.namespace + ".dev.devCode") {
         getTokenInterval = setInterval(getToken, 10000); // Polling bis Authorisation erfolgt ist
     }
-
-    // you can use the ack flag to detect if it is status (true) or command (false)
     if (state && !state.ack) {
         const idArray = id.split(".");
         const command = idArray.pop().replace(/_/g, ".");
         const haId = idArray[2]
         if (id.indexOf(".commands.") !== -1) {
             adapter.log.debug(id);
-            if (id.indexOf("StopProgram")) {
+            if (id.indexOf("StopProgram") && state.val) {
                 stateGet(adapter.namespace + ".dev.token").then(token => {
                     deleteAPIValues(token, haId, "/programs/active");
                 })
 
             } else {
-
                 const data = {
                     data: {
                         key: command,
@@ -344,16 +338,12 @@ adapter.on("stateChange", function (id, state) {
             if (id.indexOf("Active") !== -1) {
                 stateGet(adapter.namespace + ".dev.token").then(token => {
                     updateOptions(token, haId, "/programs/active");
-
                 })
-
             }
             if (id.indexOf("Selected") !== -1) {
                 stateGet(adapter.namespace + ".dev.token").then(token => {
                     updateOptions(token, haId, "/programs/selected");
-
                 })
-
             }
         }
     }
@@ -377,10 +367,26 @@ adapter.on("ready", function () {
 });
 
 function updateOptions(token, haId, url) {
-    adapter.delObject(haId + url.replace(/\//g, ".") + ".options", function (res, err) {
-        adapter.log.debug(res, err)
-        getAPIValues(token, haId, url + "/options");
+
+    const pre = adapter.name + "." + adapter.instance;
+    adapter.getStates(pre + "." + haId + ".programs.*", (err, states) => {
+
+        var allIds = Object.keys(states);
+        let searchString = "selected.options."
+        if (url.indexOf("/active") !== -1) {
+            searchString = "active.options."
+        }
+        adapter.log.debug(searchString)
+        allIds.forEach(function (keyName) {
+            if (keyName.indexOf(searchString) !== -1) {
+                adapter.delObject(keyName.split(".").slice(2).join("."))
+
+            }
+        })
+        setTimeout(() => getAPIValues(token, haId, url + "/options"), 0);
+
     })
+
     adapter.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options")
 }
 

@@ -62,6 +62,10 @@ Log is displayed. Simply copy the URL and open it in your browser. Then enter th
 
 ## Changelog
 
+### 0.0.11 (09.06.2019)
+
+-   (ta2k) fix set values and refresh available options after program select
+
 ### 0.0.10 (04.06.2019)
 
 -   (ta2k) add settings and commands, add options to available and fix bugs
