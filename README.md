@@ -12,13 +12,13 @@
 
 Es muß mindestens Node.js Version 8 installiert sein!!
 
-Für den Adapter wird eine ClientID benötigt. Dazu muss man sich ersteinmal im Developer-Portal von Home-Connect registrieren.
+Für den Adapter wird eine ClientID benötigt. Nutze die Einstellungen um jeden Schritt der Registrierung zu erreichen.
 
 ## Requirements before installation
 
 At least Node.js version 8 must be installed!
 
-A ClientID is required for the adapter. You have to register first in the developer portal of Home-Connect.
+A ClientID is required for the adapter. Use the settings for each step to register.
 
 https://developer.home-connect.com
 
@@ -52,13 +52,11 @@ The last field can remain empty. Then save and you have the required ClientID.
 
 ## Konfiguration
 
-In der Adapter-Config muss nur die ClientID eingetragen werden. Wenn der Adapter läuft, wird eine Authorization-URL generiert, diese wird im
-Log angezeigt. Die URL einfach kopieren und im Browser öffnen. Dann die Logindaten vom Home-Connect-Account (nicht vom Developer-Account) eingeben und bestätigen. Dann die Authorisierung bestätigen. Fertig.
+In der Adapter-Config muss nur die ClientID eingetragen werden. Wenn der Adapter läuft, wird eine Authorization-URL generiert, diese wird in den Einstellungen nach dem Speichern der ClientID angezeigt. Einfach nach dem Speichern die Einstellungen neuöffnen
 
 ## Configuration
 
-Only the ClientID must be entered in the adapter configuration. If the adapter is running, an authorization URL is generated; this is specified in the
-Log is displayed. Simply copy the URL and open it in your browser. Then enter the login data from the Home Connect account (not from the Developer account) and confirm. Then confirm the authorization. Done.
+Only the ClientID must be entered in the adapter configuration. If the adapter is running, an authorization URL is generated. This url you can see in the settings after save, wait and reopen the settings.
 
 ## Changelog
 
