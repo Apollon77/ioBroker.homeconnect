@@ -162,6 +162,7 @@ function startAdapter(options) {
 		eventSource = new EventSource(baseUrl, header);
 		// Error handling
 		eventSource.onerror = err => {
+			adapter.log.error("EventSource error: " +err);
 			adapter.log.error(err.status);
 			if (err.status !== undefined) {
 				adapter.log.error("Error (" + haId + ")", err);
@@ -460,7 +461,10 @@ function startAdapter(options) {
 				updateOptions(token, haId, "/programs/active");
 				updateOptions(token, haId, "/programs/selected");
 				startEventStream(token, haId);
-				reconnectEventStreamInterval = setInterval(() => startEventStream, 12 * 60 * 60 * 1000) //each 12h reconnect eventstream;
+				reconnectEventStreamInterval = setInterval(() =>  {
+					adapter.log.debug("reconnect EventStream");
+					startEventStream();}
+				, 12 * 60 * 60 * 1000); //each 12h reconnect eventstream;
 			}, err => {
 				adapter.log.error("FEHLER: " + err);
 			});
