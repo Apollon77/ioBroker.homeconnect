@@ -20,6 +20,7 @@ function startAdapter(options) {
 	let reconnectEventStreamInterval;
 	let eventSource;
 	let availablePrograms = {};
+	let eventSourceList = {};
 
 	function stateGet(stat) {
 		return new Promise((resolve, reject) => {
@@ -143,7 +144,7 @@ function startAdapter(options) {
 	}
 
 	/* Eventstream
-     */
+	 */
 	function startEventStream(token, haId) {
 		let baseUrl = "https://api.home-connect.com/api/homeappliances/" + haId + "/events";
 		let header = {
@@ -152,18 +153,18 @@ function startAdapter(options) {
 				Accept: "text/event-stream"
 			}
 		};
-		if (eventSource) {
-			eventSource.removeEventListener("STATUS", e => processEvent(e), false);
-			eventSource.removeEventListener("NOTIFY", e => processEvent(e), false);
-			eventSource.removeEventListener("EVENT", e => processEvent(e), false);
-			eventSource.removeEventListener("CONNECTED", e => processEvent(e), false);
-			eventSource.removeEventListener("DISCONNECTED", e => processEvent(e), false);
+		if (eventSourceList[haId]) {
+			eventSourceList[haId].removeEventListener("STATUS", e => processEvent(e), false);
+			eventSourceList[haId].removeEventListener("NOTIFY", e => processEvent(e), false);
+			eventSourceList[haId].removeEventListener("EVENT", e => processEvent(e), false);
+			eventSourceList[haId].removeEventListener("CONNECTED", e => processEvent(e), false);
+			eventSourceList[haId].removeEventListener("DISCONNECTED", e => processEvent(e), false);
 		}
-		eventSource = new EventSource(baseUrl, header);
+		eventSourceList[haId] = new EventSource(baseUrl, header);
 		// Error handling
-		eventSource.onerror = err => {
-			adapter.log.error("EventSource error: " +err);
-			adapter.log.error(err.status);
+		eventSourceList[haId].onerror = err => {
+			adapter.log.error("EventSource error: " + JSON.stringify(err));
+			adapter.log.error(err.status + " " + err.message);
 			if (err.status !== undefined) {
 				adapter.log.error("Error (" + haId + ")", err);
 				if (err.status === 401) {
@@ -178,11 +179,11 @@ function startAdapter(options) {
 				}
 			}
 		};
-		eventSource.addEventListener("STATUS", e => processEvent(e), false);
-		eventSource.addEventListener("NOTIFY", e => processEvent(e), false);
-		eventSource.addEventListener("EVENT", e => processEvent(e), false);
-		eventSource.addEventListener("CONNECTED", e => processEvent(e), false);
-		eventSource.addEventListener("DISCONNECTED", e => processEvent(e), false);
+		eventSourceList[haId].addEventListener("STATUS", e => processEvent(e), false);
+		eventSourceList[haId].addEventListener("NOTIFY", e => processEvent(e), false);
+		eventSourceList[haId].addEventListener("EVENT", e => processEvent(e), false);
+		eventSourceList[haId].addEventListener("CONNECTED", e => processEvent(e), false);
+		eventSourceList[haId].addEventListener("DISCONNECTED", e => processEvent(e), false);
 		//this.eventSource.addEventListener('KEEP-ALIVE', () => lastAlive = new Date(), false)
 
 
@@ -461,10 +462,10 @@ function startAdapter(options) {
 				updateOptions(token, haId, "/programs/active");
 				updateOptions(token, haId, "/programs/selected");
 				startEventStream(token, haId);
-				reconnectEventStreamInterval = setInterval(() =>  {
+				reconnectEventStreamInterval = setInterval(() => {
 					adapter.log.debug("reconnect EventStream");
-					startEventStream();}
-				, 12 * 60 * 60 * 1000); //each 12h reconnect eventstream;
+					startEventStream(token, haId);
+				}, 12 * 60 * 60 * 1000); //each 12h reconnect eventstream;
 			}, err => {
 				adapter.log.error("FEHLER: " + err);
 			});
