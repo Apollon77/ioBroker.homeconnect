@@ -154,6 +154,7 @@ function startAdapter(options) {
 			}
 		};
 		if (eventSourceList[haId]) {
+			eventSourceList[haId].close();
 			eventSourceList[haId].removeEventListener("STATUS", e => processEvent(e), false);
 			eventSourceList[haId].removeEventListener("NOTIFY", e => processEvent(e), false);
 			eventSourceList[haId].removeEventListener("EVENT", e => processEvent(e), false);

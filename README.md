@@ -60,6 +60,10 @@ Only the ClientID must be entered in the adapter configuration. If the adapter i
 
 ## Changelog
 
+### 0.0.13 (18.06.2019)
+
+-   (ta2k) close event stream before reconnect
+
 ### 0.0.12 (18.06.2019)
 
 -   (ta2k) fix events lost after 12hr

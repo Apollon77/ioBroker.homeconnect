@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.11",
+        "version": "0.0.13",
         "news": {
+            "0.0.13": {
+                "en": "close event stream before reconnect"
+            },
             "0.0.12": {
                 "en": "fix events lost after 12hr"
             },
