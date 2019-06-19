@@ -463,10 +463,10 @@ function startAdapter(options) {
 				updateOptions(token, haId, "/programs/active");
 				updateOptions(token, haId, "/programs/selected");
 				startEventStream(token, haId);
-				reconnectEventStreamInterval = setInterval(() => {
-					adapter.log.debug("reconnect EventStream");
-					startEventStream(token, haId);
-				}, 12 * 60 * 60 * 1000); //each 12h reconnect eventstream;
+				// reconnectEventStreamInterval = setInterval(() => {
+				// 	adapter.log.debug("reconnect EventStream");
+				// 	startEventStream(token, haId);
+				// }, 12 * 60 * 60 * 1000); //each 12h reconnect eventstream;
 			}, err => {
 				adapter.log.error("FEHLER: " + err);
 			});
