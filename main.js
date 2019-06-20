@@ -21,6 +21,7 @@ function startAdapter(options) {
 	let eventSource;
 	let availablePrograms = {};
 	let eventSourceList = {};
+	let reconnectTimeouts = {};
 
 	function stateGet(stat) {
 		return new Promise((resolve, reject) => {
@@ -160,6 +161,7 @@ function startAdapter(options) {
 			eventSourceList[haId].removeEventListener("EVENT", e => processEvent(e), false);
 			eventSourceList[haId].removeEventListener("CONNECTED", e => processEvent(e), false);
 			eventSourceList[haId].removeEventListener("DISCONNECTED", e => processEvent(e), false);
+			eventSourceList[haId].removeEventListener("KEEP-ALIVE", e => resetReconnectTimeout(e.lastEventId), false);
 		}
 		eventSourceList[haId] = new EventSource(baseUrl, header);
 		// Error handling
@@ -185,7 +187,24 @@ function startAdapter(options) {
 		eventSourceList[haId].addEventListener("EVENT", e => processEvent(e), false);
 		eventSourceList[haId].addEventListener("CONNECTED", e => processEvent(e), false);
 		eventSourceList[haId].addEventListener("DISCONNECTED", e => processEvent(e), false);
-		//this.eventSource.addEventListener('KEEP-ALIVE', () => lastAlive = new Date(), false)
+		eventSourceList[haId].addEventListener("KEEP-ALIVE", e => {
+			//adapter.log.debug(JSON.stringify(e));
+			resetReconnectTimeout(e.lastEventId);
+		}, false);
+
+		resetReconnectTimeout(haId);
+	}
+
+	function resetReconnectTimeout(haId) {
+
+		clearInterval(reconnectTimeouts[haId]);
+		reconnectTimeouts[haId] = setInterval(() => {
+			stateGet(adapter.namespace + ".dev.token").then(
+				value => {
+					adapter.log.debug("reconnect EventStream " + haId);
+					startEventStream(value, haId);
+				});
+		}, 70000);
 
 
 	}
@@ -198,10 +217,12 @@ function startAdapter(options) {
 
 			adapter.log.debug("event: " + JSON.stringify(msg))
 			let stream = msg
+
 			if (!stream) {
 				adapter.log.debug("No Return: " + stream);
 				return;
 			}
+			resetReconnectTimeout(stream.lastEventId);
 			if (stream.type == "DISCONNECTED") {
 				adapter.setState(stream.lastEventId + ".general.connected", false, true);
 				return;
@@ -463,10 +484,7 @@ function startAdapter(options) {
 				updateOptions(token, haId, "/programs/active");
 				updateOptions(token, haId, "/programs/selected");
 				startEventStream(token, haId);
-				// reconnectEventStreamInterval = setInterval(() => {
-				// 	adapter.log.debug("reconnect EventStream");
-				// 	startEventStream(token, haId);
-				// }, 12 * 60 * 60 * 1000); //each 12h reconnect eventstream;
+
 			}, err => {
 				adapter.log.error("FEHLER: " + err);
 			});
