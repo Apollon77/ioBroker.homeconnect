@@ -46,7 +46,7 @@ function startAdapter(options) {
 		stateGet(stat).then(value => {
 			auth.tokenRefresh(value).then(
 				([token, refreshToken, expires, tokenScope]) => {
-					adapter.log.info("Accestoken renewed...");
+					adapter.log.info("Accesstoken renewed...");
 					adapter.setState("dev.token", {
 						val: token,
 						ack: true
@@ -63,13 +63,13 @@ function startAdapter(options) {
 						val: tokenScope,
 						ack: true
 					});
+					Object.keys(eventSourceList).forEach(function (key) {
+						startEventStream(token, key);
+					});
+
 				},
 				statusPost => {
-					if (statusPost == "400") {
-						adapter.log.error("FEHLER beim Refresh-Token!");
-					} else {
-						adapter.log.error("Irgendwas stimmt da wohl nicht!! Refresh-Token!!    Fehlercode: " + statusPost);
-					}
+					adapter.log.error("Error Refresh-Token: " + statusPost);
 				}
 			);
 		});
@@ -84,7 +84,7 @@ function startAdapter(options) {
 				let deviceCode = value;
 				auth.tokenGet(deviceCode, clientID).then(
 					([token, refreshToken, expires, tokenScope]) => {
-						adapter.log.debug("Accestoken created: " + token);
+						adapter.log.debug("Accesstoken created: " + token);
 						adapter.setState("dev.token", {
 							val: token,
 							ack: true
@@ -116,7 +116,7 @@ function startAdapter(options) {
 						);
 
 						adapter.log.debug("Start Refreshinterval");
-						getTokenRefreshInterval = setInterval(getRefreshToken, 21600000);
+						getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h 
 					},
 					statusPost => {
 						if (statusPost == "400") {
@@ -744,7 +744,7 @@ function startAdapter(options) {
 							let stat = adapter.namespace + ".dev.refreshToken";
 							stateGet(stat).then(value => {
 								let refreshToken = value;
-								getTokenRefreshInterval = setInterval(getRefreshToken, 12 * 60 * 60 * 1000); //every 12h 
+								getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h 
 							});
 						}
 					},
