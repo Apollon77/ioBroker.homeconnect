@@ -60,6 +60,10 @@ Only the ClientID must be entered in the adapter configuration. If the adapter i
 
 ## Changelog
 
+### 0.0.15 (24.06.2019)
+
+-   (ta2k) reconnect after token refresh
+
 ### 0.0.14 (18.06.2019)
 
 -   (ta2k) check for keep alive events

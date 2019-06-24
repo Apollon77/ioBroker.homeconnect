@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.14",
+        "version": "0.0.15",
         "news": {
+            "0.0.15": {
+                "en": "reconnect after token refresh"
+            },
             "0.0.14": {
                 "en": "check for keep alive events"
             },

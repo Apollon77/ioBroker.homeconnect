@@ -1,6 +1,6 @@
 "use strict";
 
-const utils = require('@iobroker/adapter-core');
+const utils = require("@iobroker/adapter-core");
 const auth = require(__dirname + "/lib/auth.js");
 const EventEmitter = require("events");
 const EventSource = require("eventsource");
@@ -19,9 +19,9 @@ function startAdapter(options) {
 	let getTokenRefreshInterval;
 	let reconnectEventStreamInterval;
 	let eventSource;
-	let availablePrograms = {};
-	let eventSourceList = {};
-	let reconnectTimeouts = {};
+	const availablePrograms = {};
+	const eventSourceList = {};
+	const reconnectTimeouts = {};
 
 	function stateGet(stat) {
 		return new Promise((resolve, reject) => {
@@ -30,10 +30,10 @@ function startAdapter(options) {
 					reject(err);
 				} else {
 					if (typeof state != undefined && state != null) {
-						let value = state.val;
+						const value = state.val;
 						resolve(value);
 					} else {
-						let value = false;
+						const value = false;
 						resolve(value);
 					}
 				}
@@ -42,7 +42,7 @@ function startAdapter(options) {
 	}
 
 	function getRefreshToken() {
-		let stat = adapter.namespace + ".dev.refreshToken";
+		const stat = adapter.namespace + ".dev.refreshToken";
 		stateGet(stat).then(value => {
 			auth.tokenRefresh(value).then(
 				([token, refreshToken, expires, tokenScope]) => {
@@ -76,12 +76,12 @@ function startAdapter(options) {
 	}
 
 	function getToken() {
-		let stat = "dev.devCode";
+		const stat = "dev.devCode";
 
 		stateGet(stat).then(
 			value => {
-				let clientID = adapter.config.clientID;
-				let deviceCode = value;
+				const clientID = adapter.config.clientID;
+				const deviceCode = value;
 				auth.tokenGet(deviceCode, clientID).then(
 					([token, refreshToken, expires, tokenScope]) => {
 						adapter.log.debug("Accesstoken created: " + token);
@@ -120,7 +120,7 @@ function startAdapter(options) {
 					},
 					statusPost => {
 						if (statusPost == "400") {
-							let stat = "dev.authUriComplete";
+							const stat = "dev.authUriComplete";
 
 							stateGet(stat).then(
 								value => {
@@ -147,8 +147,9 @@ function startAdapter(options) {
 	/* Eventstream
 	 */
 	function startEventStream(token, haId) {
-		let baseUrl = "https://api.home-connect.com/api/homeappliances/" + haId + "/events";
-		let header = {
+		adapter.log.debug("Start EventStream " + haId);
+		const baseUrl = "https://api.home-connect.com/api/homeappliances/" + haId + "/events";
+		const header = {
 			headers: {
 				Authorization: "Bearer " + token,
 				Accept: "text/event-stream"
@@ -211,12 +212,12 @@ function startAdapter(options) {
 
 	//Eventstream ==>> Datenpunkt
 
-	let processEvent = msg => {
+	const processEvent = msg => {
 		/*Auswertung des Eventstreams*/
 		try {
 
-			adapter.log.debug("event: " + JSON.stringify(msg))
-			let stream = msg
+			adapter.log.debug("event: " + JSON.stringify(msg));
+			const stream = msg;
 
 			if (!stream) {
 				adapter.log.debug("No Return: " + stream);
@@ -232,24 +233,24 @@ function startAdapter(options) {
 				return;
 			}
 
-			let parseMsg = msg.data;
+			const parseMsg = msg.data;
 
-			let parseMessage = JSON.parse(parseMsg);
+			const parseMessage = JSON.parse(parseMsg);
 			parseMessage.items.forEach(element => {
-				let haId = parseMessage.haId
+				const haId = parseMessage.haId;
 				let folder;
 				let key;
 				if (stream.type === "EVENT") {
-					folder = "events"
-					key = element.key.replace(/\./g, '_')
+					folder = "events";
+					key = element.key.replace(/\./g, "_");
 
 				} else {
-					folder = element.uri.split("/").splice(4)
+					folder = element.uri.split("/").splice(4);
 					if (folder[folder.length - 1].indexOf(".") != -1) {
 						folder.pop();
 					}
 					folder = folder.join(".");
-					key = element.key.replace(/\./g, '_')
+					key = element.key.replace(/\./g, "_");
 				}
 				adapter.log.debug(haId + "." + folder + "." + key + ":" + element.value);
 				adapter.setObjectNotExists(haId + "." + folder + "." + key, {
@@ -271,8 +272,8 @@ function startAdapter(options) {
 
 
 		} catch (error) {
-			adapter.log.error("Parsemessage: " + error)
-			adapter.log.error("Error Event: " + msg)
+			adapter.log.error("Parsemessage: " + error);
+			adapter.log.error("Error Event: " + msg);
 		}
 
 	};
@@ -300,13 +301,13 @@ function startAdapter(options) {
 		if (state && !state.ack) {
 			const idArray = id.split(".");
 			const command = idArray.pop().replace(/_/g, ".");
-			const haId = idArray[2]
+			const haId = idArray[2];
 			if (id.indexOf(".commands.") !== -1) {
 				adapter.log.debug(id);
 				if (id.indexOf("StopProgram") && state.val) {
 					stateGet(adapter.namespace + ".dev.token").then(token => {
 						deleteAPIValues(token, haId, "/programs/active");
-					})
+					});
 
 				} else {
 					const data = {
@@ -314,68 +315,68 @@ function startAdapter(options) {
 							key: command,
 							value: state.val
 						}
-					}
+					};
 					stateGet(adapter.namespace + ".dev.token").then(token => {
 						putAPIValues(token, haId, "/commands/" + command, data);
-					})
+					});
 				}
 			}
 			if (id.indexOf(".settings.") !== -1) {
-				let data = {
+				const data = {
 					data: {
 						key: command,
 						value: state.val,
 						type: command
 					}
-				}
+				};
 				stateGet(adapter.namespace + ".dev.token").then(token => {
 					putAPIValues(token, haId, "/settings/" + command, data);
-				})
+				});
 			}
 			if (id.indexOf(".options.") !== -1) {
-				let data = {
+				const data = {
 					data: {
 						key: command,
 						value: state.val
 					}
-				}
+				};
 				const folder = idArray.slice(3, idArray.length).join("/");
 				stateGet(adapter.namespace + ".dev.token").then(token => {
 					putAPIValues(token, haId, "/" + folder + "/" + command, data);
-				})
+				});
 			}
 			if (id.indexOf("BSH_Common_Root_") !== -1) {
 				const data = {
 					data: {
 						key: state.val
 					}
-				}
+				};
 				if (id.indexOf("Active") !== -1) {
 
 					stateGet(adapter.namespace + ".dev.token").then(token => {
 						putAPIValues(token, haId, "/programs/active", data).then(() => updateOptions(token, haId, "/programs/active"));
-					})
+					});
 				}
 				if (id.indexOf("Selected") !== -1) {
 
 					stateGet(adapter.namespace + ".dev.token").then(token => {
 						putAPIValues(token, haId, "/programs/selected", data).then(() => updateOptions(token, haId, "/programs/selected"));
-					})
+					});
 				}
 			}
 		} else {
 			const idArray = id.split(".");
-			const haId = idArray[2]
+			const haId = idArray[2];
 			if (id.indexOf("BSH_Common_Root_") !== -1) {
 				if (id.indexOf("Active") !== -1) {
 					stateGet(adapter.namespace + ".dev.token").then(token => {
 						updateOptions(token, haId, "/programs/active");
-					})
+					});
 				}
 				if (id.indexOf("Selected") !== -1) {
 					stateGet(adapter.namespace + ".dev.token").then(token => {
 						updateOptions(token, haId, "/programs/selected");
-					})
+					});
 				}
 			}
 		}
@@ -403,28 +404,28 @@ function startAdapter(options) {
 		const pre = adapter.name + "." + adapter.instance;
 		adapter.getStates(pre + "." + haId + ".programs.*", (err, states) => {
 
-			var allIds = Object.keys(states);
-			let searchString = "selected.options."
+			const allIds = Object.keys(states);
+			let searchString = "selected.options.";
 			if (url.indexOf("/active") !== -1) {
-				searchString = "active.options."
+				searchString = "active.options.";
 			}
-			adapter.log.debug(searchString)
+			adapter.log.debug(searchString);
 			allIds.forEach(function (keyName) {
-				if (keyName.indexOf(searchString) !== -1) {
-					adapter.delObject(keyName.split(".").slice(2).join("."))
+				if (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) {
+					adapter.delObject(keyName.split(".").slice(2).join("."));
 
 				}
-			})
+			});
 			setTimeout(() => getAPIValues(token, haId, url + "/options"), 0);
 
-		})
+		});
 
-		adapter.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options")
+		adapter.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options");
 	}
 
 	function parseHomeappliances(appliancesArray) {
 		appliancesArray.data.homeappliances.forEach(element => {
-			let haId = element.haId;
+			const haId = element.haId;
 			for (const key in element) {
 				adapter.setObjectNotExists(haId + ".general." + key, {
 					type: "state",
@@ -472,12 +473,12 @@ function startAdapter(options) {
 				},
 				native: {}
 			});
-			let tokenID = adapter.namespace + ".dev.token";
+			const tokenID = adapter.namespace + ".dev.token";
 			stateGet(tokenID).then(value => {
-				let token = value;
-				getAPIValues(token, haId, '/programs/available');
+				const token = value;
+				getAPIValues(token, haId, "/programs/available");
 				getAPIValues(token, haId, "/status");
-				getAPIValues(token, haId, '/settings');
+				getAPIValues(token, haId, "/settings");
 				getAPIValues(token, haId, "/programs/active");
 				getAPIValues(token, haId, "/programs/selected");
 
@@ -493,15 +494,15 @@ function startAdapter(options) {
 
 	function putAPIValues(token, haId, url, data) {
 		return new Promise((resolve, reject) => {
-			adapter.log.debug(haId + url)
-			adapter.log.debug(JSON.stringify(data))
+			adapter.log.debug(haId + url);
+			adapter.log.debug(JSON.stringify(data));
 			auth.sendRequest(token, haId, url, "PUT", JSON.stringify(data)).then(([statusCode, returnValue]) => {
-				adapter.log.debug((statusCode + " " + returnValue))
-				adapter.log.debug(JSON.stringify(returnValue))
+				adapter.log.debug((statusCode + " " + returnValue));
+				adapter.log.debug(JSON.stringify(returnValue));
 				resolve();
 			}, ([statusCode, description]) => {
 				if (statusCode === 403) {
-					adapter.log.info("Homeconnect API has not the rights for this command and device")
+					adapter.log.info("Homeconnect API has not the rights for this command and device");
 				}
 				adapter.log.info(statusCode + ": " + description);
 				reject();
@@ -512,16 +513,16 @@ function startAdapter(options) {
 	function deleteAPIValues(token, haId, url) {
 		auth.sendRequest(token, haId, url, "DELETE").then(([statusCode, returnValue]) => {
 			adapter.log.debug(url);
-			adapter.log.debug(JSON.stringify(returnValue))
-		})
+			adapter.log.debug(JSON.stringify(returnValue));
+		});
 	}
 
 	function getAPIValues(token, haId, url) {
 		auth.sendRequest(token, haId, url).then(([statusCode, returnValue]) => {
 			adapter.log.debug(url);
-			adapter.log.debug(JSON.stringify(returnValue))
-			if (url.indexOf('/settings/') !== -1) {
-				let common = {
+			adapter.log.debug(JSON.stringify(returnValue));
+			if (url.indexOf("/settings/") !== -1) {
+				const common = {
 					name: returnValue.data.name,
 					type: "string",
 					role: "indicator",
@@ -529,12 +530,12 @@ function startAdapter(options) {
 					read: true,
 					states: {}
 
-				}
+				};
 				returnValue.data.constraints.allowedvalues.forEach((element, index) => {
-					common.states[element] = returnValue.data.constraints.displayvalues[index]
+					common.states[element] = returnValue.data.constraints.displayvalues[index];
 
 				});
-				const folder = ".settings." + returnValue.data.key.replace(/\./g, '_');
+				const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
 				adapter.extendObject(haId + folder, {
 					type: "state",
 					common: common,
@@ -543,10 +544,10 @@ function startAdapter(options) {
 				return;
 			}
 
-			if (url.indexOf('/programs/available/') !== -1) {
+			if (url.indexOf("/programs/available/") !== -1) {
 				if (returnValue.data.options) {
 					returnValue.data.options.forEach((option) => {
-						let common = {
+						const common = {
 							name: option.name,
 							type: "string",
 							role: "indicator",
@@ -556,16 +557,16 @@ function startAdapter(options) {
 							min: option.constraints.min || null,
 							max: option.constraints.max || null,
 
-						}
+						};
 
 						if (option.constraints.allowedvalues) {
-							common.states = {}
+							common.states = {};
 							option.constraints.allowedvalues.forEach((element, index) => {
-								common.states[element] = option.constraints.displayvalues[index]
+								common.states[element] = option.constraints.displayvalues[index];
 
 							});
 						}
-						const folder = ".programs.available.options." + option.key.replace(/\./g, '_');
+						const folder = ".programs.available.options." + option.key.replace(/\./g, "_");
 
 
 						adapter.extendObject(haId + folder, {
@@ -575,7 +576,7 @@ function startAdapter(options) {
 						});
 						adapter.setState(haId + folder, option.constraints.default, true);
 
-					})
+					});
 				}
 				return;
 			}
@@ -588,85 +589,85 @@ function startAdapter(options) {
 			}
 			for (const item in returnValue.data) {
 				returnValue.data[item].forEach(subElement => {
-					if (url === '/programs/active') {
-						subElement.value = subElement.key
-						subElement.key = 'BSH_Common_Root_ActiveProgram'
-						subElement.name = 'BSH_Common_Root_ActiveProgram'
+					if (url === "/programs/active") {
+						subElement.value = subElement.key;
+						subElement.key = "BSH_Common_Root_ActiveProgram";
+						subElement.name = "BSH_Common_Root_ActiveProgram";
 					}
-					if (url === '/programs/selected') {
-						subElement.value = subElement.key
-						subElement.key = 'BSH_Common_Root_SelectedProgram'
-						subElement.name = 'BSH_Common_Root_SelectedProgram'
+					if (url === "/programs/selected") {
+						subElement.value = subElement.key;
+						subElement.key = "BSH_Common_Root_SelectedProgram";
+						subElement.name = "BSH_Common_Root_SelectedProgram";
 					}
-					if (url === '/programs/available') {
-						adapter.log.debug(haId + " available: " + JSON.stringify(subElement))
+					if (url === "/programs/available") {
+						adapter.log.debug(haId + " available: " + JSON.stringify(subElement));
 						if (availablePrograms[haId]) {
 							availablePrograms[haId].push({
 								key: subElement.key,
 								name: subElement.name
-							})
+							});
 						} else {
 							availablePrograms[haId] = [{
 								key: subElement.key,
 								name: subElement.name
-							}]
+							}];
 						}
-						getAPIValues(token, haId, '/programs/available/' + subElement.key)
+						getAPIValues(token, haId, "/programs/available/" + subElement.key);
 					}
-					if (url === '/settings') {
-						getAPIValues(token, haId, '/settings/' + subElement.key)
+					if (url === "/settings") {
+						getAPIValues(token, haId, "/settings/" + subElement.key);
 					}
 					const folder = url.replace(/\//g, ".");
-					adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, '_'))
-					let common = {
+					adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
+					const common = {
 						name: subElement.name,
 						type: "object",
 						role: "indicator",
 						write: true,
 						read: true,
 						unit: subElement.unit || ""
-					}
+					};
 
-					adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, '_'), {
+					adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
 						type: "state",
 						common: common,
 						native: {}
 					});
-					adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, '_'), subElement.value, true);
+					adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
 				});
 			}
-			if (url === '/programs/available') {
+			if (url === "/programs/available") {
 				const rootItems = [{
 					key: "BSH_Common_Root_ActiveProgram",
-					folder: '.programs.active'
+					folder: ".programs.active"
 				}, {
 					key: "BSH_Common_Root_SelectedProgram",
-					folder: '.programs.selected'
-				}]
+					folder: ".programs.selected"
+				}];
 				rootItems.forEach((rootItem) => {
 
-					let common = {
+					const common = {
 						name: rootItem.key,
 						type: "string",
 						role: "indicator",
 						write: true,
 						read: true,
 						states: {}
-					}
+					};
 					availablePrograms[haId].forEach((program) => {
 						common.states[program.key] = program.name;
 					});
-					adapter.setObjectNotExists(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, '_'), {
+					adapter.setObjectNotExists(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
 						type: "state",
 						common: common,
 						native: {}
 					});
-					adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, '_'), {
+					adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
 						type: "state",
 						common: common,
 						native: {}
 					});
-				})
+				});
 			}
 		}, ([statusCode, description]) => {
 			// adapter.log.info("Error getting API Values Error: " + statusGet);
@@ -688,7 +689,7 @@ function startAdapter(options) {
 			adapter.setState("dev.refreshToken", "");
 			adapter.setState("dev.expires", "");
 			adapter.setState("dev.tokenScope", "");
-			let adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
+			const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
 			adapter.getForeignObject(adapterConfig, (error, obj) => {
 				obj.native.authUri = "";
 				obj.native.clientID = "";
@@ -700,10 +701,10 @@ function startAdapter(options) {
 		//OAuth2 Deviceflow
 		//Get Authorization-URI to grant access ===> User interaction
 
-		let scope = adapter.config.scope;
-		let clientID = adapter.config.clientID;
+		const scope = adapter.config.scope;
+		const clientID = adapter.config.clientID;
 
-		let stat = adapter.namespace + ".dev.devCode";
+		const stat = adapter.namespace + ".dev.devCode";
 		stateGet(stat).then(value => {
 			if (value == false) {
 				auth.authUriGet(scope, clientID).then(
@@ -711,7 +712,7 @@ function startAdapter(options) {
 						adapter.setState("dev.authUriComplete", authUri);
 						adapter.setState("dev.devCode", devCode);
 						adapter.setState("dev.pollInterval", pollInterval);
-						let adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
+						const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
 						adapter.getForeignObject(adapterConfig, (error, obj) => {
 							if (!obj.native.authUri) {
 								obj.native.authUri = authUri;
@@ -724,13 +725,13 @@ function startAdapter(options) {
 					}
 				);
 			} else {
-				let stat = adapter.namespace + ".dev.token";
+				const stat = adapter.namespace + ".dev.token";
 				stateGet(stat).then(
 					value => {
 						if (!value) {
 							getTokenInterval = setInterval(getToken, 10000);
 						} else {
-							let token = value;
+							const token = value;
 							auth.getAppliances(token).then(
 								appliances => {
 									parseHomeappliances(appliances);
@@ -741,9 +742,9 @@ function startAdapter(options) {
 									);
 								}
 							);
-							let stat = adapter.namespace + ".dev.refreshToken";
+							const stat = adapter.namespace + ".dev.refreshToken";
 							stateGet(stat).then(value => {
-								let refreshToken = value;
+								const refreshToken = value;
 								getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h 
 							});
 						}
