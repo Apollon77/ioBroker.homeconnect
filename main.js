@@ -76,12 +76,9 @@ function startAdapter(options) {
 	}
 
 	function getToken() {
-		const stat = "dev.devCode";
-
-		stateGet(stat).then(
-			value => {
+		stateGet("dev.devCode").then(
+			deviceCode => {
 				const clientID = adapter.config.clientID;
-				const deviceCode = value;
 				auth.tokenGet(deviceCode, clientID).then(
 					([token, refreshToken, expires, tokenScope]) => {
 						adapter.log.debug("Accesstoken created: " + token);
@@ -168,7 +165,11 @@ function startAdapter(options) {
 		// Error handling
 		eventSourceList[haId].onerror = err => {
 			adapter.log.error("EventSource error: " + JSON.stringify(err));
-			adapter.log.error(err.status + " " + err.message);
+			if (err.status) {
+				adapter.log.error(err.status + " " + err.message);
+			} else {
+				adapter.log.info("Undefined Error from Homeconnect this happens sometimes.");
+			}
 			if (err.status !== undefined) {
 				adapter.log.error("Error (" + haId + ")", err);
 				if (err.status === 401) {
@@ -704,8 +705,7 @@ function startAdapter(options) {
 		const scope = adapter.config.scope;
 		const clientID = adapter.config.clientID;
 
-		const stat = adapter.namespace + ".dev.devCode";
-		stateGet(stat).then(value => {
+		stateGet(adapter.namespace + ".dev.devCode").then(value => {
 			if (value == false) {
 				auth.authUriGet(scope, clientID).then(
 					([authUri, devCode, pollInterval]) => {
@@ -725,8 +725,8 @@ function startAdapter(options) {
 					}
 				);
 			} else {
-				const stat = adapter.namespace + ".dev.token";
-				stateGet(stat).then(
+
+				stateGet(adapter.namespace + ".dev.token").then(
 					value => {
 						if (!value) {
 							getTokenInterval = setInterval(getToken, 10000);
@@ -742,9 +742,8 @@ function startAdapter(options) {
 									);
 								}
 							);
-							const stat = adapter.namespace + ".dev.refreshToken";
-							stateGet(stat).then(value => {
-								const refreshToken = value;
+							stateGet(adapter.namespace + ".dev.refreshToken").then(refreshToken => {
+								getRefreshToken();
 								getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h 
 							});
 						}
