@@ -304,9 +304,10 @@ function startAdapter(options) {
 			const command = idArray.pop().replace(/_/g, ".");
 			const haId = idArray[2];
 			if (id.indexOf(".commands.") !== -1) {
-				adapter.log.debug(id);
+				adapter.log.debug(id + " " + state.val);
 				if (id.indexOf("StopProgram") && state.val) {
 					stateGet(adapter.namespace + ".dev.token").then(token => {
+
 						deleteAPIValues(token, haId, "/programs/active");
 					});
 
@@ -441,7 +442,7 @@ function startAdapter(options) {
 				});
 				adapter.setState(haId + ".general." + key, element[key]);
 			}
-			adapter.setObjectNotExists(haId + ".commands.BSH_Common_Command_StopProgram", {
+			adapter.extendObject(haId + ".commands.BSH_Common_Command_StopProgram", {
 				type: "state",
 				common: {
 					name: "Stop Program",
@@ -452,7 +453,7 @@ function startAdapter(options) {
 				},
 				native: {}
 			});
-			adapter.setObjectNotExists(haId + ".commands.BSH_Common_Command_PauseProgram", {
+			adapter.extendObject(haId + ".commands.BSH_Common_Command_PauseProgram", {
 				type: "state",
 				common: {
 					name: "Pause Program",
@@ -463,7 +464,7 @@ function startAdapter(options) {
 				},
 				native: {}
 			});
-			adapter.setObjectNotExists(haId + ".commands.BSH_Common_Command_ResumeProgram", {
+			adapter.extendObject(haId + ".commands.BSH_Common_Command_ResumeProgram", {
 				type: "state",
 				common: {
 					name: "Resume Program",
@@ -529,6 +530,11 @@ function startAdapter(options) {
 		auth.sendRequest(token, haId, url, "DELETE").then(([statusCode, returnValue]) => {
 			adapter.log.debug(url);
 			adapter.log.debug(JSON.stringify(returnValue));
+		}, ([statusCode, description]) => {
+			if (statusCode === 403) {
+				adapter.log.info("Homeconnect API has not the rights for this command and device");
+			}
+			adapter.log.info(statusCode + ": " + description);
 		});
 	}
 
