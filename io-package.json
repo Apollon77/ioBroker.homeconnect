@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.16",
+        "version": "0.0.17",
         "news": {
+            "0.0.17": {
+                "en": "make commands writeable"
+            },
             "0.0.16": {
                 "en": "cleanup states after update"
             },

@@ -447,7 +447,7 @@ function startAdapter(options) {
 					name: "Stop Program",
 					type: "boolean",
 					role: "button",
-					write: false,
+					write: true,
 					read: true
 				},
 				native: {}
@@ -458,7 +458,7 @@ function startAdapter(options) {
 					name: "Pause Program",
 					type: "boolean",
 					role: "button",
-					write: false,
+					write: true,
 					read: true
 				},
 				native: {}
@@ -469,7 +469,7 @@ function startAdapter(options) {
 					name: "Resume Program",
 					type: "boolean",
 					role: "button",
-					write: false,
+					write: true,
 					read: true
 				},
 				native: {}
