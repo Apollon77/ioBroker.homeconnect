@@ -490,6 +490,20 @@ function startAdapter(options) {
 			}, err => {
 				adapter.log.error("FEHLER: " + err);
 			});
+
+
+		});
+		//Delete old states
+		adapter.getStates("*", (err, states) => {
+			const allIds = Object.keys(states);
+			allIds.forEach(function (keyName) {
+				if (keyName.indexOf(".Event.") !== -1 || keyName.indexOf(".General.") !== -1 || keyName.indexOf(".Option.") !== -1 || keyName.indexOf(".Root.") !== -1 || keyName.indexOf(".Setting.") !== -1 || keyName.indexOf(".Status.") !== -1) {
+					adapter.delObject(keyName.split(".").slice(2).join("."));
+
+				}
+			});
+
+
 		});
 	}
 

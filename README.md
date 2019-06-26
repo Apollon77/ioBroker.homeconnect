@@ -58,7 +58,25 @@ In der Adapter-Config muss nur die ClientID eingetragen werden. Wenn der Adapter
 
 Only the ClientID must be entered in the adapter configuration. If the adapter is running, an authorization URL is generated. This url you can see in the settings after save, wait and reopen the settings.
 
+## Benutzung
+
+Mit den states in commands kannst du das Programm stoppen, pausiren oder fortführen.
+Mit den states in settings kannst du das Gerät ein oder ausschalten.
+Ändern des States programs.active.BSH_Common_Root_ActiveProgram führt zum starten eines Programms
+Ändern des States programs.selected.BSH_Common_Root_SelectedProgram führt zum auswählen des Programms oder Optionen
+
+## Usage
+
+With the states in commands you can stop, pause and resume a program.
+With the states in settings you can turn off or turn on the device
+Change the value of programs.active.BSH_Common_Root_ActiveProgram leads to starting a program
+Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to selecting a program or options
+
 ## Changelog
+
+### 0.0.16 (26.06.2019)
+
+-   (ta2k) cleanup states after update
 
 ### 0.0.15 (24.06.2019)
 

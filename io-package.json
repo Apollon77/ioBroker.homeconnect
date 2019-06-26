@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.15",
+        "version": "0.0.16",
         "news": {
+            "0.0.16": {
+                "en": "cleanup states after update"
+            },
             "0.0.15": {
                 "en": "reconnect after token refresh"
             },
