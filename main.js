@@ -368,6 +368,7 @@ function startAdapter(options) {
 			}
 		} else {
 			const idArray = id.split(".");
+			const command = idArray.pop().replace(/_/g, ".");
 			const haId = idArray[2];
 			if (id.indexOf("BSH_Common_Root_") !== -1) {
 				if (id.indexOf("Active") !== -1) {
@@ -378,6 +379,21 @@ function startAdapter(options) {
 				if (id.indexOf("Selected") !== -1) {
 					stateGet(adapter.namespace + ".dev.token").then(token => {
 						updateOptions(token, haId, "/programs/selected");
+					});
+				}
+			}
+
+
+			if (id.indexOf(".options.") !== -1) {
+				if (id.indexOf("BSH_Common_Option") === -1 && state && state.val.indexOf && state.val.indexOf(".") !== -1) {
+					adapter.getObject(id, function (err, obj) {
+						let common = obj.common;
+						const valArray = state.val.split(".");
+						common.states = {};
+						common.states[state.val] = valArray[valArray.length - 1]
+						adapter.extendObject(id, {
+							common: common
+						});
 					});
 				}
 			}
@@ -760,6 +776,7 @@ function startAdapter(options) {
 									adapter.log.error(
 										"Error getting homeapplianceJSON with Token. Please reset Token in settings. " + statusGet
 									);
+									setTimeout(() => adapter.restart(), 2000);
 								}
 							);
 							stateGet(adapter.namespace + ".dev.refreshToken").then(refreshToken => {
