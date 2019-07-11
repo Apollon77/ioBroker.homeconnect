@@ -385,7 +385,7 @@ function startAdapter(options) {
 
 
 			if (id.indexOf(".options.") !== -1 || id.indexOf(".events.") !== -1 || id.indexOf(".status.") !== -1) {
-				if (id.indexOf("BSH_Common_Option") === -1 && state && state.val.indexOf && state.val.indexOf(".") !== -1) {
+				if (id.indexOf("BSH_Common_Option") === -1 && state && state.val && state.val.indexOf && state.val.indexOf(".") !== -1) {
 					adapter.getObject(id, function (err, obj) {
 						let common = obj.common;
 						const valArray = state.val.split(".");
