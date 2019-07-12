@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.19",
+        "version": "0.0.20",
         "news": {
+            "0.0.20": {
+                "en": "bugfixing"
+            },
             "0.0.19": {
                 "en": "improve displaying long states, options and events"
             },
