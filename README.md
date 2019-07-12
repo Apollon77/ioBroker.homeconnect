@@ -74,7 +74,7 @@ Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to s
 
 ## Changelog
 
-### 0.0.20 (12.07.2019)
+### 0.0.21 (12.07.2019)
 
 -   (ta2k) bugfixing
 
