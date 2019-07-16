@@ -14,7 +14,6 @@ function startAdapter(options) {
 	});
 	adapter = new utils.Adapter(options);
 
-
 	let getTokenInterval;
 	let getTokenRefreshInterval;
 	let reconnectEventStreamInterval;
@@ -66,7 +65,6 @@ function startAdapter(options) {
 					Object.keys(eventSourceList).forEach(function (key) {
 						startEventStream(token, key);
 					});
-
 				},
 				statusPost => {
 					adapter.log.error("Error Refresh-Token: " + statusPost);
@@ -104,7 +102,6 @@ function startAdapter(options) {
 						auth.getAppliances(token).then(
 							appliances => {
 								parseHomeappliances(appliances);
-
 							},
 							([statusCode, description]) => {
 								adapter.log.error("Error getting Aplliances Error: " + statusCode);
@@ -113,7 +110,7 @@ function startAdapter(options) {
 						);
 
 						adapter.log.debug("Start Refreshinterval");
-						getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h 
+						getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
 					},
 					statusPost => {
 						if (statusPost == "400") {
@@ -189,26 +186,26 @@ function startAdapter(options) {
 		eventSourceList[haId].addEventListener("EVENT", e => processEvent(e), false);
 		eventSourceList[haId].addEventListener("CONNECTED", e => processEvent(e), false);
 		eventSourceList[haId].addEventListener("DISCONNECTED", e => processEvent(e), false);
-		eventSourceList[haId].addEventListener("KEEP-ALIVE", e => {
-			//adapter.log.debug(JSON.stringify(e));
-			resetReconnectTimeout(e.lastEventId);
-		}, false);
+		eventSourceList[haId].addEventListener(
+			"KEEP-ALIVE",
+			e => {
+				//adapter.log.debug(JSON.stringify(e));
+				resetReconnectTimeout(e.lastEventId);
+			},
+			false
+		);
 
 		resetReconnectTimeout(haId);
 	}
 
 	function resetReconnectTimeout(haId) {
-
 		clearInterval(reconnectTimeouts[haId]);
 		reconnectTimeouts[haId] = setInterval(() => {
-			stateGet(adapter.namespace + ".dev.token").then(
-				value => {
-					adapter.log.debug("reconnect EventStream " + haId);
-					startEventStream(value, haId);
-				});
+			stateGet(adapter.namespace + ".dev.token").then(value => {
+				adapter.log.debug("reconnect EventStream " + haId);
+				startEventStream(value, haId);
+			});
 		}, 70000);
-
-
 	}
 
 	//Eventstream ==>> Datenpunkt
@@ -216,7 +213,6 @@ function startAdapter(options) {
 	const processEvent = msg => {
 		/*Auswertung des Eventstreams*/
 		try {
-
 			adapter.log.debug("event: " + JSON.stringify(msg));
 			const stream = msg;
 
@@ -244,7 +240,6 @@ function startAdapter(options) {
 				if (stream.type === "EVENT") {
 					folder = "events";
 					key = element.key.replace(/\./g, "_");
-
 				} else {
 					folder = element.uri.split("/").splice(4);
 					if (folder[folder.length - 1].indexOf(".") != -1) {
@@ -268,15 +263,11 @@ function startAdapter(options) {
 				});
 
 				adapter.setState(haId + "." + folder + "." + key, element.value, true);
-
 			});
-
-
 		} catch (error) {
 			adapter.log.error("Parsemessage: " + error);
 			adapter.log.error("Error Event: " + msg);
 		}
-
 	};
 
 	adapter.on("unload", function (callback) {
@@ -307,10 +298,8 @@ function startAdapter(options) {
 				adapter.log.debug(id + " " + state.val);
 				if (id.indexOf("StopProgram") && state.val) {
 					stateGet(adapter.namespace + ".dev.token").then(token => {
-
 						deleteAPIValues(token, haId, "/programs/active");
 					});
-
 				} else {
 					const data = {
 						data: {
@@ -348,23 +337,41 @@ function startAdapter(options) {
 				});
 			}
 			if (id.indexOf("BSH_Common_Root_") !== -1) {
-				const data = {
-					data: {
-						key: state.val
+				const pre = adapter.name + "." + adapter.instance;
+				adapter.getStates(pre + "." + haId + ".programs.selected.options.*", (err, states) => {
+					const allIds = Object.keys(states);
+					options = [];
+					allIds.forEach(function (keyName) {
+						if (keyName.indexOf("BSH_Common_Option_ProgramProgress") === -1 && keyName.indexOf("BSH_Common_Option_RemainingProgramTime") === -1) {
+							const idArray = keyName.split(".");
+							const command = idArray.pop().replace(/_/g, ".");
+							options.push({
+								key: command,
+								value: states[keyName].val
+							});
+						}
+					});
+
+					const data = {
+						data: {
+							key: state.val,
+							options: options
+						}
+					};
+
+					if (id.indexOf("Active") !== -1) {
+						stateGet(adapter.namespace + ".dev.token").then(token => {
+							putAPIValues(token, haId, "/programs/active", data).then(() => updateOptions(token, haId, "/programs/active"));
+						});
 					}
-				};
-				if (id.indexOf("Active") !== -1) {
-
-					stateGet(adapter.namespace + ".dev.token").then(token => {
-						putAPIValues(token, haId, "/programs/active", data).then(() => updateOptions(token, haId, "/programs/active"));
-					});
-				}
-				if (id.indexOf("Selected") !== -1) {
-
-					stateGet(adapter.namespace + ".dev.token").then(token => {
-						putAPIValues(token, haId, "/programs/selected", data).then(() => updateOptions(token, haId, "/programs/selected"));
-					});
-				}
+					if (id.indexOf("Selected") !== -1) {
+						stateGet(adapter.namespace + ".dev.token").then(token => {
+							putAPIValues(token, haId, "/programs/selected", data).then(() =>
+								updateOptions(token, haId, "/programs/selected")
+							);
+						});
+					}
+				});
 			}
 		} else {
 			const idArray = id.split(".");
@@ -383,17 +390,18 @@ function startAdapter(options) {
 				}
 			}
 
-
 			if (id.indexOf(".options.") !== -1 || id.indexOf(".events.") !== -1 || id.indexOf(".status.") !== -1) {
 				if (id.indexOf("BSH_Common_Option") === -1 && state && state.val && state.val.indexOf && state.val.indexOf(".") !== -1) {
 					adapter.getObject(id, function (err, obj) {
-						let common = obj.common;
-						const valArray = state.val.split(".");
-						common.states = {};
-						common.states[state.val] = valArray[valArray.length - 1]
-						adapter.extendObject(id, {
-							common: common
-						});
+						if (obj) {
+							let common = obj.common;
+							const valArray = state.val.split(".");
+							common.states = {};
+							common.states[state.val] = valArray[valArray.length - 1];
+							adapter.extendObject(id, {
+								common: common
+							});
+						}
 					});
 				}
 			}
@@ -418,10 +426,8 @@ function startAdapter(options) {
 	});
 
 	function updateOptions(token, haId, url) {
-
 		const pre = adapter.name + "." + adapter.instance;
 		adapter.getStates(pre + "." + haId + ".programs.*", (err, states) => {
-
 			const allIds = Object.keys(states);
 			let searchString = "selected.options.";
 			if (url.indexOf("/active") !== -1) {
@@ -430,12 +436,15 @@ function startAdapter(options) {
 			adapter.log.debug(searchString);
 			allIds.forEach(function (keyName) {
 				if (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) {
-					adapter.delObject(keyName.split(".").slice(2).join("."));
-
+					adapter.delObject(
+						keyName
+						.split(".")
+						.slice(2)
+						.join(".")
+					);
 				}
 			});
 			setTimeout(() => getAPIValues(token, haId, url + "/options"), 0);
-
 		});
 
 		adapter.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options");
@@ -492,35 +501,44 @@ function startAdapter(options) {
 				native: {}
 			});
 			const tokenID = adapter.namespace + ".dev.token";
-			stateGet(tokenID).then(value => {
-				const token = value;
-				getAPIValues(token, haId, "/programs/available");
-				getAPIValues(token, haId, "/status");
-				getAPIValues(token, haId, "/settings");
-				getAPIValues(token, haId, "/programs/active");
-				getAPIValues(token, haId, "/programs/selected");
+			stateGet(tokenID).then(
+				value => {
+					const token = value;
+					getAPIValues(token, haId, "/programs/available");
+					getAPIValues(token, haId, "/status");
+					getAPIValues(token, haId, "/settings");
+					getAPIValues(token, haId, "/programs/active");
+					getAPIValues(token, haId, "/programs/selected");
 
-				updateOptions(token, haId, "/programs/active");
-				updateOptions(token, haId, "/programs/selected");
-				startEventStream(token, haId);
-
-			}, err => {
-				adapter.log.error("FEHLER: " + err);
-			});
-
-
+					updateOptions(token, haId, "/programs/active");
+					updateOptions(token, haId, "/programs/selected");
+					startEventStream(token, haId);
+				},
+				err => {
+					adapter.log.error("FEHLER: " + err);
+				}
+			);
 		});
 		//Delete old states
 		adapter.getStates("*", (err, states) => {
 			const allIds = Object.keys(states);
 			allIds.forEach(function (keyName) {
-				if (keyName.indexOf(".Event.") !== -1 || keyName.indexOf(".General.") !== -1 || keyName.indexOf(".Option.") !== -1 || keyName.indexOf(".Root.") !== -1 || keyName.indexOf(".Setting.") !== -1 || keyName.indexOf(".Status.") !== -1) {
-					adapter.delObject(keyName.split(".").slice(2).join("."));
-
+				if (
+					keyName.indexOf(".Event.") !== -1 ||
+					keyName.indexOf(".General.") !== -1 ||
+					keyName.indexOf(".Option.") !== -1 ||
+					keyName.indexOf(".Root.") !== -1 ||
+					keyName.indexOf(".Setting.") !== -1 ||
+					keyName.indexOf(".Status.") !== -1
+				) {
+					adapter.delObject(
+						keyName
+						.split(".")
+						.slice(2)
+						.join(".")
+					);
 				}
 			});
-
-
 		});
 	}
 
@@ -528,188 +546,191 @@ function startAdapter(options) {
 		return new Promise((resolve, reject) => {
 			adapter.log.debug(haId + url);
 			adapter.log.debug(JSON.stringify(data));
-			auth.sendRequest(token, haId, url, "PUT", JSON.stringify(data)).then(([statusCode, returnValue]) => {
-				adapter.log.debug((statusCode + " " + returnValue));
-				adapter.log.debug(JSON.stringify(returnValue));
-				resolve();
-			}, ([statusCode, description]) => {
-				if (statusCode === 403) {
-					adapter.log.info("Homeconnect API has not the rights for this command and device");
+			auth.sendRequest(token, haId, url, "PUT", JSON.stringify(data)).then(
+				([statusCode, returnValue]) => {
+					adapter.log.debug(statusCode + " " + returnValue);
+					adapter.log.debug(JSON.stringify(returnValue));
+					resolve();
+				},
+				([statusCode, description]) => {
+					if (statusCode === 403) {
+						adapter.log.info("Homeconnect API has not the rights for this command and device");
+					}
+					adapter.log.info(statusCode + ": " + description);
+					reject();
 				}
-				adapter.log.info(statusCode + ": " + description);
-				reject();
-			});
+			);
 		});
 	}
 
 	function deleteAPIValues(token, haId, url) {
-		auth.sendRequest(token, haId, url, "DELETE").then(([statusCode, returnValue]) => {
-			adapter.log.debug(url);
-			adapter.log.debug(JSON.stringify(returnValue));
-		}, ([statusCode, description]) => {
-			if (statusCode === 403) {
-				adapter.log.info("Homeconnect API has not the rights for this command and device");
+		auth.sendRequest(token, haId, url, "DELETE").then(
+			([statusCode, returnValue]) => {
+				adapter.log.debug(url);
+				adapter.log.debug(JSON.stringify(returnValue));
+			},
+			([statusCode, description]) => {
+				if (statusCode === 403) {
+					adapter.log.info("Homeconnect API has not the rights for this command and device");
+				}
+				adapter.log.info(statusCode + ": " + description);
 			}
-			adapter.log.info(statusCode + ": " + description);
-		});
+		);
 	}
 
 	function getAPIValues(token, haId, url) {
-		auth.sendRequest(token, haId, url).then(([statusCode, returnValue]) => {
-			adapter.log.debug(url);
-			adapter.log.debug(JSON.stringify(returnValue));
-			if (url.indexOf("/settings/") !== -1) {
-				const common = {
-					name: returnValue.data.name,
-					type: "string",
-					role: "indicator",
-					write: true,
-					read: true,
-					states: {}
-
-				};
-				returnValue.data.constraints.allowedvalues.forEach((element, index) => {
-					common.states[element] = returnValue.data.constraints.displayvalues[index];
-
-				});
-				const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
-				adapter.extendObject(haId + folder, {
-					type: "state",
-					common: common,
-					native: {}
-				});
-				return;
-			}
-
-			if (url.indexOf("/programs/available/") !== -1) {
-				if (returnValue.data.options) {
-					returnValue.data.options.forEach((option) => {
-						const common = {
-							name: option.name,
-							type: "string",
-							role: "indicator",
-							unit: option.unit || "",
-							write: true,
-							read: true,
-							min: option.constraints.min || null,
-							max: option.constraints.max || null,
-
-						};
-
-						if (option.constraints.allowedvalues) {
-							common.states = {};
-							option.constraints.allowedvalues.forEach((element, index) => {
-								common.states[element] = option.constraints.displayvalues[index];
-
-							});
-						}
-						const folder = ".programs.available.options." + option.key.replace(/\./g, "_");
-
-
-						adapter.extendObject(haId + folder, {
-							type: "state",
-							common: common,
-							native: {}
-						});
-						adapter.setState(haId + folder, option.constraints.default, true);
-
-					});
-				}
-				return;
-			}
-
-
-			if ("key" in returnValue.data) {
-				returnValue.data = {
-					items: [returnValue.data]
-				};
-			}
-			for (const item in returnValue.data) {
-				returnValue.data[item].forEach(subElement => {
-					if (url === "/programs/active") {
-						subElement.value = subElement.key;
-						subElement.key = "BSH_Common_Root_ActiveProgram";
-						subElement.name = "BSH_Common_Root_ActiveProgram";
-					}
-					if (url === "/programs/selected") {
-						subElement.value = subElement.key;
-						subElement.key = "BSH_Common_Root_SelectedProgram";
-						subElement.name = "BSH_Common_Root_SelectedProgram";
-					}
-					if (url === "/programs/available") {
-						adapter.log.debug(haId + " available: " + JSON.stringify(subElement));
-						if (availablePrograms[haId]) {
-							availablePrograms[haId].push({
-								key: subElement.key,
-								name: subElement.name
-							});
-						} else {
-							availablePrograms[haId] = [{
-								key: subElement.key,
-								name: subElement.name
-							}];
-						}
-						getAPIValues(token, haId, "/programs/available/" + subElement.key);
-					}
-					if (url === "/settings") {
-						getAPIValues(token, haId, "/settings/" + subElement.key);
-					}
-					const folder = url.replace(/\//g, ".");
-					adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
+		auth.sendRequest(token, haId, url).then(
+			([statusCode, returnValue]) => {
+				adapter.log.debug(url);
+				adapter.log.debug(JSON.stringify(returnValue));
+				if (url.indexOf("/settings/") !== -1) {
 					const common = {
-						name: subElement.name,
-						type: "object",
-						role: "indicator",
-						write: true,
-						read: true,
-						unit: subElement.unit || ""
-					};
-
-					adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
-						type: "state",
-						common: common,
-						native: {}
-					});
-					adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
-				});
-			}
-			if (url === "/programs/available") {
-				const rootItems = [{
-					key: "BSH_Common_Root_ActiveProgram",
-					folder: ".programs.active"
-				}, {
-					key: "BSH_Common_Root_SelectedProgram",
-					folder: ".programs.selected"
-				}];
-				rootItems.forEach((rootItem) => {
-
-					const common = {
-						name: rootItem.key,
+						name: returnValue.data.name,
 						type: "string",
 						role: "indicator",
 						write: true,
 						read: true,
 						states: {}
 					};
-					availablePrograms[haId].forEach((program) => {
-						common.states[program.key] = program.name;
+					returnValue.data.constraints.allowedvalues.forEach((element, index) => {
+						common.states[element] = returnValue.data.constraints.displayvalues[index];
 					});
-					adapter.setObjectNotExists(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+					const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
+					adapter.extendObject(haId + folder, {
 						type: "state",
 						common: common,
 						native: {}
 					});
-					adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
-						type: "state",
-						common: common,
-						native: {}
+					return;
+				}
+
+				if (url.indexOf("/programs/available/") !== -1) {
+					if (returnValue.data.options) {
+						returnValue.data.options.forEach(option => {
+							const common = {
+								name: option.name,
+								type: "string",
+								role: "indicator",
+								unit: option.unit || "",
+								write: true,
+								read: true,
+								min: option.constraints.min || null,
+								max: option.constraints.max || null
+							};
+
+							if (option.constraints.allowedvalues) {
+								common.states = {};
+								option.constraints.allowedvalues.forEach((element, index) => {
+									common.states[element] = option.constraints.displayvalues[index];
+								});
+							}
+							const folder = ".programs.available.options." + option.key.replace(/\./g, "_");
+
+							adapter.extendObject(haId + folder, {
+								type: "state",
+								common: common,
+								native: {}
+							});
+							adapter.setState(haId + folder, option.constraints.default, true);
+						});
+					}
+					return;
+				}
+
+				if ("key" in returnValue.data) {
+					returnValue.data = {
+						items: [returnValue.data]
+					};
+				}
+				for (const item in returnValue.data) {
+					returnValue.data[item].forEach(subElement => {
+						if (url === "/programs/active") {
+							subElement.value = subElement.key;
+							subElement.key = "BSH_Common_Root_ActiveProgram";
+							subElement.name = "BSH_Common_Root_ActiveProgram";
+						}
+						if (url === "/programs/selected") {
+							subElement.value = subElement.key;
+							subElement.key = "BSH_Common_Root_SelectedProgram";
+							subElement.name = "BSH_Common_Root_SelectedProgram";
+						}
+						if (url === "/programs/available") {
+							adapter.log.debug(haId + " available: " + JSON.stringify(subElement));
+							if (availablePrograms[haId]) {
+								availablePrograms[haId].push({
+									key: subElement.key,
+									name: subElement.name
+								});
+							} else {
+								availablePrograms[haId] = [{
+									key: subElement.key,
+									name: subElement.name
+								}];
+							}
+							getAPIValues(token, haId, "/programs/available/" + subElement.key);
+						}
+						if (url === "/settings") {
+							getAPIValues(token, haId, "/settings/" + subElement.key);
+						}
+						const folder = url.replace(/\//g, ".");
+						adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
+						const common = {
+							name: subElement.name,
+							type: "object",
+							role: "indicator",
+							write: true,
+							read: true,
+							unit: subElement.unit || ""
+						};
+
+						adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
+							type: "state",
+							common: common,
+							native: {}
+						});
+						adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
 					});
-				});
+				}
+				if (url === "/programs/available") {
+					const rootItems = [{
+							key: "BSH_Common_Root_ActiveProgram",
+							folder: ".programs.active"
+						},
+						{
+							key: "BSH_Common_Root_SelectedProgram",
+							folder: ".programs.selected"
+						}
+					];
+					rootItems.forEach(rootItem => {
+						const common = {
+							name: rootItem.key,
+							type: "string",
+							role: "indicator",
+							write: true,
+							read: true,
+							states: {}
+						};
+						availablePrograms[haId].forEach(program => {
+							common.states[program.key] = program.name;
+						});
+						adapter.setObjectNotExists(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+							type: "state",
+							common: common,
+							native: {}
+						});
+						adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+							type: "state",
+							common: common,
+							native: {}
+						});
+					});
+				}
+			},
+			([statusCode, description]) => {
+				// adapter.log.info("Error getting API Values Error: " + statusGet);
+				adapter.log.info(haId + ": " + description);
 			}
-		}, ([statusCode, description]) => {
-			// adapter.log.info("Error getting API Values Error: " + statusGet);
-			adapter.log.info(haId + ": " + description);
-		});
+		);
 	}
 
 	function main() {
@@ -761,7 +782,6 @@ function startAdapter(options) {
 					}
 				);
 			} else {
-
 				stateGet(adapter.namespace + ".dev.token").then(
 					value => {
 						if (!value) {
@@ -781,7 +801,7 @@ function startAdapter(options) {
 							);
 							stateGet(adapter.namespace + ".dev.refreshToken").then(refreshToken => {
 								getRefreshToken();
-								getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h 
+								getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
 							});
 						}
 					},
@@ -899,8 +919,6 @@ function startAdapter(options) {
 			},
 			native: {}
 		});
-
-
 
 		adapter.subscribeStates("*");
 
