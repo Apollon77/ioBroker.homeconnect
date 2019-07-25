@@ -361,7 +361,11 @@ function startAdapter(options) {
 
 					if (id.indexOf("Active") !== -1) {
 						stateGet(adapter.namespace + ".dev.token").then(token => {
-							putAPIValues(token, haId, "/programs/active", data).catch(() => putAPIValues(token, haId, "/programs/active", {})).then(() => updateOptions(token, haId, "/programs/active"));
+							putAPIValues(token, haId, "/programs/active", data).catch(() => putAPIValues(token, haId, "/programs/active", {
+								data: {
+									key: state.val
+								}
+							})).then(() => updateOptions(token, haId, "/programs/active"));
 						});
 					}
 					if (id.indexOf("Selected") !== -1) {
