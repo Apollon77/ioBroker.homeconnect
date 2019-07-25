@@ -174,7 +174,7 @@ function startAdapter(options) {
 					// Most likely the token has expired, try to refresh the token
 					adapter.log.info("Token abgelaufen");
 				} else if (err.status === 429) {
-					adapter.log.warn("Too many requests. Adapter sends too many requests per minute.");
+					adapter.log.warn("Too many requests. Adapter sends too many requests per minute. Please wait 1min before restart the instance.");
 				} else {
 					adapter.log.error("Error: " + err.status);
 					throw new Error(err.status);
@@ -361,7 +361,7 @@ function startAdapter(options) {
 
 					if (id.indexOf("Active") !== -1) {
 						stateGet(adapter.namespace + ".dev.token").then(token => {
-							putAPIValues(token, haId, "/programs/active", data).then(() => updateOptions(token, haId, "/programs/active"));
+							putAPIValues(token, haId, "/programs/active", data).catch(() => putAPIValues(token, haId, "/programs/active", {})).then(() => updateOptions(token, haId, "/programs/active"));
 						});
 					}
 					if (id.indexOf("Selected") !== -1) {
