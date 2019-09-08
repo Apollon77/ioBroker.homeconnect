@@ -67,7 +67,11 @@ function startAdapter(options) {
 					});
 				},
 				([statusCode, description]) => {
+					setTimeout(()=>{
+						getRefreshToken();
+					},5*60*1000) //5min
 					adapter.log.error("Error Refresh-Token: " + statusCode + " " + description);
+					adapter.log.warn("Retry Refresh Token in 5min");
 				}
 			);
 		});
