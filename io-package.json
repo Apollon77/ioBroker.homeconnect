@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.22",
+        "version": "0.0.23",
         "news": {
+            "0.0.23": {
+                "en": "improve error messaging"
+            },
             "0.0.22": {
                 "en": "bugfixing"
             },

@@ -66,8 +66,8 @@ function startAdapter(options) {
 						startEventStream(token, key);
 					});
 				},
-				statusPost => {
-					adapter.log.error("Error Refresh-Token: " + statusPost);
+				([statusCode, description]) => {
+					adapter.log.error("Error Refresh-Token: " + statusCode + " " + description);
 				}
 			);
 		});
@@ -799,10 +799,16 @@ function startAdapter(options) {
 								appliances => {
 									parseHomeappliances(appliances);
 								},
-								statusGet => {
-									adapter.log.error(
-										"Error getting homeapplianceJSON with Token. Please reset Token in settings. " + statusGet
-									);
+
+								([statusCode, description]) => {
+									adapter.log.error("Error getting Aplliances with existing Token: " + statusCode + " " + description);
+									adapter.log.warn("Restart the Adapter to get all devices correctly.");
+									if (statusCode === 401) {
+										adapter.log.warn("If Restart is not working please reset the Token in the settings.");
+									}
+									if (statusCode === 503) {
+										adapter.log.warn("Homeconnect is not reachable please wait until the service is up again.");
+									}
 									setTimeout(() => adapter.restart(), 2000);
 								}
 							);
