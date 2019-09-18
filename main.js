@@ -808,7 +808,12 @@ function startAdapter(options) {
 									adapter.log.error("Error getting Aplliances with existing Token: " + statusCode + " " + description);
 									adapter.log.warn("Restart the Adapter to get all devices correctly.");
 									if (statusCode === 401) {
-										adapter.log.warn("If Restart is not working please reset the Token in the settings.");
+										if (description && description.indexOf("malformed") !== -1) {
+											adapter.log.warn("The Homeconnect API is not reachable, the adapter will restart until the API is reachable. Please do not reset the Token while the Homeconnect API is not reachable.")
+										} else {
+											adapter.log.warn("If Restart is not working please reset the Token in the settings.");
+
+										}
 									}
 									if (statusCode === 503) {
 										adapter.log.warn("Homeconnect is not reachable please wait until the service is up again.");
