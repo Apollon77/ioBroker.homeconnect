@@ -1,8 +1,8 @@
 {
   "_from": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
-  "_id": "iobroker.homeconnect@0.0.8",
+  "_id": "iobroker.homeconnect@0.0.24",
   "_inBundle": false,
-  "_integrity": "sha512-AF5BQGiPXEe0iSRY3EgUNYn2thGXTW+LUL8SKRjOOiSHJqF/ARhukfTowFJuYNUwVRK4SHqOnTSMmUScNZ1R/Q==",
+  "_integrity": "sha512-DxlDoGg18bSa9Je72O8XA6A31xqHYpIqt6f6FEpffiK/wWa4JrK6/awfYj+ubeSQs4QYXvKv1tolt2Bb8cJKPg==",
   "_location": "/iobroker.homeconnect",
   "_phantomChildren": {},
   "_requested": {
@@ -17,9 +17,9 @@
     "/"
   ],
   "_resolved": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
-  "_shasum": "89579dbd5d0fdde3fb3a6d5e944368f6b3d12c37",
+  "_shasum": "2c8d23e12977dd4555be06bf3e6300b3c0005a8c",
   "_spec": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
-  "_where": "/Users/d057119/Development/hanaBackup",
+  "_where": "/usr/local",
   "author": {
     "name": "dna909",
     "email": "dna909@googlemail.com"
@@ -35,9 +35,9 @@
     }
   ],
   "dependencies": {
+    "@iobroker/adapter-core": "^1.0.3",
     "eventsource": "^1.0.7",
-    "request": "^2.88.0",
-    "@iobroker/adapter-core": "^1.0.3"
+    "request": "^2.88.0"
   },
   "deprecated": false,
   "description": "homeconnect",
@@ -86,5 +86,5 @@
     "test:package": "mocha test/package --exit",
     "test:unit": "mocha test/unit --exit"
   },
-  "version": "0.0.24"
+  "version": "0.0.25"
 }

@@ -4,6 +4,7 @@ const utils = require("@iobroker/adapter-core");
 const auth = require(__dirname + "/lib/auth.js");
 const EventEmitter = require("events");
 const EventSource = require("eventsource");
+const request = require('request');
 
 let adapter;
 
@@ -21,6 +22,8 @@ function startAdapter(options) {
 	const availablePrograms = {};
 	const eventSourceList = {};
 	const reconnectTimeouts = {};
+
+	let  rateCalculation = [];
 
 	function stateGet(stat) {
 		return new Promise((resolve, reject) => {
@@ -40,7 +43,7 @@ function startAdapter(options) {
 		});
 	}
 
-	function getRefreshToken() {
+	function getRefreshToken(disableReconnectStream) {
 		const stat = adapter.namespace + ".dev.refreshToken";
 		stateGet(stat).then(value => {
 			auth.tokenRefresh(value).then(
@@ -62,14 +65,16 @@ function startAdapter(options) {
 						val: tokenScope,
 						ack: true
 					});
+					if (!disableReconnectStream) {
 					Object.keys(eventSourceList).forEach(function (key) {
 						startEventStream(token, key);
 					});
+				}
 				},
 				([statusCode, description]) => {
-					setTimeout(()=>{
+					setTimeout(() => {
 						getRefreshToken();
-					},5*60*1000) //5min
+					}, 5 * 60 * 1000) //5min
 					adapter.log.error("Error Refresh-Token: " + statusCode + " " + description);
 					adapter.log.warn("Retry Refresh Token in 5min");
 				}
@@ -280,6 +285,19 @@ function startAdapter(options) {
 			clearInterval(getTokenRefreshInterval);
 			clearInterval(getTokenInterval);
 			clearInterval(reconnectEventStreamInterval);
+			Object.keys(eventSourceList).forEach(haId => {
+				if (eventSourceList[haId]) {
+					console.log("Clean event " + haId)
+					eventSourceList[haId].close();
+					eventSourceList[haId].removeEventListener("STATUS", e => processEvent(e), false);
+					eventSourceList[haId].removeEventListener("NOTIFY", e => processEvent(e), false);
+					eventSourceList[haId].removeEventListener("EVENT", e => processEvent(e), false);
+					eventSourceList[haId].removeEventListener("CONNECTED", e => processEvent(e), false);
+					eventSourceList[haId].removeEventListener("DISCONNECTED", e => processEvent(e), false);
+					eventSourceList[haId].removeEventListener("KEEP-ALIVE", e => resetReconnectTimeout(e.lastEventId), false);
+				}
+
+			});
 			callback();
 		} catch (e) {
 			callback();
@@ -520,7 +538,6 @@ function startAdapter(options) {
 					getAPIValues(token, haId, "/settings");
 					getAPIValues(token, haId, "/programs/active");
 					getAPIValues(token, haId, "/programs/selected");
-
 					updateOptions(token, haId, "/programs/active");
 					updateOptions(token, haId, "/programs/selected");
 					startEventStream(token, haId);
@@ -557,7 +574,7 @@ function startAdapter(options) {
 		return new Promise((resolve, reject) => {
 			adapter.log.debug(haId + url);
 			adapter.log.debug(JSON.stringify(data));
-			auth.sendRequest(token, haId, url, "PUT", JSON.stringify(data)).then(
+			sendRequest(token, haId, url, "PUT", JSON.stringify(data)).then(
 				([statusCode, returnValue]) => {
 					adapter.log.debug(statusCode + " " + returnValue);
 					adapter.log.debug(JSON.stringify(returnValue));
@@ -575,7 +592,7 @@ function startAdapter(options) {
 	}
 
 	function deleteAPIValues(token, haId, url) {
-		auth.sendRequest(token, haId, url, "DELETE").then(
+		sendRequest(token, haId, url, "DELETE").then(
 			([statusCode, returnValue]) => {
 				adapter.log.debug(url);
 				adapter.log.debug(JSON.stringify(returnValue));
@@ -590,7 +607,7 @@ function startAdapter(options) {
 	}
 
 	function getAPIValues(token, haId, url) {
-		auth.sendRequest(token, haId, url).then(
+		sendRequest(token, haId, url).then(
 			([statusCode, returnValue]) => {
 				adapter.log.debug(url);
 				adapter.log.debug(JSON.stringify(returnValue));
@@ -603,9 +620,11 @@ function startAdapter(options) {
 						read: true,
 						states: {}
 					};
-					returnValue.data.constraints.allowedvalues.forEach((element, index) => {
-						common.states[element] = returnValue.data.constraints.displayvalues[index];
-					});
+					if (returnValue.data.constraints && returnValue.data.constraints.allowedvalues) {
+						returnValue.data.constraints.allowedvalues.forEach((element, index) => {
+							common.states[element] = returnValue.data.constraints.displayvalues[index];
+						});
+					}
 					const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
 					adapter.extendObject(haId + folder, {
 						type: "state",
@@ -744,6 +763,91 @@ function startAdapter(options) {
 		);
 	}
 
+
+function sendRequest(token, haId, url, method, data) {
+	method = method || "GET";
+  
+  
+	let param = {
+	  'Authorization': 'Bearer ' + token,
+	  'Accept': 'application/vnd.bsh.sdk.v1+json, application/vnd.bsh.sdk.v2+json, application/json, application/vnd.bsh.hca.v2+json, application/vnd.bsh.sdk.v1+json, application/vnd',
+	  'Accept-Language': 'de-DE',
+  
+	};
+	if (method === "PUT" || method === "DELETE") {
+	  param['Content-Type'] = 'application/vnd.bsh.sdk.v1+json';
+	}
+	return new Promise((resolve, reject) => {
+	  const now = Date.now();
+	  let timeout = 0;
+  
+	  let i = 0;
+	  while (i < rateCalculation.length) {
+		  if (now - rateCalculation[i] < 60000) {
+			  break;
+		  }
+		  i++;
+	  }
+	  if (i) {
+		  if (i < rateCalculation.length) {
+			  rateCalculation.splice(0, i);
+		  } else {
+			  rateCalculation = [];
+		  }
+	  }
+  
+	  if (rateCalculation.length > 2) {
+		
+		timeout = rateCalculation.length * 1500;
+	  }
+
+	  adapter.log.debug("Rate per min: " + rateCalculation.length)
+	  rateCalculation.push(now);
+	  setTimeout(()=>{
+	  request({
+		  method: method,
+		  url: 'https://api.home-connect.com/api/homeappliances/' + haId + url,
+		  headers: param,
+		  body: data
+		},
+  
+		function (error, response, body) {
+		  const responseCode = response ? response.statusCode : null
+		  if (error) {
+			reject([responseCode, error]);
+			return;
+		  }
+		  if (!error && responseCode >= 300) {
+  
+			try {
+			  let errorString = JSON.parse(body);
+			  let description = errorString.error.description;
+			  reject([responseCode, description]);
+			} catch (error) {
+			  let description = body
+			  reject([responseCode, description]);
+			}
+  
+		  } else {
+			try {
+			  let parsedResponse = JSON.parse(body);
+			  resolve([responseCode, parsedResponse]);
+			} catch (error) {
+			  resolve([responseCode, body]);
+			}
+  
+  
+		  }
+  
+		}
+  
+	  );
+	  },timeout)
+	});
+  
+  }
+  
+  
 	function main() {
 		if (!adapter.config.clientID) {
 			adapter.log.error("Client ID not specified!");
@@ -822,7 +926,7 @@ function startAdapter(options) {
 								}
 							);
 							stateGet(adapter.namespace + ".dev.refreshToken").then(refreshToken => {
-								getRefreshToken();
+								getRefreshToken(true);
 								getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
 							});
 						}
@@ -944,8 +1048,9 @@ function startAdapter(options) {
 
 		adapter.subscribeStates("*");
 
-		return adapter;
+
 	}
+	return adapter;
 }
 // If started as allInOne/compact mode => return function to create instance
 if (module && module.parent) {
