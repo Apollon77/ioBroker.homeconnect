@@ -316,6 +316,15 @@ function startAdapter(options) {
 			const idArray = id.split(".");
 			const command = idArray.pop().replace(/_/g, ".");
 			const haId = idArray[2];
+			if (!isNaN(state.val)) {
+				state.val = parseFloat(state.val)
+			}
+			if (state.val === "true") {
+				state.val = true;
+			}
+			if (state.val === "false") {
+				state.val = false;
+			}
 			if (id.indexOf(".commands.") !== -1) {
 				adapter.log.debug(id + " " + state.val);
 				if (id.indexOf("StopProgram") && state.val) {

@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.25",
+        "version": "0.0.26",
         "news": {
+            "0.0.26": {
+                "en": "fix boolean settings"
+            },
             "0.0.25": {
                 "en": "fix compact mode, reduce query per minute to prevent too much request error"
             },
@@ -11,99 +14,6 @@
             },
             "0.0.23": {
                 "en": "improve error messaging"
-            },
-            "0.0.22": {
-                "en": "bugfixing"
-            },
-            "0.0.21": {
-                "en": "bugfixing"
-            },
-            "0.0.19": {
-                "en": "improve displaying long states, options and events"
-            },
-            "0.0.18": {
-                "en": "add error handling for stoping"
-            },
-            "0.0.17": {
-                "en": "make commands writeable"
-            },
-            "0.0.16": {
-                "en": "cleanup states after update"
-            },
-            "0.0.15": {
-                "en": "reconnect after token refresh"
-            },
-            "0.0.14": {
-                "en": "check for keep alive events"
-            },
-            "0.0.13": {
-                "en": "close event stream before reconnect"
-            },
-            "0.0.12": {
-                "en": "fix events lost after 12hr"
-            },
-            "0.0.11": {
-                "en": "fix set values and refresh available options after program select"
-            },
-            "0.0.10": {
-                "en": "add settings and commands, add options to available and fix bugs"
-            },
-            "0.0.9": {
-                "en": "clean up code and receive event notifications"
-            },
-            "0.0.8": {
-                "en": "increase refreshTokenInterval"
-            },
-            "0.0.7": {
-                "en": "fix refreshToken, add register process"
-            },
-            "0.0.6": {
-                "en": "bugfixing",
-                "de": "Fehlerbereinigung",
-                "ru": "Первоначальный адаптер",
-                "pt": "Versão inicial",
-                "fr": "Version initiale",
-                "nl": "Eerste release"
-            },
-            "0.0.5": {
-                "en": "add eventstream handling",
-                "de": "Auswertung Eventstream",
-                "ru": "Первоначальный адаптер",
-                "pt": "Versão inicial",
-                "fr": "Version initiale",
-                "nl": "Eerste release"
-            },
-            "0.0.4": {
-                "en": "add event-listener",
-                "de": "Event-Listener hinzugefügt",
-                "ru": "Первоначальный адаптер",
-                "pt": "Versão inicial",
-                "fr": "Version initiale",
-                "nl": "Eerste release"
-            },
-            "0.0.3": {
-                "en": "query State and available programs",
-                "de": "Abfrage Status und verfügbare Programme",
-                "ru": "Первоначальный адаптер",
-                "pt": "Versão inicial",
-                "fr": "Version initiale",
-                "nl": "Eerste release"
-            },
-            "0.0.2": {
-                "en": "OAuth2 Deviceflow-Authorization, enumerate connected appliances",
-                "de": "OAuth2 Deviceflow-Authorisation, Aufzählen der verbundenen Appliances",
-                "ru": "Первоначальный адаптер",
-                "pt": "Versão inicial",
-                "fr": "Version initiale",
-                "nl": "Eerste release"
-            },
-            "0.0.1": {
-                "en": "initial adapter",
-                "de": "Initiale Version",
-                "ru": "Первоначальный адаптер",
-                "pt": "Versão inicial",
-                "fr": "Version initiale",
-                "nl": "Eerste release"
             }
         },
         "title": "Home Connect",
