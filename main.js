@@ -20,10 +20,11 @@ function startAdapter(options) {
 	let reconnectEventStreamInterval;
 	let eventSource;
 	const availablePrograms = {};
+	let availableProgramOptions = {};
 	const eventSourceList = {};
 	const reconnectTimeouts = {};
 
-	let  rateCalculation = [];
+	let rateCalculation = [];
 
 	function stateGet(stat) {
 		return new Promise((resolve, reject) => {
@@ -66,10 +67,10 @@ function startAdapter(options) {
 						ack: true
 					});
 					if (!disableReconnectStream) {
-					Object.keys(eventSourceList).forEach(function (key) {
-						startEventStream(token, key);
-					});
-				}
+						Object.keys(eventSourceList).forEach(function (key) {
+							startEventStream(token, key);
+						});
+					}
 				},
 				([statusCode, description]) => {
 					setTimeout(() => {
@@ -376,10 +377,12 @@ function startAdapter(options) {
 						if (keyName.indexOf("BSH_Common_Option_ProgramProgress") === -1 && keyName.indexOf("BSH_Common_Option_RemainingProgramTime") === -1) {
 							const idArray = keyName.split(".");
 							const command = idArray.pop().replace(/_/g, ".");
-							options.push({
-								key: command,
-								value: states[keyName].val
-							});
+							if (availableProgramOptions[state.val].includes(command)) {
+								options.push({
+									key: command,
+									value: states[keyName].val
+								});
+							}
 						}
 					});
 
@@ -404,9 +407,11 @@ function startAdapter(options) {
 					}
 					if (id.indexOf("Selected") !== -1) {
 						stateGet(adapter.namespace + ".dev.token").then(token => {
-							putAPIValues(token, haId, "/programs/selected", data).then(() =>
+							putAPIValues(token, haId, "/programs/selected", data).then(() => {
 								updateOptions(token, haId, "/programs/selected")
-							);
+							}, () => {
+								adapter.log.warn("Setting selected program was not succesful");
+							});
 						});
 					}
 				});
@@ -469,19 +474,20 @@ function startAdapter(options) {
 			const allIds = Object.keys(states);
 			let searchString = "selected.options.";
 			if (url.indexOf("/active") !== -1) {
-				searchString = "active.options.";
+				searchString = "active.options."
+				adapter.log.debug(searchString);
+				//delete only for active options
+				allIds.forEach(function (keyName) {
+					if (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) {
+						adapter.delObject(
+							keyName
+							.split(".")
+							.slice(2)
+							.join(".")
+						);
+					}
+				});
 			}
-			adapter.log.debug(searchString);
-			allIds.forEach(function (keyName) {
-				if (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) {
-					adapter.delObject(
-						keyName
-						.split(".")
-						.slice(2)
-						.join(".")
-					);
-				}
-			});
 			setTimeout(() => getAPIValues(token, haId, url + "/options"), 0);
 		});
 
@@ -645,10 +651,20 @@ function startAdapter(options) {
 
 				if (url.indexOf("/programs/available/") !== -1) {
 					if (returnValue.data.options) {
+
+						availableProgramOptions[returnValue.data.key] = availableProgramOptions[returnValue.data.key] || []
 						returnValue.data.options.forEach(option => {
+							availableProgramOptions[returnValue.data.key].push(option.key);
+							let type = "string";
+							if (option.type === "Int") {
+								type = "number"
+							}
+							if (option.type === "Boolean") {
+								type = "boolean"
+							}
 							const common = {
 								name: option.name,
-								type: "string",
+								type: type,
 								role: "indicator",
 								unit: option.unit || "",
 								write: true,
@@ -663,7 +679,7 @@ function startAdapter(options) {
 									common.states[element] = option.constraints.displayvalues[index];
 								});
 							}
-							const folder = ".programs.available.options." + option.key.replace(/\./g, "_");
+							let folder = ".programs.available.options." + option.key.replace(/\./g, "_");
 
 							adapter.extendObject(haId + folder, {
 								type: "state",
@@ -671,6 +687,15 @@ function startAdapter(options) {
 								native: {}
 							});
 							adapter.setState(haId + folder, option.constraints.default, true);
+
+							folder = ".programs.selected.options." + option.key.replace(/\./g, "_");
+							adapter.extendObject(haId + folder, {
+								type: "state",
+								common: common,
+								native: {}
+							});
+
+
 						});
 					}
 					return;
@@ -773,90 +798,90 @@ function startAdapter(options) {
 	}
 
 
-function sendRequest(token, haId, url, method, data) {
-	method = method || "GET";
-  
-  
-	let param = {
-	  'Authorization': 'Bearer ' + token,
-	  'Accept': 'application/vnd.bsh.sdk.v1+json, application/vnd.bsh.sdk.v2+json, application/json, application/vnd.bsh.hca.v2+json, application/vnd.bsh.sdk.v1+json, application/vnd',
-	  'Accept-Language': 'de-DE',
-  
-	};
-	if (method === "PUT" || method === "DELETE") {
-	  param['Content-Type'] = 'application/vnd.bsh.sdk.v1+json';
-	}
-	return new Promise((resolve, reject) => {
-	  const now = Date.now();
-	  let timeout = 0;
-  
-	  let i = 0;
-	  while (i < rateCalculation.length) {
-		  if (now - rateCalculation[i] < 60000) {
-			  break;
-		  }
-		  i++;
-	  }
-	  if (i) {
-		  if (i < rateCalculation.length) {
-			  rateCalculation.splice(0, i);
-		  } else {
-			  rateCalculation = [];
-		  }
-	  }
-  
-	  if (rateCalculation.length > 2) {
-		
-		timeout = rateCalculation.length * 1500;
-	  }
+	function sendRequest(token, haId, url, method, data) {
+		method = method || "GET";
 
-	  adapter.log.debug("Rate per min: " + rateCalculation.length)
-	  rateCalculation.push(now);
-	  setTimeout(()=>{
-	  request({
-		  method: method,
-		  url: 'https://api.home-connect.com/api/homeappliances/' + haId + url,
-		  headers: param,
-		  body: data
-		},
-  
-		function (error, response, body) {
-		  const responseCode = response ? response.statusCode : null
-		  if (error) {
-			reject([responseCode, error]);
-			return;
-		  }
-		  if (!error && responseCode >= 300) {
-  
-			try {
-			  let errorString = JSON.parse(body);
-			  let description = errorString.error.description;
-			  reject([responseCode, description]);
-			} catch (error) {
-			  let description = body
-			  reject([responseCode, description]);
-			}
-  
-		  } else {
-			try {
-			  let parsedResponse = JSON.parse(body);
-			  resolve([responseCode, parsedResponse]);
-			} catch (error) {
-			  resolve([responseCode, body]);
-			}
-  
-  
-		  }
-  
+
+		let param = {
+			'Authorization': 'Bearer ' + token,
+			'Accept': 'application/vnd.bsh.sdk.v1+json, application/vnd.bsh.sdk.v2+json, application/json, application/vnd.bsh.hca.v2+json, application/vnd.bsh.sdk.v1+json, application/vnd',
+			'Accept-Language': 'de-DE',
+
+		};
+		if (method === "PUT" || method === "DELETE") {
+			param['Content-Type'] = 'application/vnd.bsh.sdk.v1+json';
 		}
-  
-	  );
-	  },timeout)
-	});
-  
-  }
-  
-  
+		return new Promise((resolve, reject) => {
+			const now = Date.now();
+			let timeout = 0;
+
+			let i = 0;
+			while (i < rateCalculation.length) {
+				if (now - rateCalculation[i] < 60000) {
+					break;
+				}
+				i++;
+			}
+			if (i) {
+				if (i < rateCalculation.length) {
+					rateCalculation.splice(0, i);
+				} else {
+					rateCalculation = [];
+				}
+			}
+
+			if (rateCalculation.length > 2) {
+
+				timeout = rateCalculation.length * 1500;
+			}
+
+			adapter.log.debug("Rate per min: " + rateCalculation.length)
+			rateCalculation.push(now);
+			setTimeout(() => {
+				request({
+						method: method,
+						url: 'https://api.home-connect.com/api/homeappliances/' + haId + url,
+						headers: param,
+						body: data
+					},
+
+					function (error, response, body) {
+						const responseCode = response ? response.statusCode : null
+						if (error) {
+							reject([responseCode, error]);
+							return;
+						}
+						if (!error && responseCode >= 300) {
+
+							try {
+								let errorString = JSON.parse(body);
+								let description = errorString.error.description;
+								reject([responseCode, description]);
+							} catch (error) {
+								let description = body
+								reject([responseCode, description]);
+							}
+
+						} else {
+							try {
+								let parsedResponse = JSON.parse(body);
+								resolve([responseCode, parsedResponse]);
+							} catch (error) {
+								resolve([responseCode, body]);
+							}
+
+
+						}
+
+					}
+
+				);
+			}, timeout)
+		});
+
+	}
+
+
 	function main() {
 		if (!adapter.config.clientID) {
 			adapter.log.error("Client ID not specified!");
