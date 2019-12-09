@@ -495,6 +495,12 @@ function startAdapter(options) {
 	}
 
 	function parseHomeappliances(appliancesArray) {
+		appliancesArray.data.homeappliances = appliancesArray.data.homeappliances.filter((element) => {
+			if (element.haId.endsWith("-001")) {
+				return false
+			}
+			return true;
+		})
 		appliancesArray.data.homeappliances.forEach(element => {
 			const haId = element.haId;
 			for (const key in element) {
