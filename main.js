@@ -500,6 +500,17 @@ function startAdapter(options) {
 	
 		appliancesArray.data.homeappliances.forEach(element => {
 			const haId = element.haId;
+			adapter.setObjectNotExists(haId , {
+				type: "device",
+				common: {
+					name: element.name,
+					type: "object",
+					role: "indicator",
+					write: false,
+					read: true
+				},
+				native: {}
+			});
 			for (const key in element) {
 				adapter.setObjectNotExists(haId + ".general." + key, {
 					type: "state",
