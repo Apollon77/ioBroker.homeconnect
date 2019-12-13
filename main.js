@@ -209,6 +209,7 @@ function startAdapter(options) {
 	}
 
 	function resetReconnectTimeout(haId) {
+		haId = haId.replace(/\.?\-001*$/,"")
 		clearInterval(reconnectTimeouts[haId]);
 		reconnectTimeouts[haId] = setInterval(() => {
 			stateGet(adapter.namespace + ".dev.token").then(value => {
@@ -225,18 +226,18 @@ function startAdapter(options) {
 		try {
 			adapter.log.debug("event: " + JSON.stringify(msg));
 			const stream = msg;
-
+			const lastEventId = stream.lastEventId.replace(/\.?\-001*$/,"")
 			if (!stream) {
 				adapter.log.debug("No Return: " + stream);
 				return;
 			}
-			resetReconnectTimeout(stream.lastEventId);
+			resetReconnectTimeout(lastEventId);
 			if (stream.type == "DISCONNECTED") {
-				adapter.setState(stream.lastEventId + ".general.connected", false, true);
+				adapter.setState(lastEventId + ".general.connected", false, true);
 				return;
 			}
 			if (stream.type == "CONNECTED") {
-				adapter.setState(stream.lastEventId + ".general.connected", true, true);
+				adapter.setState(lastEventId + ".general.connected", true, true);
 				return;
 			}
 
@@ -244,7 +245,8 @@ function startAdapter(options) {
 
 			const parseMessage = JSON.parse(parseMsg);
 			parseMessage.items.forEach(element => {
-				const haId = parseMessage.haId;
+				let haId = parseMessage.haId;
+				haId = haId.replace(/\.?\-001*$/,"")
 				let folder;
 				let key;
 				if (stream.type === "EVENT") {
@@ -495,12 +497,7 @@ function startAdapter(options) {
 	}
 
 	function parseHomeappliances(appliancesArray) {
-		appliancesArray.data.homeappliances = appliancesArray.data.homeappliances.filter((element) => {
-			if (element.haId.endsWith("-001")) {
-				return false
-			}
-			return true;
-		})
+	
 		appliancesArray.data.homeappliances.forEach(element => {
 			const haId = element.haId;
 			for (const key in element) {
