@@ -62,7 +62,6 @@
         "compact": true,
         "license": "MIT",
         "messagebox": false,
-        "supportCustoms": true,
         "dependencies": [
             {
                 "admin": ">=3.0.0"
