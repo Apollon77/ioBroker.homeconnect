@@ -987,7 +987,9 @@ function startAdapter(options) {
                 });
                 const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
                 adapter.getForeignObject(adapterConfig, (error, obj) => {
-                    obj.native.updateCleanup = true;
+                    if (obj) {
+                        obj.native.updateCleanup = true;
+                    }
                     //  adapter.setForeignObject(adapterConfig, obj);
                 });
             });
