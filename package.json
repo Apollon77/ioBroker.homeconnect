@@ -1,29 +1,4 @@
 {
-  "_from": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
-  "_id": "iobroker.homeconnect@0.0.24",
-  "_inBundle": false,
-  "_integrity": "sha512-DxlDoGg18bSa9Je72O8XA6A31xqHYpIqt6f6FEpffiK/wWa4JrK6/awfYj+ubeSQs4QYXvKv1tolt2Bb8cJKPg==",
-  "_location": "/iobroker.homeconnect",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "remote",
-    "raw": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
-    "rawSpec": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
-    "saveSpec": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
-    "fetchSpec": "https://github.com/dna909/ioBroker.homeconnect/tarball/master"
-  },
-  "_requiredBy": [
-    "#USER",
-    "/"
-  ],
-  "_resolved": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
-  "_shasum": "2c8d23e12977dd4555be06bf3e6300b3c0005a8c",
-  "_spec": "https://github.com/dna909/ioBroker.homeconnect/tarball/master",
-  "_where": "/usr/local",
-  "author": {
-    "name": "dna909",
-    "email": "dna909@googlemail.com"
-  },
   "bugs": {
     "url": "https://github.com/dna909/ioBroker.homeconnect/issues"
   },

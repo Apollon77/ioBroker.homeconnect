@@ -11,7 +11,7 @@ let adapter;
 function startAdapter(options) {
     options = options || {};
     Object.assign(options, {
-        name: "homeconnect"
+        name: "homeconnect",
     });
     adapter = new utils.Adapter(options);
 
@@ -29,7 +29,7 @@ function startAdapter(options) {
 
     function stateGet(stat) {
         return new Promise((resolve, reject) => {
-            adapter.getState(stat, function(err, state) {
+            adapter.getState(stat, function (err, state) {
                 if (err) {
                     reject(err);
                 } else {
@@ -47,28 +47,28 @@ function startAdapter(options) {
 
     function getRefreshToken(disableReconnectStream) {
         const stat = adapter.namespace + ".dev.refreshToken";
-        stateGet(stat).then(value => {
+        stateGet(stat).then((value) => {
             auth.tokenRefresh(value).then(
                 ([token, refreshToken, expires, tokenScope]) => {
                     adapter.log.info("Accesstoken renewed...");
                     adapter.setState("dev.token", {
                         val: token,
-                        ack: true
+                        ack: true,
                     });
                     adapter.setState("dev.refreshToken", {
                         val: refreshToken,
-                        ack: true
+                        ack: true,
                     });
                     adapter.setState("dev.expires", {
                         val: expires,
-                        ack: true
+                        ack: true,
                     });
                     adapter.setState("dev.tokenScope", {
                         val: tokenScope,
-                        ack: true
+                        ack: true,
                     });
                     if (!disableReconnectStream) {
-                        Object.keys(eventSourceList).forEach(function(key) {
+                        Object.keys(eventSourceList).forEach(function (key) {
                             startEventStream(token, key);
                         });
                     }
@@ -86,32 +86,32 @@ function startAdapter(options) {
 
     function getToken() {
         stateGet("dev.devCode").then(
-            deviceCode => {
+            (deviceCode) => {
                 const clientID = adapter.config.clientID;
                 auth.tokenGet(deviceCode, clientID).then(
                     ([token, refreshToken, expires, tokenScope]) => {
                         adapter.log.debug("Accesstoken created: " + token);
                         adapter.setState("dev.token", {
                             val: token,
-                            ack: true
+                            ack: true,
                         });
                         adapter.setState("dev.refreshToken", {
                             val: refreshToken,
-                            ack: true
+                            ack: true,
                         });
                         adapter.setState("dev.expires", {
                             val: expires,
-                            ack: true
+                            ack: true,
                         });
                         adapter.setState("dev.tokenScope", {
                             val: tokenScope,
-                            ack: true
+                            ack: true,
                         });
                         clearInterval(getTokenInterval);
 
                         adapter.setState("dev.access", true);
                         auth.getAppliances(token).then(
-                            appliances => {
+                            (appliances) => {
                                 parseHomeappliances(appliances);
                             },
                             ([statusCode, description]) => {
@@ -123,15 +123,15 @@ function startAdapter(options) {
                         adapter.log.debug("Start Refreshinterval");
                         getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
                     },
-                    statusPost => {
+                    (statusPost) => {
                         if (statusPost == "400") {
                             const stat = "dev.authUriComplete";
 
                             stateGet(stat).then(
-                                value => {
+                                (value) => {
                                     adapter.log.error("Please visit this url:  " + value);
                                 },
-                                err => {
+                                (err) => {
                                     adapter.log.error("FEHLER: " + err);
                                 }
                             );
@@ -142,7 +142,7 @@ function startAdapter(options) {
                     }
                 );
             },
-            err => {
+            (err) => {
                 adapter.log.error("getToken FEHLER: " + err);
                 clearInterval(getTokenInterval);
             }
@@ -157,21 +157,21 @@ function startAdapter(options) {
         const header = {
             headers: {
                 Authorization: "Bearer " + token,
-                Accept: "text/event-stream"
-            }
+                Accept: "text/event-stream",
+            },
         };
         if (eventSourceList[haId]) {
             eventSourceList[haId].close();
-            eventSourceList[haId].removeEventListener("STATUS", e => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("NOTIFY", e => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("EVENT", e => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("CONNECTED", e => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("DISCONNECTED", e => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("KEEP-ALIVE", e => resetReconnectTimeout(e.lastEventId), false);
+            eventSourceList[haId].removeEventListener("STATUS", (e) => processEvent(e), false);
+            eventSourceList[haId].removeEventListener("NOTIFY", (e) => processEvent(e), false);
+            eventSourceList[haId].removeEventListener("EVENT", (e) => processEvent(e), false);
+            eventSourceList[haId].removeEventListener("CONNECTED", (e) => processEvent(e), false);
+            eventSourceList[haId].removeEventListener("DISCONNECTED", (e) => processEvent(e), false);
+            eventSourceList[haId].removeEventListener("KEEP-ALIVE", (e) => resetReconnectTimeout(e.lastEventId), false);
         }
         eventSourceList[haId] = new EventSource(baseUrl, header);
         // Error handling
-        eventSourceList[haId].onerror = err => {
+        eventSourceList[haId].onerror = (err) => {
             adapter.log.error("EventSource error: " + JSON.stringify(err));
             if (err.status) {
                 adapter.log.error(err.status + " " + err.message);
@@ -192,14 +192,14 @@ function startAdapter(options) {
                 }
             }
         };
-        eventSourceList[haId].addEventListener("STATUS", e => processEvent(e), false);
-        eventSourceList[haId].addEventListener("NOTIFY", e => processEvent(e), false);
-        eventSourceList[haId].addEventListener("EVENT", e => processEvent(e), false);
-        eventSourceList[haId].addEventListener("CONNECTED", e => processEvent(e), false);
-        eventSourceList[haId].addEventListener("DISCONNECTED", e => processEvent(e), false);
+        eventSourceList[haId].addEventListener("STATUS", (e) => processEvent(e), false);
+        eventSourceList[haId].addEventListener("NOTIFY", (e) => processEvent(e), false);
+        eventSourceList[haId].addEventListener("EVENT", (e) => processEvent(e), false);
+        eventSourceList[haId].addEventListener("CONNECTED", (e) => processEvent(e), false);
+        eventSourceList[haId].addEventListener("DISCONNECTED", (e) => processEvent(e), false);
         eventSourceList[haId].addEventListener(
             "KEEP-ALIVE",
-            e => {
+            (e) => {
                 //adapter.log.debug(JSON.stringify(e));
                 resetReconnectTimeout(e.lastEventId);
             },
@@ -213,7 +213,7 @@ function startAdapter(options) {
         haId = haId.replace(/\.?\-001*$/, "");
         clearInterval(reconnectTimeouts[haId]);
         reconnectTimeouts[haId] = setInterval(() => {
-            stateGet(adapter.namespace + ".dev.token").then(value => {
+            stateGet(adapter.namespace + ".dev.token").then((value) => {
                 adapter.log.debug("reconnect EventStream " + haId);
                 startEventStream(value, haId);
             });
@@ -222,7 +222,7 @@ function startAdapter(options) {
 
     //Eventstream ==>> Datenpunkt
 
-    const processEvent = msg => {
+    const processEvent = (msg) => {
         /*Auswertung des Eventstreams*/
         try {
             adapter.log.debug("event: " + JSON.stringify(msg));
@@ -245,7 +245,7 @@ function startAdapter(options) {
             const parseMsg = msg.data;
 
             const parseMessage = JSON.parse(parseMsg);
-            parseMessage.items.forEach(element => {
+            parseMessage.items.forEach((element) => {
                 let haId = parseMessage.haId;
                 haId = haId.replace(/\.?\-001*$/, "");
                 let folder;
@@ -270,9 +270,9 @@ function startAdapter(options) {
                         role: "indicator",
                         write: true,
                         read: true,
-                        unit: element.unit || ""
+                        unit: element.unit || "",
                     },
-                    native: {}
+                    native: {},
                 });
 
                 adapter.setState(haId + "." + folder + "." + key, element.value, true);
@@ -283,22 +283,22 @@ function startAdapter(options) {
         }
     };
 
-    adapter.on("unload", function(callback) {
+    adapter.on("unload", function (callback) {
         try {
             adapter.log.info("cleaned everything up...");
             clearInterval(getTokenRefreshInterval);
             clearInterval(getTokenInterval);
             clearInterval(reconnectEventStreamInterval);
-            Object.keys(eventSourceList).forEach(haId => {
+            Object.keys(eventSourceList).forEach((haId) => {
                 if (eventSourceList[haId]) {
                     console.log("Clean event " + haId);
                     eventSourceList[haId].close();
-                    eventSourceList[haId].removeEventListener("STATUS", e => processEvent(e), false);
-                    eventSourceList[haId].removeEventListener("NOTIFY", e => processEvent(e), false);
-                    eventSourceList[haId].removeEventListener("EVENT", e => processEvent(e), false);
-                    eventSourceList[haId].removeEventListener("CONNECTED", e => processEvent(e), false);
-                    eventSourceList[haId].removeEventListener("DISCONNECTED", e => processEvent(e), false);
-                    eventSourceList[haId].removeEventListener("KEEP-ALIVE", e => resetReconnectTimeout(e.lastEventId), false);
+                    eventSourceList[haId].removeEventListener("STATUS", (e) => processEvent(e), false);
+                    eventSourceList[haId].removeEventListener("NOTIFY", (e) => processEvent(e), false);
+                    eventSourceList[haId].removeEventListener("EVENT", (e) => processEvent(e), false);
+                    eventSourceList[haId].removeEventListener("CONNECTED", (e) => processEvent(e), false);
+                    eventSourceList[haId].removeEventListener("DISCONNECTED", (e) => processEvent(e), false);
+                    eventSourceList[haId].removeEventListener("KEEP-ALIVE", (e) => resetReconnectTimeout(e.lastEventId), false);
                 }
             });
             callback();
@@ -307,11 +307,11 @@ function startAdapter(options) {
         }
     });
 
-    adapter.on("objectChange", function(id, obj) {
+    adapter.on("objectChange", function (id, obj) {
         adapter.log.info("objectChange " + id + " " + JSON.stringify(obj));
     });
 
-    adapter.on("stateChange", function(id, state) {
+    adapter.on("stateChange", function (id, state) {
         if (id == adapter.namespace + ".dev.devCode") {
             getTokenInterval = setInterval(getToken, 10000); // Polling bis Authorisation erfolgt ist
         }
@@ -331,17 +331,17 @@ function startAdapter(options) {
             if (id.indexOf(".commands.") !== -1) {
                 adapter.log.debug(id + " " + state.val);
                 if (id.indexOf("StopProgram") && state.val) {
-                    stateGet(adapter.namespace + ".dev.token").then(token => {
+                    stateGet(adapter.namespace + ".dev.token").then((token) => {
                         deleteAPIValues(token, haId, "/programs/active");
                     });
                 } else {
                     const data = {
                         data: {
                             key: command,
-                            value: state.val
-                        }
+                            value: state.val,
+                        },
                     };
-                    stateGet(adapter.namespace + ".dev.token").then(token => {
+                    stateGet(adapter.namespace + ".dev.token").then((token) => {
                         putAPIValues(token, haId, "/commands/" + command, data);
                     });
                 }
@@ -351,10 +351,10 @@ function startAdapter(options) {
                     data: {
                         key: command,
                         value: state.val,
-                        type: command
-                    }
+                        type: command,
+                    },
                 };
-                stateGet(adapter.namespace + ".dev.token").then(token => {
+                stateGet(adapter.namespace + ".dev.token").then((token) => {
                     putAPIValues(token, haId, "/settings/" + command, data);
                 });
             }
@@ -362,14 +362,14 @@ function startAdapter(options) {
                 const data = {
                     data: {
                         key: command,
-                        value: state.val
-                    }
+                        value: state.val,
+                    },
                 };
                 if (id.indexOf("selected") !== -1) {
                     idArray.pop();
                 }
                 const folder = idArray.slice(3, idArray.length).join("/");
-                stateGet(adapter.namespace + ".dev.token").then(token => {
+                stateGet(adapter.namespace + ".dev.token").then((token) => {
                     putAPIValues(token, haId, "/" + folder + "/" + command, data);
                 });
             }
@@ -379,7 +379,7 @@ function startAdapter(options) {
                 adapter.getStates(pre + "." + haId + ".programs.selected.options." + key + ".*", (err, states) => {
                     const allIds = Object.keys(states);
                     options = [];
-                    allIds.forEach(function(keyName) {
+                    allIds.forEach(function (keyName) {
                         if (keyName.indexOf("BSH_Common_Option_ProgramProgress") === -1 && keyName.indexOf("BSH_Common_Option_RemainingProgramTime") === -1) {
                             const idArray = keyName.split(".");
                             const commandOption = idArray.pop().replace(/_/g, ".");
@@ -391,7 +391,7 @@ function startAdapter(options) {
                                 } else {
                                     options.push({
                                         key: commandOption,
-                                        value: states[keyName].val
+                                        value: states[keyName].val,
                                     });
                                 }
                             }
@@ -401,19 +401,19 @@ function startAdapter(options) {
                     const data = {
                         data: {
                             key: state.val,
-                            options: options
-                        }
+                            options: options,
+                        },
                     };
 
                     if (id.indexOf("Active") !== -1) {
-                        stateGet(adapter.namespace + ".dev.token").then(token => {
+                        stateGet(adapter.namespace + ".dev.token").then((token) => {
                             putAPIValues(token, haId, "/programs/active", data)
                                 .catch(() => {
                                     adapter.log.info("Programm doesn't start with options. Try again without selected options.");
                                     putAPIValues(token, haId, "/programs/active", {
                                         data: {
-                                            key: state.val
-                                        }
+                                            key: state.val,
+                                        },
                                     });
                                 })
                                 .then(() => updateOptions(token, haId, "/programs/active"));
@@ -421,7 +421,7 @@ function startAdapter(options) {
                     }
                     if (id.indexOf("Selected") !== -1) {
                         currentSelected[haId] = { key: state.val };
-                        stateGet(adapter.namespace + ".dev.token").then(token => {
+                        stateGet(adapter.namespace + ".dev.token").then((token) => {
                             putAPIValues(token, haId, "/programs/selected", data).then(
                                 () => {
                                     updateOptions(token, haId, "/programs/selected");
@@ -440,7 +440,7 @@ function startAdapter(options) {
             const haId = idArray[2];
             if (id.indexOf("BSH_Common_Root_") !== -1) {
                 if (id.indexOf("Active") !== -1) {
-                    stateGet(adapter.namespace + ".dev.token").then(token => {
+                    stateGet(adapter.namespace + ".dev.token").then((token) => {
                         updateOptions(token, haId, "/programs/active");
                     });
                 }
@@ -448,7 +448,7 @@ function startAdapter(options) {
                     if (state) {
                         currentSelected[haId] = { key: state.val };
                     }
-                    stateGet(adapter.namespace + ".dev.token").then(token => {
+                    stateGet(adapter.namespace + ".dev.token").then((token) => {
                         updateOptions(token, haId, "/programs/selected");
                     });
                 }
@@ -456,14 +456,14 @@ function startAdapter(options) {
 
             if (id.indexOf(".options.") !== -1 || id.indexOf(".events.") !== -1 || id.indexOf(".status.") !== -1) {
                 if (id.indexOf("BSH_Common_Option") === -1 && state && state.val && state.val.indexOf && state.val.indexOf(".") !== -1) {
-                    adapter.getObject(id, function(err, obj) {
+                    adapter.getObject(id, function (err, obj) {
                         if (obj) {
                             let common = obj.common;
                             const valArray = state.val.split(".");
                             common.states = {};
                             common.states[state.val] = valArray[valArray.length - 1];
                             adapter.extendObject(id, {
-                                common: common
+                                common: common,
                             });
                         }
                     });
@@ -473,7 +473,7 @@ function startAdapter(options) {
     });
 
     // Some message was sent to adapter instance over message box. Used by email, pushover, text2speech, ...
-    adapter.on("message", function(obj) {
+    adapter.on("message", function (obj) {
         if (typeof obj === "object" && obj.message) {
             if (obj.command === "send") {
                 // e.g. send email or pushover or whatever
@@ -485,7 +485,7 @@ function startAdapter(options) {
         }
     });
 
-    adapter.on("ready", function() {
+    adapter.on("ready", function () {
         main();
     });
 
@@ -499,14 +499,9 @@ function startAdapter(options) {
                 adapter.log.debug(searchString);
                 //delete only for active options
                 adapter.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options");
-                allIds.forEach(function(keyName) {
+                allIds.forEach(function (keyName) {
                     if (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) {
-                        adapter.delObject(
-                            keyName
-                                .split(".")
-                                .slice(2)
-                                .join(".")
-                        );
+                        adapter.delObject(keyName.split(".").slice(2).join("."));
                     }
                 });
             }
@@ -515,7 +510,7 @@ function startAdapter(options) {
     }
 
     function parseHomeappliances(appliancesArray) {
-        appliancesArray.data.homeappliances.forEach(element => {
+        appliancesArray.data.homeappliances.forEach((element) => {
             // if (element.haId.indexOf("BOSCH-WTX87K80-68A40E2EF6A5") === -1) {
             //     return;
             // }
@@ -527,9 +522,9 @@ function startAdapter(options) {
                     type: "object",
                     role: "indicator",
                     write: false,
-                    read: true
+                    read: true,
                 },
-                native: {}
+                native: {},
             });
             for (const key in element) {
                 adapter.setObjectNotExists(haId + ".general." + key, {
@@ -539,9 +534,9 @@ function startAdapter(options) {
                         type: "object",
                         role: "indicator",
                         write: false,
-                        read: true
+                        read: true,
                     },
-                    native: {}
+                    native: {},
                 });
                 adapter.setState(haId + ".general." + key, element[key]);
             }
@@ -552,9 +547,9 @@ function startAdapter(options) {
                     type: "boolean",
                     role: "button",
                     write: true,
-                    read: true
+                    read: true,
                 },
-                native: {}
+                native: {},
             });
             adapter.extendObject(haId + ".commands.BSH_Common_Command_PauseProgram", {
                 type: "state",
@@ -563,9 +558,9 @@ function startAdapter(options) {
                     type: "boolean",
                     role: "button",
                     write: true,
-                    read: true
+                    read: true,
                 },
-                native: {}
+                native: {},
             });
             adapter.extendObject(haId + ".commands.BSH_Common_Command_ResumeProgram", {
                 type: "state",
@@ -574,14 +569,14 @@ function startAdapter(options) {
                     type: "boolean",
                     role: "button",
                     write: true,
-                    read: true
+                    read: true,
                 },
-                native: {}
+                native: {},
             });
             const tokenID = adapter.namespace + ".dev.token";
             if (element.connected) {
                 stateGet(tokenID).then(
-                    value => {
+                    (value) => {
                         const token = value;
                         getAPIValues(token, haId, "/status");
                         getAPIValues(token, haId, "/settings");
@@ -592,7 +587,7 @@ function startAdapter(options) {
                         updateOptions(token, haId, "/programs/selected");
                         startEventStream(token, haId);
                     },
-                    err => {
+                    (err) => {
                         adapter.log.error("FEHLER: " + err);
                     }
                 );
@@ -603,7 +598,7 @@ function startAdapter(options) {
         //Delete old states
         adapter.getStates("*", (err, states) => {
             const allIds = Object.keys(states);
-            allIds.forEach(function(keyName) {
+            allIds.forEach(function (keyName) {
                 if (
                     keyName.indexOf(".Event.") !== -1 ||
                     keyName.indexOf(".General.") !== -1 ||
@@ -612,12 +607,7 @@ function startAdapter(options) {
                     keyName.indexOf(".Setting.") !== -1 ||
                     keyName.indexOf(".Status.") !== -1
                 ) {
-                    adapter.delObject(
-                        keyName
-                            .split(".")
-                            .slice(2)
-                            .join(".")
-                    );
+                    adapter.delObject(keyName.split(".").slice(2).join("."));
                 }
             });
         });
@@ -662,207 +652,214 @@ function startAdapter(options) {
     function getAPIValues(token, haId, url) {
         sendRequest(token, haId, url).then(
             ([statusCode, returnValue]) => {
-                adapter.log.debug(url);
-                adapter.log.debug(JSON.stringify(returnValue));
-                if (url.indexOf("/settings/") !== -1) {
-                    let type = "string";
-                    if (returnValue.data.type === "Int" || returnValue.data.type === "Double") {
-                        type = "number";
-                    }
-                    if (returnValue.data.type === "Boolean") {
-                        type = "boolean";
-                    }
-                    const common = {
-                        name: returnValue.data.name,
-                        type: type,
-                        role: "indicator",
-                        write: true,
-                        read: true
-                    };
-                    if (returnValue.data.constraints && returnValue.data.constraints.allowedvalues) {
-                        let states = {};
-                        returnValue.data.constraints.allowedvalues.forEach((element, index) => {
-                            states[element] = returnValue.data.constraints.displayvalues[index];
-                        });
-                        common.states = states;
-                    }
-                    const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
-                    adapter.extendObject(haId + folder, {
-                        type: "state",
-                        common: common,
-                        native: {}
-                    });
-                    return;
-                }
-
-                if (url.indexOf("/programs/available/") !== -1) {
-                    if (returnValue.data.options) {
-                        availableProgramOptions[returnValue.data.key] = availableProgramOptions[returnValue.data.key] || [];
-                        returnValue.data.options.forEach(option => {
-                            availableProgramOptions[returnValue.data.key].push(option.key);
-                            let type = "string";
-                            if (option.type === "Int" || option.type === "Double") {
-                                type = "number";
-                            }
-                            if (option.type === "Boolean") {
-                                type = "boolean";
-                            }
-                            const common = {
-                                name: option.name,
-                                type: type,
-                                role: "indicator",
-                                unit: option.unit || "",
-                                write: true,
-                                read: true,
-                                min: option.constraints.min || null,
-                                max: option.constraints.max || null
-                            };
-
-                            if (option.constraints.allowedvalues) {
-                                common.states = {};
-                                option.constraints.allowedvalues.forEach((element, index) => {
-                                    common.states[element] = option.constraints.displayvalues[index];
-                                });
-                            }
-                            let folder = ".programs.available.options." + option.key.replace(/\./g, "_");
-
-                            adapter.extendObject(haId + folder, {
-                                type: "state",
-                                common: common,
-                                native: {}
-                            });
-                            adapter.setState(haId + folder, option.constraints.default, true);
-                            const key = returnValue.data.key.split(".").pop();
-                            adapter.setObjectNotExists(haId + ".programs.selected.options." + key, {
-                                type: "state",
-                                common: { name: returnValue.data.name, type: "mixed", role: "indicator", write: true, read: true },
-                                native: {}
-                            });
-                            folder = ".programs.selected.options." + key + "." + option.key.replace(/\./g, "_");
-                            adapter.extendObject(haId + folder, {
-                                type: "state",
-                                common: common,
-                                native: {}
-                            });
-                        });
-                    }
-                    return;
-                }
-
-                if ("key" in returnValue.data) {
-                    returnValue.data = {
-                        items: [returnValue.data]
-                    };
-                }
-                for (const item in returnValue.data) {
-                    returnValue.data[item].forEach(subElement => {
-                        let folder = url.replace(/\//g, ".");
-                        if (url === "/programs/active") {
-                            subElement.value = subElement.key;
-                            subElement.key = "BSH_Common_Root_ActiveProgram";
-                            subElement.name = "BSH_Common_Root_ActiveProgram";
-                        }
-                        if (url === "/programs/selected") {
-                            subElement.value = subElement.key;
-                            currentSelected[haId] = { key: subElement.value, name: subElement.name };
-                            subElement.key = "BSH_Common_Root_SelectedProgram";
-                            subElement.name = "BSH_Common_Root_SelectedProgram";
-                        }
-                        if (url === "/programs") {
-                            adapter.log.debug(haId + " available: " + JSON.stringify(subElement));
-                            if (availablePrograms[haId]) {
-                                availablePrograms[haId].push({
-                                    key: subElement.key,
-                                    name: subElement.name
-                                });
-                            } else {
-                                availablePrograms[haId] = [
-                                    {
-                                        key: subElement.key,
-                                        name: subElement.name
-                                    }
-                                ];
-                            }
-                            getAPIValues(token, haId, "/programs/available/" + subElement.key);
-                            folder += ".available";
-                        }
-                        if (url === "/settings") {
-                            getAPIValues(token, haId, "/settings/" + subElement.key);
-                        }
-
-                        if (url.indexOf("/programs/selected/") !== -1) {
-                            if (!currentSelected[haId]) {
-                                return;
-                            }
-                            const key = currentSelected[haId].key.split(".").pop();
-                            folder += "." + key;
-
-                            adapter.setObjectNotExists(haId + folder, {
-                                type: "state",
-                                common: { name: currentSelected[haId].name, type: "mixed", role: "indicator", write: true, read: true },
-                                native: {}
-                            });
-                        }
-                        adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
-                        let type = "mixed";
-                        if (typeof subElement.value === "boolean") {
-                            type = "boolean";
-                        }
-                        if (typeof subElement.value === "number") {
+                try {
+                    adapter.log.debug(url);
+                    adapter.log.debug(JSON.stringify(returnValue));
+                    if (url.indexOf("/settings/") !== -1) {
+                        let type = "string";
+                        if (returnValue.data.type === "Int" || returnValue.data.type === "Double") {
                             type = "number";
                         }
+                        if (returnValue.data.type === "Boolean") {
+                            type = "boolean";
+                        }
                         const common = {
-                            name: subElement.name,
+                            name: returnValue.data.name,
                             type: type,
                             role: "indicator",
                             write: true,
                             read: true,
-                            unit: subElement.unit || "",
-                            min: (subElement.constraints && subElement.constraints.min) || null,
-                            max: (subElement.constraints && subElement.constraints.max) || null
                         };
-                        adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
-                            type: "state",
-                            common: common,
-                            native: {}
-                        });
-                        adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
-                    });
-                }
-                if (url === "/programs") {
-                    const rootItems = [
-                        {
-                            key: "BSH_Common_Root_ActiveProgram",
-                            folder: ".programs.active"
-                        },
-                        {
-                            key: "BSH_Common_Root_SelectedProgram",
-                            folder: ".programs.selected"
+                        if (returnValue.data.constraints && returnValue.data.constraints.allowedvalues) {
+                            let states = {};
+                            returnValue.data.constraints.allowedvalues.forEach((element, index) => {
+                                states[element] = returnValue.data.constraints.displayvalues[index];
+                            });
+                            common.states = states;
                         }
-                    ];
-                    rootItems.forEach(rootItem => {
-                        const common = {
-                            name: rootItem.key,
-                            type: "string",
-                            role: "indicator",
-                            write: true,
-                            read: true,
-                            states: {}
+                        const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
+                        adapter.extendObject(haId + folder, {
+                            type: "state",
+                            common: common,
+                            native: {},
+                        });
+                        return;
+                    }
+
+                    if (url.indexOf("/programs/available/") !== -1) {
+                        if (returnValue.data.options) {
+                            availableProgramOptions[returnValue.data.key] = availableProgramOptions[returnValue.data.key] || [];
+                            returnValue.data.options.forEach((option) => {
+                                availableProgramOptions[returnValue.data.key].push(option.key);
+                                let type = "string";
+                                if (option.type === "Int" || option.type === "Double") {
+                                    type = "number";
+                                }
+                                if (option.type === "Boolean") {
+                                    type = "boolean";
+                                }
+                                const common = {
+                                    name: option.name,
+                                    type: type,
+                                    role: "indicator",
+                                    unit: option.unit || "",
+                                    write: true,
+                                    read: true,
+                                    min: option.constraints.min || null,
+                                    max: option.constraints.max || null,
+                                };
+
+                                if (option.constraints.allowedvalues) {
+                                    common.states = {};
+                                    option.constraints.allowedvalues.forEach((element, index) => {
+                                        common.states[element] = option.constraints.displayvalues[index];
+                                    });
+                                }
+                                let folder = ".programs.available.options." + option.key.replace(/\./g, "_");
+
+                                adapter.extendObject(haId + folder, {
+                                    type: "state",
+                                    common: common,
+                                    native: {},
+                                });
+                                adapter.setState(haId + folder, option.constraints.default, true);
+                                const key = returnValue.data.key.split(".").pop();
+                                adapter.setObjectNotExists(haId + ".programs.selected.options." + key, {
+                                    type: "state",
+                                    common: { name: returnValue.data.name, type: "mixed", role: "indicator", write: true, read: true },
+                                    native: {},
+                                });
+                                folder = ".programs.selected.options." + key + "." + option.key.replace(/\./g, "_");
+                                adapter.extendObject(haId + folder, {
+                                    type: "state",
+                                    common: common,
+                                    native: {},
+                                });
+                            });
+                        }
+                        return;
+                    }
+
+                    if ("key" in returnValue.data) {
+                        returnValue.data = {
+                            items: [returnValue.data],
                         };
-                        availablePrograms[haId].forEach(program => {
-                            common.states[program.key] = program.name;
+                    }
+                    for (const item in returnValue.data) {
+                        returnValue.data[item].forEach((subElement) => {
+                            let folder = url.replace(/\//g, ".");
+                            if (url === "/programs/active") {
+                                subElement.value = subElement.key;
+                                subElement.key = "BSH_Common_Root_ActiveProgram";
+                                subElement.name = "BSH_Common_Root_ActiveProgram";
+                            }
+                            if (url === "/programs/selected") {
+                                subElement.value = subElement.key;
+                                currentSelected[haId] = { key: subElement.value, name: subElement.name };
+                                subElement.key = "BSH_Common_Root_SelectedProgram";
+                                subElement.name = "BSH_Common_Root_SelectedProgram";
+                            }
+                            if (url === "/programs") {
+                                adapter.log.debug(haId + " available: " + JSON.stringify(subElement));
+                                if (availablePrograms[haId]) {
+                                    availablePrograms[haId].push({
+                                        key: subElement.key,
+                                        name: subElement.name,
+                                    });
+                                } else {
+                                    availablePrograms[haId] = [
+                                        {
+                                            key: subElement.key,
+                                            name: subElement.name,
+                                        },
+                                    ];
+                                }
+                                getAPIValues(token, haId, "/programs/available/" + subElement.key);
+                                folder += ".available";
+                            }
+                            if (url === "/settings") {
+                                getAPIValues(token, haId, "/settings/" + subElement.key);
+                            }
+
+                            if (url.indexOf("/programs/selected/") !== -1) {
+                                if (!currentSelected[haId]) {
+                                    return;
+                                }
+                                const key = currentSelected[haId].key.split(".").pop();
+                                folder += "." + key;
+
+                                adapter.setObjectNotExists(haId + folder, {
+                                    type: "state",
+                                    common: { name: currentSelected[haId].name, type: "mixed", role: "indicator", write: true, read: true },
+                                    native: {},
+                                });
+                            }
+                            adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
+                            let type = "mixed";
+                            if (typeof subElement.value === "boolean") {
+                                type = "boolean";
+                            }
+                            if (typeof subElement.value === "number") {
+                                type = "number";
+                            }
+                            const common = {
+                                name: subElement.name,
+                                type: type,
+                                role: "indicator",
+                                write: true,
+                                read: true,
+                                unit: subElement.unit || "",
+                                min: (subElement.constraints && subElement.constraints.min) || null,
+                                max: (subElement.constraints && subElement.constraints.max) || null,
+                            };
+                            adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
+                                type: "state",
+                                common: common,
+                                native: {},
+                            });
+                            adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
                         });
-                        adapter.setObjectNotExists(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
-                            type: "state",
-                            common: common,
-                            native: {}
+                    }
+                    if (url === "/programs") {
+                        const rootItems = [
+                            {
+                                key: "BSH_Common_Root_ActiveProgram",
+                                folder: ".programs.active",
+                            },
+                            {
+                                key: "BSH_Common_Root_SelectedProgram",
+                                folder: ".programs.selected",
+                            },
+                        ];
+                        rootItems.forEach((rootItem) => {
+                            const common = {
+                                name: rootItem.key,
+                                type: "string",
+                                role: "indicator",
+                                write: true,
+                                read: true,
+                                states: {},
+                            };
+                            availablePrograms[haId].forEach((program) => {
+                                common.states[program.key] = program.name;
+                            });
+                            adapter.setObjectNotExists(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+                                type: "state",
+                                common: common,
+                                native: {},
+                            });
+                            adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+                                type: "state",
+                                common: common,
+                                native: {},
+                            });
                         });
-                        adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
-                            type: "state",
-                            common: common,
-                            native: {}
-                        });
-                    });
+                    }
+                } catch (error) {
+                    adapter.log.error(error);
+                    adapter.log.error(error.stack);
+                    adapter.log.error(url);
+                    adapter.log.error(JSON.stringify(returnValue));
                 }
             },
             ([statusCode, description]) => {
@@ -878,7 +875,7 @@ function startAdapter(options) {
         let param = {
             Authorization: "Bearer " + token,
             Accept: "application/vnd.bsh.sdk.v1+json, application/vnd.bsh.sdk.v2+json, application/json, application/vnd.bsh.hca.v2+json, application/vnd.bsh.sdk.v1+json, application/vnd",
-            "Accept-Language": "de-DE"
+            "Accept-Language": "de-DE",
         };
         if (method === "PUT" || method === "DELETE") {
             param["Content-Type"] = "application/vnd.bsh.sdk.v1+json";
@@ -914,10 +911,10 @@ function startAdapter(options) {
                         method: method,
                         url: "https://api.home-connect.com/api/homeappliances/" + haId + url,
                         headers: param,
-                        body: data
+                        body: data,
                     },
 
-                    function(error, response, body) {
+                    function (error, response, body) {
                         const responseCode = response ? response.statusCode : null;
                         if (error) {
                             reject([responseCode, error]);
@@ -975,14 +972,9 @@ function startAdapter(options) {
             adapter.getStates(pre + ".*", (err, states) => {
                 const allIds = Object.keys(states);
                 let searchString = "selected.options.";
-                allIds.forEach(function(keyName) {
+                allIds.forEach(function (keyName) {
                     if (keyName.indexOf(searchString) !== -1) {
-                        adapter.delObject(
-                            keyName
-                                .split(".")
-                                .slice(2)
-                                .join(".")
-                        );
+                        adapter.delObject(keyName.split(".").slice(2).join("."));
                     }
                 });
                 const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
@@ -1000,7 +992,7 @@ function startAdapter(options) {
         const scope = adapter.config.scope;
         const clientID = adapter.config.clientID;
 
-        stateGet(adapter.namespace + ".dev.devCode").then(value => {
+        stateGet(adapter.namespace + ".dev.devCode").then((value) => {
             if (value == false) {
                 auth.authUriGet(scope, clientID).then(
                     ([authUri, devCode, pollInterval]) => {
@@ -1015,19 +1007,19 @@ function startAdapter(options) {
                             }
                         });
                     },
-                    statusPost => {
+                    (statusPost) => {
                         adapter.log.error("Error AuthUriGet: " + statusPost);
                     }
                 );
             } else {
                 stateGet(adapter.namespace + ".dev.token").then(
-                    value => {
+                    (value) => {
                         if (!value) {
                             getTokenInterval = setInterval(getToken, 10000);
                         } else {
                             const token = value;
                             auth.getAppliances(token).then(
-                                appliances => {
+                                (appliances) => {
                                     parseHomeappliances(appliances);
                                 },
 
@@ -1049,13 +1041,13 @@ function startAdapter(options) {
                                     setTimeout(() => adapter.restart(), 2000);
                                 }
                             );
-                            stateGet(adapter.namespace + ".dev.refreshToken").then(refreshToken => {
+                            stateGet(adapter.namespace + ".dev.refreshToken").then((refreshToken) => {
                                 getRefreshToken(true);
                                 getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
                             });
                         }
                     },
-                    err => {
+                    (err) => {
                         adapter.log.error("FEHLER: " + err);
                     }
                 );
@@ -1069,9 +1061,9 @@ function startAdapter(options) {
                 type: "mixed",
                 role: "indicator",
                 write: false,
-                read: true
+                read: true,
             },
-            native: {}
+            native: {},
         });
 
         adapter.setObjectNotExists("dev.devCode", {
@@ -1081,9 +1073,9 @@ function startAdapter(options) {
                 type: "mixed",
                 role: "indicator",
                 write: false,
-                read: true
+                read: true,
             },
-            native: {}
+            native: {},
         });
 
         adapter.setObjectNotExists("dev.pollInterval", {
@@ -1093,9 +1085,9 @@ function startAdapter(options) {
                 type: "mixed",
                 role: "indicator",
                 write: false,
-                read: true
+                read: true,
             },
-            native: {}
+            native: {},
         });
 
         adapter.setObjectNotExists("dev.token", {
@@ -1105,9 +1097,9 @@ function startAdapter(options) {
                 type: "mixed",
                 role: "indicator",
                 write: false,
-                read: true
+                read: true,
             },
-            native: {}
+            native: {},
         });
 
         adapter.setObjectNotExists("dev.refreshToken", {
@@ -1117,9 +1109,9 @@ function startAdapter(options) {
                 type: "mixed",
                 role: "indicator",
                 write: false,
-                read: true
+                read: true,
             },
-            native: {}
+            native: {},
         });
 
         adapter.setObjectNotExists("dev.access", {
@@ -1129,9 +1121,9 @@ function startAdapter(options) {
                 type: "boolean",
                 role: "indicator",
                 write: true,
-                read: true
+                read: true,
             },
-            native: {}
+            native: {},
         });
 
         adapter.setObjectNotExists("dev.expires", {
@@ -1141,9 +1133,9 @@ function startAdapter(options) {
                 type: "number",
                 role: "indicator",
                 write: false,
-                read: true
+                read: true,
             },
-            native: {}
+            native: {},
         });
 
         adapter.setObjectNotExists("dev.tokenScope", {
@@ -1153,9 +1145,9 @@ function startAdapter(options) {
                 type: "mixed",
                 role: "indicator",
                 write: false,
-                read: true
+                read: true,
             },
-            native: {}
+            native: {},
         });
 
         adapter.setObjectNotExists("dev.eventStreamJSON", {
@@ -1165,9 +1157,9 @@ function startAdapter(options) {
                 type: "object",
                 role: "indicator",
                 write: false,
-                read: true
+                read: true,
             },
-            native: {}
+            native: {},
         });
 
         adapter.subscribeStates("*");
