@@ -20,10 +20,10 @@ function startAdapter(options) {
     let reconnectEventStreamInterval;
     let eventSource;
     const availablePrograms = {};
-    let availableProgramOptions = {};
+    const availableProgramOptions = {};
     const eventSourceList = {};
     const reconnectTimeouts = {};
-    let currentSelected = {};
+    const currentSelected = {};
 
     let rateCalculation = [];
 
@@ -120,15 +120,19 @@ function startAdapter(options) {
                                 clearInterval(getTokenInterval);
 
                                 adapter.setState("dev.access", true);
-                                auth.getAppliances(token).then(
-                                    (appliances) => {
-                                        parseHomeappliances(appliances);
-                                    },
-                                    ([statusCode, description]) => {
-                                        adapter.log.error("Error getting Aplliances Error: " + statusCode);
-                                        adapter.log.error(description);
-                                    }
-                                );
+                                auth.getAppliances(token)
+                                    .then(
+                                        (appliances) => {
+                                            parseHomeappliances(appliances);
+                                        },
+                                        ([statusCode, description]) => {
+                                            adapter.log.error("Error getting Aplliances Error: " + statusCode);
+                                            adapter.log.error(description);
+                                        }
+                                    )
+                                    .catch(() => {
+                                        adapter.log.debug("No appliance found");
+                                    });
 
                                 adapter.log.debug("Start Refreshinterval");
                                 getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
@@ -514,7 +518,7 @@ function startAdapter(options) {
                 if (id.indexOf("BSH_Common_Option") === -1 && state && state.val && state.val.indexOf && state.val.indexOf(".") !== -1) {
                     adapter.getObject(id, function (err, obj) {
                         if (obj) {
-                            let common = obj.common;
+                            const common = obj.common;
                             const valArray = state.val.split(".");
                             common.states = {};
                             common.states[state.val] = valArray[valArray.length - 1];
@@ -740,7 +744,7 @@ function startAdapter(options) {
                                 read: true,
                             };
                             if (returnValue.data.constraints && returnValue.data.constraints.allowedvalues) {
-                                let states = {};
+                                const states = {};
                                 returnValue.data.constraints.allowedvalues.forEach((element, index) => {
                                     states[element] = returnValue.data.constraints.displayvalues[index];
                                 });
@@ -948,7 +952,7 @@ function startAdapter(options) {
     function sendRequest(token, haId, url, method, data) {
         method = method || "GET";
 
-        let param = {
+        const param = {
             Authorization: "Bearer " + token,
             Accept: "application/vnd.bsh.sdk.v1+json, application/vnd.bsh.sdk.v2+json, application/json, application/vnd.bsh.hca.v2+json, application/vnd.bsh.sdk.v1+json, application/vnd",
             "Accept-Language": "de-DE",
@@ -998,16 +1002,16 @@ function startAdapter(options) {
                         }
                         if (!error && responseCode >= 300) {
                             try {
-                                let errorString = JSON.parse(body);
-                                let description = errorString.error.description;
+                                const errorString = JSON.parse(body);
+                                const description = errorString.error.description;
                                 reject([responseCode, description]);
                             } catch (error) {
-                                let description = body;
+                                const description = body;
                                 reject([responseCode, description]);
                             }
                         } else {
                             try {
-                                let parsedResponse = JSON.parse(body);
+                                const parsedResponse = JSON.parse(body);
                                 resolve([responseCode, parsedResponse]);
                             } catch (error) {
                                 resolve([responseCode, body]);
@@ -1047,7 +1051,7 @@ function startAdapter(options) {
             const pre = adapter.name + "." + adapter.instance;
             adapter.getStates(pre + ".*", (err, states) => {
                 const allIds = Object.keys(states);
-                let searchString = "selected.options.";
+                const searchString = "selected.options.";
                 allIds.forEach(function (keyName) {
                     if (keyName.indexOf(searchString) !== -1) {
                         adapter.delObject(keyName.split(".").slice(2).join("."));
