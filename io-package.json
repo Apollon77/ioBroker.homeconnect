@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.27",
+        "version": "0.0.28",
         "news": {
+            "0.0.28": {
+                "en": "fix js controller 3 issues"
+            },
             "0.0.27": {
                 "en": "improve option selecting"
             },
@@ -62,6 +65,11 @@
         "compact": true,
         "license": "MIT",
         "messagebox": false,
+        "plugins": {
+            "sentry": {
+                "dsn": "https://0d0cad2f2cc44d5e889a2bd7ee0fcc42@sentry.iobroker.net/65"
+            }
+        },
         "dependencies": [
             {
                 "admin": ">=3.0.0"
