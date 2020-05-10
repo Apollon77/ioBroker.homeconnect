@@ -47,106 +47,126 @@ function startAdapter(options) {
 
     function getRefreshToken(disableReconnectStream) {
         const stat = adapter.namespace + ".dev.refreshToken";
-        stateGet(stat).then((value) => {
-            auth.tokenRefresh(value).then(
-                ([token, refreshToken, expires, tokenScope]) => {
-                    adapter.log.info("Accesstoken renewed...");
-                    adapter.setState("dev.token", {
-                        val: token,
-                        ack: true,
+        stateGet(stat)
+            .then((value) => {
+                auth.tokenRefresh(value)
+                    .then(
+                        ([token, refreshToken, expires, tokenScope]) => {
+                            adapter.log.info("Accesstoken renewed...");
+                            adapter.setState("dev.token", {
+                                val: token,
+                                ack: true,
+                            });
+                            adapter.setState("dev.refreshToken", {
+                                val: refreshToken,
+                                ack: true,
+                            });
+                            adapter.setState("dev.expires", {
+                                val: expires,
+                                ack: true,
+                            });
+                            adapter.setState("dev.tokenScope", {
+                                val: tokenScope,
+                                ack: true,
+                            });
+                            if (!disableReconnectStream) {
+                                Object.keys(eventSourceList).forEach(function (key) {
+                                    startEventStream(token, key);
+                                });
+                            }
+                        },
+                        ([statusCode, description]) => {
+                            setTimeout(() => {
+                                getRefreshToken();
+                            }, 5 * 60 * 1000); //5min
+                            adapter.log.error("Error Refresh-Token: " + statusCode + " " + description);
+                            adapter.log.warn("Retry Refresh Token in 5min");
+                        }
+                    )
+                    .catch(() => {
+                        adapter.log.debug("No able to get refesh token ");
                     });
-                    adapter.setState("dev.refreshToken", {
-                        val: refreshToken,
-                        ack: true,
-                    });
-                    adapter.setState("dev.expires", {
-                        val: expires,
-                        ack: true,
-                    });
-                    adapter.setState("dev.tokenScope", {
-                        val: tokenScope,
-                        ack: true,
-                    });
-                    if (!disableReconnectStream) {
-                        Object.keys(eventSourceList).forEach(function (key) {
-                            startEventStream(token, key);
-                        });
-                    }
-                },
-                ([statusCode, description]) => {
-                    setTimeout(() => {
-                        getRefreshToken();
-                    }, 5 * 60 * 1000); //5min
-                    adapter.log.error("Error Refresh-Token: " + statusCode + " " + description);
-                    adapter.log.warn("Retry Refresh Token in 5min");
-                }
-            );
-        });
+            })
+            .catch(() => {
+                adapter.log.debug("No refreshtoken found");
+            });
     }
 
     function getToken() {
-        stateGet("dev.devCode").then(
-            (deviceCode) => {
-                const clientID = adapter.config.clientID;
-                auth.tokenGet(deviceCode, clientID).then(
-                    ([token, refreshToken, expires, tokenScope]) => {
-                        adapter.log.debug("Accesstoken created: " + token);
-                        adapter.setState("dev.token", {
-                            val: token,
-                            ack: true,
-                        });
-                        adapter.setState("dev.refreshToken", {
-                            val: refreshToken,
-                            ack: true,
-                        });
-                        adapter.setState("dev.expires", {
-                            val: expires,
-                            ack: true,
-                        });
-                        adapter.setState("dev.tokenScope", {
-                            val: tokenScope,
-                            ack: true,
-                        });
-                        clearInterval(getTokenInterval);
+        stateGet("dev.devCode")
+            .then(
+                (deviceCode) => {
+                    const clientID = adapter.config.clientID;
+                    auth.tokenGet(deviceCode, clientID)
+                        .then(
+                            ([token, refreshToken, expires, tokenScope]) => {
+                                adapter.log.debug("Accesstoken created: " + token);
+                                adapter.setState("dev.token", {
+                                    val: token,
+                                    ack: true,
+                                });
+                                adapter.setState("dev.refreshToken", {
+                                    val: refreshToken,
+                                    ack: true,
+                                });
+                                adapter.setState("dev.expires", {
+                                    val: expires,
+                                    ack: true,
+                                });
+                                adapter.setState("dev.tokenScope", {
+                                    val: tokenScope,
+                                    ack: true,
+                                });
+                                clearInterval(getTokenInterval);
 
-                        adapter.setState("dev.access", true);
-                        auth.getAppliances(token).then(
-                            (appliances) => {
-                                parseHomeappliances(appliances);
+                                adapter.setState("dev.access", true);
+                                auth.getAppliances(token).then(
+                                    (appliances) => {
+                                        parseHomeappliances(appliances);
+                                    },
+                                    ([statusCode, description]) => {
+                                        adapter.log.error("Error getting Aplliances Error: " + statusCode);
+                                        adapter.log.error(description);
+                                    }
+                                );
+
+                                adapter.log.debug("Start Refreshinterval");
+                                getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
                             },
-                            ([statusCode, description]) => {
-                                adapter.log.error("Error getting Aplliances Error: " + statusCode);
-                                adapter.log.error(description);
-                            }
-                        );
+                            (statusPost) => {
+                                if (statusPost == "400") {
+                                    const stat = "dev.authUriComplete";
 
-                        adapter.log.debug("Start Refreshinterval");
-                        getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
-                    },
-                    (statusPost) => {
-                        if (statusPost == "400") {
-                            const stat = "dev.authUriComplete";
-
-                            stateGet(stat).then(
-                                (value) => {
-                                    adapter.log.error("Please visit this url:  " + value);
-                                },
-                                (err) => {
-                                    adapter.log.error("FEHLER: " + err);
+                                    stateGet(stat)
+                                        .then(
+                                            (value) => {
+                                                adapter.log.error("Please visit this url:  " + value);
+                                            },
+                                            (err) => {
+                                                adapter.log.error("FEHLER: " + err);
+                                            }
+                                        )
+                                        .catch(() => {
+                                            adapter.log.debug("No state" + stat + " found");
+                                        });
+                                } else {
+                                    adapter.log.error("Error GetToken: " + statusPost);
+                                    clearInterval(getTokenInterval);
                                 }
-                            );
-                        } else {
-                            adapter.log.error("Error GetToken: " + statusPost);
-                            clearInterval(getTokenInterval);
-                        }
-                    }
-                );
-            },
-            (err) => {
-                adapter.log.error("getToken FEHLER: " + err);
-                clearInterval(getTokenInterval);
-            }
-        );
+                            }
+                        )
+                        .catch(() => {
+                            adapter.log.debug("No token found");
+                        });
+                },
+                (err) => {
+                    adapter.log.error("getToken FEHLER: " + err);
+                    clearInterval(getTokenInterval);
+                }
+            )
+            .catch(() => {
+                adapter.log.debug("No token found");
+            });
     }
 
     /* Eventstream
@@ -213,10 +233,14 @@ function startAdapter(options) {
         haId = haId.replace(/\.?\-001*$/, "");
         clearInterval(reconnectTimeouts[haId]);
         reconnectTimeouts[haId] = setInterval(() => {
-            stateGet(adapter.namespace + ".dev.token").then((value) => {
-                adapter.log.debug("reconnect EventStream " + haId);
-                startEventStream(value, haId);
-            });
+            stateGet(adapter.namespace + ".dev.token")
+                .then((value) => {
+                    adapter.log.debug("reconnect EventStream " + haId);
+                    startEventStream(value, haId);
+                })
+                .catch(() => {
+                    adapter.log.debug("No token found");
+                });
         }, 70000);
     }
 
@@ -331,9 +355,13 @@ function startAdapter(options) {
             if (id.indexOf(".commands.") !== -1) {
                 adapter.log.debug(id + " " + state.val);
                 if (id.indexOf("StopProgram") && state.val) {
-                    stateGet(adapter.namespace + ".dev.token").then((token) => {
-                        deleteAPIValues(token, haId, "/programs/active");
-                    });
+                    stateGet(adapter.namespace + ".dev.token")
+                        .then((token) => {
+                            deleteAPIValues(token, haId, "/programs/active");
+                        })
+                        .catch(() => {
+                            adapter.log.debug("No token found");
+                        });
                 } else {
                     const data = {
                         data: {
@@ -341,9 +369,13 @@ function startAdapter(options) {
                             value: state.val,
                         },
                     };
-                    stateGet(adapter.namespace + ".dev.token").then((token) => {
-                        putAPIValues(token, haId, "/commands/" + command, data);
-                    });
+                    stateGet(adapter.namespace + ".dev.token")
+                        .then((token) => {
+                            putAPIValues(token, haId, "/commands/" + command, data);
+                        })
+                        .catch(() => {
+                            adapter.log.debug("No token found");
+                        });
                 }
             }
             if (id.indexOf(".settings.") !== -1) {
@@ -354,9 +386,13 @@ function startAdapter(options) {
                         type: command,
                     },
                 };
-                stateGet(adapter.namespace + ".dev.token").then((token) => {
-                    putAPIValues(token, haId, "/settings/" + command, data);
-                });
+                stateGet(adapter.namespace + ".dev.token")
+                    .then((token) => {
+                        putAPIValues(token, haId, "/settings/" + command, data);
+                    })
+                    .catch(() => {
+                        adapter.log.debug("No token found");
+                    });
             }
             if (id.indexOf(".options.") !== -1) {
                 const data = {
@@ -369,9 +405,13 @@ function startAdapter(options) {
                     idArray.pop();
                 }
                 const folder = idArray.slice(3, idArray.length).join("/");
-                stateGet(adapter.namespace + ".dev.token").then((token) => {
-                    putAPIValues(token, haId, "/" + folder + "/" + command, data);
-                });
+                stateGet(adapter.namespace + ".dev.token")
+                    .then((token) => {
+                        putAPIValues(token, haId, "/" + folder + "/" + command, data);
+                    })
+                    .catch(() => {
+                        adapter.log.debug("No token found");
+                    });
             }
             if (id.indexOf("BSH_Common_Root_") !== -1) {
                 const pre = adapter.name + "." + adapter.instance;
@@ -406,30 +446,38 @@ function startAdapter(options) {
                     };
 
                     if (id.indexOf("Active") !== -1) {
-                        stateGet(adapter.namespace + ".dev.token").then((token) => {
-                            putAPIValues(token, haId, "/programs/active", data)
-                                .catch(() => {
-                                    adapter.log.info("Programm doesn't start with options. Try again without selected options.");
-                                    putAPIValues(token, haId, "/programs/active", {
-                                        data: {
-                                            key: state.val,
-                                        },
-                                    });
-                                })
-                                .then(() => updateOptions(token, haId, "/programs/active"));
-                        });
+                        stateGet(adapter.namespace + ".dev.token")
+                            .then((token) => {
+                                putAPIValues(token, haId, "/programs/active", data)
+                                    .catch(() => {
+                                        adapter.log.info("Programm doesn't start with options. Try again without selected options.");
+                                        putAPIValues(token, haId, "/programs/active", {
+                                            data: {
+                                                key: state.val,
+                                            },
+                                        });
+                                    })
+                                    .then(() => updateOptions(token, haId, "/programs/active"));
+                            })
+                            .catch(() => {
+                                adapter.log.debug("No token found");
+                            });
                     }
                     if (id.indexOf("Selected") !== -1) {
                         currentSelected[haId] = { key: state.val };
                         stateGet(adapter.namespace + ".dev.token").then((token) => {
-                            putAPIValues(token, haId, "/programs/selected", data).then(
-                                () => {
-                                    updateOptions(token, haId, "/programs/selected");
-                                },
-                                () => {
-                                    adapter.log.warn("Setting selected program was not succesful");
-                                }
-                            );
+                            putAPIValues(token, haId, "/programs/selected", data)
+                                .then(
+                                    () => {
+                                        updateOptions(token, haId, "/programs/selected");
+                                    },
+                                    () => {
+                                        adapter.log.warn("Setting selected program was not succesful");
+                                    }
+                                )
+                                .catch(() => {
+                                    adapter.log.debug("No program selected found");
+                                });
                         });
                     }
                 });
@@ -440,17 +488,25 @@ function startAdapter(options) {
             const haId = idArray[2];
             if (id.indexOf("BSH_Common_Root_") !== -1) {
                 if (id.indexOf("Active") !== -1) {
-                    stateGet(adapter.namespace + ".dev.token").then((token) => {
-                        updateOptions(token, haId, "/programs/active");
-                    });
+                    stateGet(adapter.namespace + ".dev.token")
+                        .then((token) => {
+                            updateOptions(token, haId, "/programs/active");
+                        })
+                        .catch(() => {
+                            adapter.log.debug("No token found");
+                        });
                 }
                 if (id.indexOf("Selected") !== -1) {
                     if (state) {
                         currentSelected[haId] = { key: state.val };
                     }
-                    stateGet(adapter.namespace + ".dev.token").then((token) => {
-                        updateOptions(token, haId, "/programs/selected");
-                    });
+                    stateGet(adapter.namespace + ".dev.token")
+                        .then((token) => {
+                            updateOptions(token, haId, "/programs/selected");
+                        })
+                        .catch(() => {
+                            adapter.log.debug("No token found");
+                        });
                 }
             }
 
@@ -575,22 +631,26 @@ function startAdapter(options) {
             });
             const tokenID = adapter.namespace + ".dev.token";
             if (element.connected) {
-                stateGet(tokenID).then(
-                    (value) => {
-                        const token = value;
-                        getAPIValues(token, haId, "/status");
-                        getAPIValues(token, haId, "/settings");
-                        getAPIValues(token, haId, "/programs");
-                        getAPIValues(token, haId, "/programs/active");
-                        getAPIValues(token, haId, "/programs/selected");
-                        updateOptions(token, haId, "/programs/active");
-                        updateOptions(token, haId, "/programs/selected");
-                        startEventStream(token, haId);
-                    },
-                    (err) => {
-                        adapter.log.error("FEHLER: " + err);
-                    }
-                );
+                stateGet(tokenID)
+                    .then(
+                        (value) => {
+                            const token = value;
+                            getAPIValues(token, haId, "/status");
+                            getAPIValues(token, haId, "/settings");
+                            getAPIValues(token, haId, "/programs");
+                            getAPIValues(token, haId, "/programs/active");
+                            getAPIValues(token, haId, "/programs/selected");
+                            updateOptions(token, haId, "/programs/active");
+                            updateOptions(token, haId, "/programs/selected");
+                            startEventStream(token, haId);
+                        },
+                        (err) => {
+                            adapter.log.error("FEHLER: " + err);
+                        }
+                    )
+                    .catch(() => {
+                        adapter.log.debug("No token found");
+                    });
             } else {
                 adapter.log.warn(haId + " is not connected cannot fetch information.");
             }
@@ -617,256 +677,272 @@ function startAdapter(options) {
         return new Promise((resolve, reject) => {
             adapter.log.debug(haId + url);
             adapter.log.debug(JSON.stringify(data));
-            sendRequest(token, haId, url, "PUT", JSON.stringify(data)).then(
+            sendRequest(token, haId, url, "PUT", JSON.stringify(data))
+                .then(
+                    ([statusCode, returnValue]) => {
+                        adapter.log.debug(statusCode + " " + returnValue);
+                        adapter.log.debug(JSON.stringify(returnValue));
+                        resolve();
+                    },
+                    ([statusCode, description]) => {
+                        if (statusCode === 403) {
+                            adapter.log.info("Homeconnect API has not the rights for this command and device");
+                        }
+                        adapter.log.info(statusCode + ": " + description);
+                        reject();
+                    }
+                )
+                .catch(() => {
+                    adapter.log.debug("request not successful found");
+                });
+        });
+    }
+
+    function deleteAPIValues(token, haId, url) {
+        sendRequest(token, haId, url, "DELETE")
+            .then(
                 ([statusCode, returnValue]) => {
-                    adapter.log.debug(statusCode + " " + returnValue);
+                    adapter.log.debug(url);
                     adapter.log.debug(JSON.stringify(returnValue));
-                    resolve();
                 },
                 ([statusCode, description]) => {
                     if (statusCode === 403) {
                         adapter.log.info("Homeconnect API has not the rights for this command and device");
                     }
                     adapter.log.info(statusCode + ": " + description);
-                    reject();
                 }
-            );
-        });
-    }
-
-    function deleteAPIValues(token, haId, url) {
-        sendRequest(token, haId, url, "DELETE").then(
-            ([statusCode, returnValue]) => {
-                adapter.log.debug(url);
-                adapter.log.debug(JSON.stringify(returnValue));
-            },
-            ([statusCode, description]) => {
-                if (statusCode === 403) {
-                    adapter.log.info("Homeconnect API has not the rights for this command and device");
-                }
-                adapter.log.info(statusCode + ": " + description);
-            }
-        );
+            )
+            .catch(() => {
+                adapter.log.debug("delete not successful");
+            });
     }
 
     function getAPIValues(token, haId, url) {
-        sendRequest(token, haId, url).then(
-            ([statusCode, returnValue]) => {
-                try {
-                    adapter.log.debug(url);
-                    adapter.log.debug(JSON.stringify(returnValue));
-                    if (url.indexOf("/settings/") !== -1) {
-                        let type = "string";
-                        if (returnValue.data.type === "Int" || returnValue.data.type === "Double") {
-                            type = "number";
-                        }
-                        if (returnValue.data.type === "Boolean") {
-                            type = "boolean";
-                        }
-                        const common = {
-                            name: returnValue.data.name,
-                            type: type,
-                            role: "indicator",
-                            write: true,
-                            read: true,
-                        };
-                        if (returnValue.data.constraints && returnValue.data.constraints.allowedvalues) {
-                            let states = {};
-                            returnValue.data.constraints.allowedvalues.forEach((element, index) => {
-                                states[element] = returnValue.data.constraints.displayvalues[index];
-                            });
-                            common.states = states;
-                        }
-                        const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
-                        adapter.extendObject(haId + folder, {
-                            type: "state",
-                            common: common,
-                            native: {},
-                        });
-                        return;
-                    }
-
-                    if (url.indexOf("/programs/available/") !== -1) {
-                        if (returnValue.data.options) {
-                            availableProgramOptions[returnValue.data.key] = availableProgramOptions[returnValue.data.key] || [];
-                            returnValue.data.options.forEach((option) => {
-                                availableProgramOptions[returnValue.data.key].push(option.key);
-                                let type = "string";
-                                if (option.type === "Int" || option.type === "Double") {
-                                    type = "number";
-                                }
-                                if (option.type === "Boolean") {
-                                    type = "boolean";
-                                }
-                                const common = {
-                                    name: option.name,
-                                    type: type,
-                                    role: "indicator",
-                                    unit: option.unit || "",
-                                    write: true,
-                                    read: true,
-                                    min: option.constraints.min || null,
-                                    max: option.constraints.max || null,
-                                };
-
-                                if (option.constraints.allowedvalues) {
-                                    common.states = {};
-                                    option.constraints.allowedvalues.forEach((element, index) => {
-                                        common.states[element] = option.constraints.displayvalues[index];
-                                    });
-                                }
-                                let folder = ".programs.available.options." + option.key.replace(/\./g, "_");
-
-                                adapter.extendObject(haId + folder, {
-                                    type: "state",
-                                    common: common,
-                                    native: {},
-                                });
-                                adapter.setState(haId + folder, option.constraints.default, true);
-                                const key = returnValue.data.key.split(".").pop();
-                                adapter.setObjectNotExists(haId + ".programs.selected.options." + key, {
-                                    type: "state",
-                                    common: { name: returnValue.data.name, type: "mixed", role: "indicator", write: true, read: true },
-                                    native: {},
-                                });
-                                folder = ".programs.selected.options." + key + "." + option.key.replace(/\./g, "_");
-                                adapter.extendObject(haId + folder, {
-                                    type: "state",
-                                    common: common,
-                                    native: {},
-                                });
-                            });
-                        }
-                        return;
-                    }
-
-                    if ("key" in returnValue.data) {
-                        returnValue.data = {
-                            items: [returnValue.data],
-                        };
-                    }
-                    for (const item in returnValue.data) {
-                        returnValue.data[item].forEach((subElement) => {
-                            let folder = url.replace(/\//g, ".");
-                            if (url === "/programs/active") {
-                                subElement.value = subElement.key;
-                                subElement.key = "BSH_Common_Root_ActiveProgram";
-                                subElement.name = "BSH_Common_Root_ActiveProgram";
-                            }
-                            if (url === "/programs/selected") {
-                                subElement.value = subElement.key;
-                                currentSelected[haId] = { key: subElement.value, name: subElement.name };
-                                subElement.key = "BSH_Common_Root_SelectedProgram";
-                                subElement.name = "BSH_Common_Root_SelectedProgram";
-                            }
-                            if (url === "/programs") {
-                                adapter.log.debug(haId + " available: " + JSON.stringify(subElement));
-                                if (availablePrograms[haId]) {
-                                    availablePrograms[haId].push({
-                                        key: subElement.key,
-                                        name: subElement.name,
-                                    });
-                                } else {
-                                    availablePrograms[haId] = [
-                                        {
-                                            key: subElement.key,
-                                            name: subElement.name,
-                                        },
-                                    ];
-                                }
-                                getAPIValues(token, haId, "/programs/available/" + subElement.key);
-                                folder += ".available";
-                            }
-                            if (url === "/settings") {
-                                getAPIValues(token, haId, "/settings/" + subElement.key);
-                            }
-
-                            if (url.indexOf("/programs/selected/") !== -1) {
-                                if (!currentSelected[haId]) {
-                                    return;
-                                }
-                                const key = currentSelected[haId].key.split(".").pop();
-                                folder += "." + key;
-
-                                adapter.setObjectNotExists(haId + folder, {
-                                    type: "state",
-                                    common: { name: currentSelected[haId].name, type: "mixed", role: "indicator", write: true, read: true },
-                                    native: {},
-                                });
-                            }
-                            adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
-                            let type = "mixed";
-                            if (typeof subElement.value === "boolean") {
-                                type = "boolean";
-                            }
-                            if (typeof subElement.value === "number") {
+        sendRequest(token, haId, url)
+            .then(
+                ([statusCode, returnValue]) => {
+                    try {
+                        adapter.log.debug(url);
+                        adapter.log.debug(JSON.stringify(returnValue));
+                        if (url.indexOf("/settings/") !== -1) {
+                            let type = "string";
+                            if (returnValue.data.type === "Int" || returnValue.data.type === "Double") {
                                 type = "number";
                             }
+                            if (returnValue.data.type === "Boolean") {
+                                type = "boolean";
+                            }
                             const common = {
-                                name: subElement.name,
+                                name: returnValue.data.name,
                                 type: type,
                                 role: "indicator",
                                 write: true,
                                 read: true,
-                                unit: subElement.unit || "",
-                                min: (subElement.constraints && subElement.constraints.min) || null,
-                                max: (subElement.constraints && subElement.constraints.max) || null,
                             };
-                            adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
+                            if (returnValue.data.constraints && returnValue.data.constraints.allowedvalues) {
+                                let states = {};
+                                returnValue.data.constraints.allowedvalues.forEach((element, index) => {
+                                    states[element] = returnValue.data.constraints.displayvalues[index];
+                                });
+                                common.states = states;
+                            }
+                            const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
+                            adapter.extendObject(haId + folder, {
                                 type: "state",
                                 common: common,
                                 native: {},
                             });
-                            adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
-                        });
-                    }
-                    if (url === "/programs") {
-                        const rootItems = [
-                            {
-                                key: "BSH_Common_Root_ActiveProgram",
-                                folder: ".programs.active",
-                            },
-                            {
-                                key: "BSH_Common_Root_SelectedProgram",
-                                folder: ".programs.selected",
-                            },
-                        ];
-                        rootItems.forEach((rootItem) => {
-                            const common = {
-                                name: rootItem.key,
-                                type: "string",
-                                role: "indicator",
-                                write: true,
-                                read: true,
-                                states: {},
+                            return;
+                        }
+
+                        if (url.indexOf("/programs/available/") !== -1) {
+                            if (returnValue.data.options) {
+                                availableProgramOptions[returnValue.data.key] = availableProgramOptions[returnValue.data.key] || [];
+                                returnValue.data.options.forEach((option) => {
+                                    availableProgramOptions[returnValue.data.key].push(option.key);
+                                    let type = "string";
+                                    if (option.type === "Int" || option.type === "Double") {
+                                        type = "number";
+                                    }
+                                    if (option.type === "Boolean") {
+                                        type = "boolean";
+                                    }
+                                    const common = {
+                                        name: option.name,
+                                        type: type,
+                                        role: "indicator",
+                                        unit: option.unit || "",
+                                        write: true,
+                                        read: true,
+                                        min: option.constraints.min || null,
+                                        max: option.constraints.max || null,
+                                    };
+
+                                    if (option.constraints.allowedvalues) {
+                                        common.states = {};
+                                        option.constraints.allowedvalues.forEach((element, index) => {
+                                            common.states[element] = option.constraints.displayvalues[index];
+                                        });
+                                    }
+                                    let folder = ".programs.available.options." + option.key.replace(/\./g, "_");
+
+                                    adapter.extendObject(haId + folder, {
+                                        type: "state",
+                                        common: common,
+                                        native: {},
+                                    });
+                                    adapter.setState(haId + folder, option.constraints.default, true);
+                                    const key = returnValue.data.key.split(".").pop();
+                                    adapter.setObjectNotExists(haId + ".programs.selected.options." + key, {
+                                        type: "state",
+                                        common: { name: returnValue.data.name, type: "mixed", role: "indicator", write: true, read: true },
+                                        native: {},
+                                    });
+                                    folder = ".programs.selected.options." + key + "." + option.key.replace(/\./g, "_");
+                                    adapter.extendObject(haId + folder, {
+                                        type: "state",
+                                        common: common,
+                                        native: {},
+                                    });
+                                });
+                            }
+                            return;
+                        }
+
+                        if ("key" in returnValue.data) {
+                            returnValue.data = {
+                                items: [returnValue.data],
                             };
-                            availablePrograms[haId].forEach((program) => {
-                                common.states[program.key] = program.name;
+                        }
+                        for (const item in returnValue.data) {
+                            returnValue.data[item].forEach((subElement) => {
+                                let folder = url.replace(/\//g, ".");
+                                if (url === "/programs/active") {
+                                    subElement.value = subElement.key;
+                                    subElement.key = "BSH_Common_Root_ActiveProgram";
+                                    subElement.name = "BSH_Common_Root_ActiveProgram";
+                                }
+                                if (url === "/programs/selected") {
+                                    subElement.value = subElement.key;
+                                    currentSelected[haId] = { key: subElement.value, name: subElement.name };
+                                    subElement.key = "BSH_Common_Root_SelectedProgram";
+                                    subElement.name = "BSH_Common_Root_SelectedProgram";
+                                }
+                                if (url === "/programs") {
+                                    adapter.log.debug(haId + " available: " + JSON.stringify(subElement));
+                                    if (availablePrograms[haId]) {
+                                        availablePrograms[haId].push({
+                                            key: subElement.key,
+                                            name: subElement.name,
+                                        });
+                                    } else {
+                                        availablePrograms[haId] = [
+                                            {
+                                                key: subElement.key,
+                                                name: subElement.name,
+                                            },
+                                        ];
+                                    }
+                                    getAPIValues(token, haId, "/programs/available/" + subElement.key);
+                                    folder += ".available";
+                                }
+                                if (url === "/settings") {
+                                    getAPIValues(token, haId, "/settings/" + subElement.key);
+                                }
+
+                                if (url.indexOf("/programs/selected/") !== -1) {
+                                    if (!currentSelected[haId]) {
+                                        return;
+                                    }
+                                    if (!currentSelected[haId].key) {
+                                        adapter.log.warn(JSON.stringify(currentSelected[haId]) + " is selected but has no key selected ");
+                                        return;
+                                    }
+                                    const key = currentSelected[haId].key.split(".").pop();
+                                    folder += "." + key;
+
+                                    adapter.setObjectNotExists(haId + folder, {
+                                        type: "state",
+                                        common: { name: currentSelected[haId].name, type: "mixed", role: "indicator", write: true, read: true },
+                                        native: {},
+                                    });
+                                }
+                                adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
+                                let type = "mixed";
+                                if (typeof subElement.value === "boolean") {
+                                    type = "boolean";
+                                }
+                                if (typeof subElement.value === "number") {
+                                    type = "number";
+                                }
+                                const common = {
+                                    name: subElement.name,
+                                    type: type,
+                                    role: "indicator",
+                                    write: true,
+                                    read: true,
+                                    unit: subElement.unit || "",
+                                    min: (subElement.constraints && subElement.constraints.min) || null,
+                                    max: (subElement.constraints && subElement.constraints.max) || null,
+                                };
+                                adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
+                                    type: "state",
+                                    common: common,
+                                    native: {},
+                                });
+                                adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
                             });
-                            adapter.setObjectNotExists(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
-                                type: "state",
-                                common: common,
-                                native: {},
+                        }
+                        if (url === "/programs") {
+                            const rootItems = [
+                                {
+                                    key: "BSH_Common_Root_ActiveProgram",
+                                    folder: ".programs.active",
+                                },
+                                {
+                                    key: "BSH_Common_Root_SelectedProgram",
+                                    folder: ".programs.selected",
+                                },
+                            ];
+                            rootItems.forEach((rootItem) => {
+                                const common = {
+                                    name: rootItem.key,
+                                    type: "string",
+                                    role: "indicator",
+                                    write: true,
+                                    read: true,
+                                    states: {},
+                                };
+                                availablePrograms[haId].forEach((program) => {
+                                    common.states[program.key] = program.name;
+                                });
+                                adapter.setObjectNotExists(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+                                    type: "state",
+                                    common: common,
+                                    native: {},
+                                });
+                                adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+                                    type: "state",
+                                    common: common,
+                                    native: {},
+                                });
                             });
-                            adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
-                                type: "state",
-                                common: common,
-                                native: {},
-                            });
-                        });
+                        }
+                    } catch (error) {
+                        adapter.log.error(error);
+                        adapter.log.error(error.stack);
+                        adapter.log.error(url);
+                        adapter.log.error(JSON.stringify(returnValue));
                     }
-                } catch (error) {
-                    adapter.log.error(error);
-                    adapter.log.error(error.stack);
-                    adapter.log.error(url);
-                    adapter.log.error(JSON.stringify(returnValue));
+                },
+                ([statusCode, description]) => {
+                    // adapter.log.info("Error getting API Values Error: " + statusGet);
+                    adapter.log.info(haId + ": " + description);
                 }
-            },
-            ([statusCode, description]) => {
-                // adapter.log.info("Error getting API Values Error: " + statusGet);
-                adapter.log.info(haId + ": " + description);
-            }
-        );
+            )
+            .catch(() => {
+                adapter.log.debug("request not succesfull");
+            });
     }
 
     function sendRequest(token, haId, url, method, data) {
@@ -992,67 +1068,87 @@ function startAdapter(options) {
         const scope = adapter.config.scope;
         const clientID = adapter.config.clientID;
 
-        stateGet(adapter.namespace + ".dev.devCode").then((value) => {
-            if (value == false) {
-                auth.authUriGet(scope, clientID).then(
-                    ([authUri, devCode, pollInterval]) => {
-                        adapter.setState("dev.authUriComplete", authUri);
-                        adapter.setState("dev.devCode", devCode);
-                        adapter.setState("dev.pollInterval", pollInterval);
-                        const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
-                        adapter.getForeignObject(adapterConfig, (error, obj) => {
-                            if (!obj.native.authUri) {
-                                obj.native.authUri = authUri;
-                                adapter.setForeignObject(adapterConfig, obj);
+        stateGet(adapter.namespace + ".dev.devCode")
+            .then((value) => {
+                if (value == false) {
+                    auth.authUriGet(scope, clientID)
+                        .then(
+                            ([authUri, devCode, pollInterval]) => {
+                                adapter.setState("dev.authUriComplete", authUri);
+                                adapter.setState("dev.devCode", devCode);
+                                adapter.setState("dev.pollInterval", pollInterval);
+                                const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
+                                adapter.getForeignObject(adapterConfig, (error, obj) => {
+                                    if (!obj.native.authUri) {
+                                        obj.native.authUri = authUri;
+                                        adapter.setForeignObject(adapterConfig, obj);
+                                    }
+                                });
+                            },
+                            (statusPost) => {
+                                adapter.log.error("Error AuthUriGet: " + statusPost);
                             }
+                        )
+                        .catch(() => {
+                            adapter.log.debug("auth uri not successfull");
                         });
-                    },
-                    (statusPost) => {
-                        adapter.log.error("Error AuthUriGet: " + statusPost);
-                    }
-                );
-            } else {
-                stateGet(adapter.namespace + ".dev.token").then(
-                    (value) => {
-                        if (!value) {
-                            getTokenInterval = setInterval(getToken, 10000);
-                        } else {
-                            const token = value;
-                            auth.getAppliances(token).then(
-                                (appliances) => {
-                                    parseHomeappliances(appliances);
-                                },
+                } else {
+                    stateGet(adapter.namespace + ".dev.token")
+                        .then(
+                            (value) => {
+                                if (!value) {
+                                    getTokenInterval = setInterval(getToken, 10000);
+                                } else {
+                                    const token = value;
+                                    auth.getAppliances(token)
+                                        .then(
+                                            (appliances) => {
+                                                parseHomeappliances(appliances);
+                                            },
 
-                                ([statusCode, description]) => {
-                                    adapter.log.error("Error getting Aplliances with existing Token: " + statusCode + " " + description);
-                                    adapter.log.warn("Restart the Adapter to get all devices correctly.");
-                                    if (statusCode === 401) {
-                                        if (description && description.indexOf("malformed") !== -1) {
-                                            adapter.log.warn(
-                                                "The Homeconnect API is not reachable, the adapter will restart until the API is reachable. Please do not reset the Token while the Homeconnect API is not reachable."
-                                            );
-                                        } else {
-                                            adapter.log.warn("If Restart is not working please reset the Token in the settings.");
-                                        }
-                                    }
-                                    if (statusCode === 503) {
-                                        adapter.log.warn("Homeconnect is not reachable please wait until the service is up again.");
-                                    }
-                                    setTimeout(() => adapter.restart(), 2000);
+                                            ([statusCode, description]) => {
+                                                adapter.log.error("Error getting Aplliances with existing Token: " + statusCode + " " + description);
+                                                adapter.log.warn("Restart the Adapter to get all devices correctly.");
+                                                if (statusCode === 401) {
+                                                    if (description && description.indexOf("malformed") !== -1) {
+                                                        adapter.log.warn(
+                                                            "The Homeconnect API is not reachable, the adapter will restart until the API is reachable. Please do not reset the Token while the Homeconnect API is not reachable."
+                                                        );
+                                                    } else {
+                                                        adapter.log.warn("If Restart is not working please reset the Token in the settings.");
+                                                    }
+                                                }
+                                                if (statusCode === 503) {
+                                                    adapter.log.warn("Homeconnect is not reachable please wait until the service is up again.");
+                                                }
+                                                setTimeout(() => adapter.restart(), 2000);
+                                            }
+                                        )
+                                        .catch(() => {
+                                            adapter.log.debug("No appliance found");
+                                        });
+                                    stateGet(adapter.namespace + ".dev.refreshToken")
+                                        .then((refreshToken) => {
+                                            getRefreshToken(true);
+                                            getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
+                                        })
+                                        .catch(() => {
+                                            adapter.log.debug("Not able to get refresh token");
+                                        });
                                 }
-                            );
-                            stateGet(adapter.namespace + ".dev.refreshToken").then((refreshToken) => {
-                                getRefreshToken(true);
-                                getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
-                            });
-                        }
-                    },
-                    (err) => {
-                        adapter.log.error("FEHLER: " + err);
-                    }
-                );
-            }
-        });
+                            },
+                            (err) => {
+                                adapter.log.error("FEHLER: " + err);
+                            }
+                        )
+                        .catch(() => {
+                            adapter.log.debug("No token found");
+                        });
+                }
+            })
+            .catch(() => {
+                adapter.log.debug("No token found");
+            });
 
         adapter.setObjectNotExists("dev.authUriComplete", {
             type: "state",
