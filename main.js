@@ -212,7 +212,10 @@ function startAdapter(options) {
                     adapter.log.warn("Too many requests. Adapter sends too many requests per minute. Please wait 1min before restart the instance.");
                 } else {
                     adapter.log.error("Error: " + err.status);
-                    throw new Error(err.status);
+                    adapter.log.error("Error: " + JSON.stringify(err));
+                    if (err.status >= 500) {
+                        adapter.log.error("Homeconnect API are not available please try again later");
+                    }
                 }
             }
         };
