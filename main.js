@@ -18,6 +18,9 @@ function startAdapter(options) {
     let getTokenInterval;
     let getTokenRefreshInterval;
     let reconnectEventStreamInterval;
+    let retryTimeout;
+    let rateLimitTimeout;
+    let restartTimeout;
     let eventSource;
     const availablePrograms = {};
     const availableProgramOptions = {};
@@ -76,7 +79,7 @@ function startAdapter(options) {
                             }
                         },
                         ([statusCode, description]) => {
-                            setTimeout(() => {
+                            retryTimeout = setTimeout(() => {
                                 getRefreshToken();
                             }, 5 * 60 * 1000); //5min
                             adapter.log.error("Error Refresh-Token: " + statusCode + " " + description);
@@ -320,6 +323,9 @@ function startAdapter(options) {
             clearInterval(getTokenRefreshInterval);
             clearInterval(getTokenInterval);
             clearInterval(reconnectEventStreamInterval);
+            clearTimeout(retryTimeout);
+            clearTimeout(rateLimitTimeout);
+            clearTimeout(restartTimeout);
             Object.keys(eventSourceList).forEach((haId) => {
                 if (eventSourceList[haId]) {
                     console.log("Clean event " + haId);
@@ -988,7 +994,7 @@ function startAdapter(options) {
 
             adapter.log.debug("Rate per min: " + rateCalculation.length);
             rateCalculation.push(now);
-            setTimeout(() => {
+            rateLimitTimeout = setTimeout(() => {
                 request(
                     {
                         method: method,
@@ -1128,7 +1134,7 @@ function startAdapter(options) {
                                                 if (statusCode === 503) {
                                                     adapter.log.warn("Homeconnect is not reachable please wait until the service is up again.");
                                                 }
-                                                setTimeout(() => adapter.restart(), 2000);
+                                                restartTimeout = setTimeout(() => adapter.restart(), 2000);
                                             }
                                         )
                                         .catch(() => {
