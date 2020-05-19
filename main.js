@@ -477,21 +477,25 @@ function startAdapter(options) {
                             });
                     }
                     if (id.indexOf("Selected") !== -1) {
-                        currentSelected[haId] = { key: state.val };
-                        stateGet(adapter.namespace + ".dev.token").then((token) => {
-                            putAPIValues(token, haId, "/programs/selected", data)
-                                .then(
-                                    () => {
-                                        updateOptions(token, haId, "/programs/selected");
-                                    },
-                                    () => {
-                                        adapter.log.warn("Setting selected program was not succesful");
-                                    }
-                                )
-                                .catch(() => {
-                                    adapter.log.debug("No program selected found");
-                                });
-                        });
+                        if (state.val) {
+                            currentSelected[haId] = { key: state.val };
+                            stateGet(adapter.namespace + ".dev.token").then((token) => {
+                                putAPIValues(token, haId, "/programs/selected", data)
+                                    .then(
+                                        () => {
+                                            updateOptions(token, haId, "/programs/selected");
+                                        },
+                                        () => {
+                                            adapter.log.warn("Setting selected program was not succesful");
+                                        }
+                                    )
+                                    .catch(() => {
+                                        adapter.log.debug("No program selected found");
+                                    });
+                            });
+                        } else {
+                            adapter.log.warn("No state val: " + JSON.stringify(state));
+                        }
                     }
                 });
             }
@@ -510,8 +514,10 @@ function startAdapter(options) {
                         });
                 }
                 if (id.indexOf("Selected") !== -1) {
-                    if (state) {
+                    if (state && state.val) {
                         currentSelected[haId] = { key: state.val };
+                    } else {
+                        adapter.log.warn("Selected program is empty: " + JSON.stringify(state));
                     }
                     stateGet(adapter.namespace + ".dev.token")
                         .then((token) => {
@@ -836,10 +842,14 @@ function startAdapter(options) {
                                     subElement.name = "BSH_Common_Root_ActiveProgram";
                                 }
                                 if (url === "/programs/selected") {
-                                    subElement.value = subElement.key;
-                                    currentSelected[haId] = { key: subElement.value, name: subElement.name };
-                                    subElement.key = "BSH_Common_Root_SelectedProgram";
-                                    subElement.name = "BSH_Common_Root_SelectedProgram";
+                                    if (subElement.key) {
+                                        subElement.value = subElement.key;
+                                        currentSelected[haId] = { key: subElement.value, name: subElement.name };
+                                        subElement.key = "BSH_Common_Root_SelectedProgram";
+                                        subElement.name = "BSH_Common_Root_SelectedProgram";
+                                    } else {
+                                        adapter.log.warn("Empty sublement: " + JSON.stringify(subElement));
+                                    }
                                 }
                                 if (url === "/programs") {
                                     adapter.log.debug(haId + " available: " + JSON.stringify(subElement));
