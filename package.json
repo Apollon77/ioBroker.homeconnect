@@ -1,6 +1,6 @@
 {
   "bugs": {
-    "url": "https://github.com/dna909/ioBroker.homeconnect/issues"
+    "url": "https://github.com/iobroker-community-adapters/ioBroker.homeconnect/issues"
   },
   "bundleDependencies": false,
   "contributors": [
@@ -43,7 +43,7 @@
   "engines": {
     "node": ">=8"
   },
-  "homepage": "https://github.com/dna909/ioBroker.homeconnect",
+  "homepage": "https://github.com/iobroker-community-adapters/ioBroker.homeconnect",
   "keywords": [
     "ioBroker",
     "homeconnect",
@@ -55,7 +55,7 @@
   "name": "iobroker.homeconnect",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dna909/ioBroker.homeconnect.git"
+    "url": "https://github.com/iobroker-community-adapters/ioBroker.homeconnect"
   },
   "scripts": {
     "lint": "eslint",
