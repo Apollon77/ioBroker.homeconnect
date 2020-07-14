@@ -51,7 +51,7 @@
         "icon": "homeconnect.png",
         "materialize": true,
         "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/dna909/ioBroker.homeconnect/master/admin/homeconnect.png",
+        "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.homeconnect/master/admin/homeconnect.png",
         "keywords": [
             "homeconnect",
             "vis",
@@ -59,7 +59,7 @@
             "graphical",
             "scada"
         ],
-        "readme": "https://github.com/dna909/ioBroker.homeconnect/blob/master/README.md",
+        "readme": "https://github.com/iobroker-community-adapters/ioBroker.homeconnect/blob/master/README.md",
         "loglevel": "info",
         "type": "household",
         "compact": true,
