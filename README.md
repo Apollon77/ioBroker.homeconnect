@@ -60,7 +60,7 @@ Only the ClientID must be entered in the adapter configuration. If the adapter i
 
 ## Benutzung
 
-Mit den states in commands kannst du das Programm stoppen, pausiren oder fortführen.
+Mit den states in commands kannst du das Programm stoppen, pausieren oder fortführen.
 Mit den states in settings kannst du das Gerät ein oder ausschalten.
 Ändern des States programs.active.BSH_Common_Root_ActiveProgram führt zum starten eines Programms
 Ändern des States programs.selected.BSH_Common_Root_SelectedProgram führt zum auswählen des Programms oder Optionen
