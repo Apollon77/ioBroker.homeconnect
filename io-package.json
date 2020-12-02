@@ -1,11 +1,15 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.30",
+        "version": "0.0.31",
         "news": {
+            "0.0.31": {
+                "en": "fix pause start command bug"
+            },     
             "0.0.30": {
                 "en": "fix js controller 3 issues"
-            },
+            },            
+
             "0.0.27": {
                 "en": "improve option selecting"
             },

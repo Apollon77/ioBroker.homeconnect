@@ -367,7 +367,7 @@ function startAdapter(options) {
             }
             if (id.indexOf(".commands.") !== -1) {
                 adapter.log.debug(id + " " + state.val);
-                if (id.indexOf("StopProgram") && state.val) {
+                if (id.indexOf("StopProgram") !==-1 && state.val) {
                     stateGet(adapter.namespace + ".dev.token")
                         .then((token) => {
                             deleteAPIValues(token, haId, "/programs/active");
@@ -428,6 +428,10 @@ function startAdapter(options) {
             }
             if (id.indexOf("BSH_Common_Root_") !== -1) {
                 const pre = adapter.name + "." + adapter.instance;
+                if(!state.val) {
+                        adapter.log.warn("No state val: " + JSON.stringify(state));
+                        return;
+                }
                 const key = state.val.split(".").pop();
                 adapter.getStates(pre + "." + haId + ".programs.selected.options." + key + ".*", (err, states) => {
                     const allIds = Object.keys(states);
@@ -586,7 +590,7 @@ function startAdapter(options) {
 
     function parseHomeappliances(appliancesArray) {
         appliancesArray.data.homeappliances.forEach((element) => {
-            // if (element.haId.indexOf("BOSCH-WTX87K80-68A40E2EF6A5") === -1) {
+            // if (element.haId.indexOf("BOSCH-WTX87K80") === -1) {
             //     return;
             // }
             const haId = element.haId;
