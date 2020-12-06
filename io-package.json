@@ -68,6 +68,8 @@
         "type": "household",
         "compact": true,
         "license": "MIT",
+        "connectionType": "cloud",
+        "dataSource": "push",
         "messagebox": false,
         "plugins": {
             "sentry": {
