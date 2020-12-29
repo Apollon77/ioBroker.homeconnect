@@ -273,6 +273,26 @@ function startAdapter(options) {
             }
             if (stream.type == "CONNECTED") {
                 adapter.setState(lastEventId + ".general.connected", true, true);
+				const tokenID = adapter.namespace + ".dev.token";
+                stateGet(tokenID)
+                    .then(
+                        (value) => {
+                            const token = value;
+							getAPIValues(token, lastEventId, "/status");
+							getAPIValues(token, lastEventId, "/settings");
+							getAPIValues(token, lastEventId, "/programs");
+							getAPIValues(token, lastEventId, "/programs/active");
+							getAPIValues(token, lastEventId, "/programs/selected");
+							updateOptions(token, lastEventId, "/programs/active");
+							updateOptions(token, lastEventId, "/programs/selected");
+                        },
+                        (err) => {
+                            adapter.log.error("FEHLER: " + err);
+                        }
+                    )
+                    .catch(() => {
+                        adapter.log.debug("No token found");
+                    });							
                 return;
             }
 
@@ -653,11 +673,11 @@ function startAdapter(options) {
                 native: {},
             });
             const tokenID = adapter.namespace + ".dev.token";
-            if (element.connected) {
-                stateGet(tokenID)
-                    .then(
-                        (value) => {
-                            const token = value;
+            stateGet(tokenID)
+                .then(
+                    (value) => {
+                        const token = value;
+                        if (element.connected) {
                             getAPIValues(token, haId, "/status");
                             getAPIValues(token, haId, "/settings");
                             getAPIValues(token, haId, "/programs");
@@ -665,18 +685,16 @@ function startAdapter(options) {
                             getAPIValues(token, haId, "/programs/selected");
                             updateOptions(token, haId, "/programs/active");
                             updateOptions(token, haId, "/programs/selected");
-                            startEventStream(token, haId);
-                        },
-                        (err) => {
-                            adapter.log.error("FEHLER: " + err);
                         }
-                    )
-                    .catch(() => {
-                        adapter.log.debug("No token found");
-                    });
-            } else {
-                adapter.log.warn(haId + " is not connected cannot fetch information.");
-            }
+                        startEventStream(token, haId);
+                    },
+                    (err) => {
+                        adapter.log.error("FEHLER: " + err);
+                    }
+                )
+                .catch(() => {
+                    adapter.log.debug("No token found");
+                });
         });
         //Delete old states
         adapter.getStates("*", (err, states) => {

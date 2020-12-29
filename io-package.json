@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.31",
+        "version": "0.0.32",
         "news": {
+            "0.0.32": {
+                "en": "bugfix for devices that are completely switched off (e.g. washing machine, dryer)"
+            },   
             "0.0.31": {
                 "en": "fix pause start command bug"
             },     
