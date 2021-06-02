@@ -410,7 +410,9 @@ function startAdapter(options) {
                     };
                     stateGet(adapter.namespace + ".dev.token")
                         .then((token) => {
-                            putAPIValues(token, haId, "/commands/" + command, data);
+                            putAPIValues(token, haId, "/commands/" + command, data).catch(() => {
+                                adapter.log.error("Put value failed " + haId + "/commands/" + command + data);
+                            });
                         })
                         .catch(() => {
                             adapter.log.debug("No token found");
@@ -427,7 +429,9 @@ function startAdapter(options) {
                 };
                 stateGet(adapter.namespace + ".dev.token")
                     .then((token) => {
-                        putAPIValues(token, haId, "/settings/" + command, data);
+                        putAPIValues(token, haId, "/settings/" + command, data).catch(() => {
+                            adapter.log.error("Put settings failed " + haId + "/commands/" + command + data);
+                        });
                     })
                     .catch(() => {
                         adapter.log.debug("No token found");
@@ -446,7 +450,9 @@ function startAdapter(options) {
                 const folder = idArray.slice(3, idArray.length).join("/");
                 stateGet(adapter.namespace + ".dev.token")
                     .then((token) => {
-                        putAPIValues(token, haId, "/" + folder + "/" + command, data);
+                        putAPIValues(token, haId, "/" + folder + "/" + command, data).catch(() => {
+                            adapter.log.error("Put folder failed " + haId + "/commands/" + command + data);
+                        });
                     })
                     .catch(() => {
                         adapter.log.debug("No token found");
@@ -498,6 +504,8 @@ function startAdapter(options) {
                                             data: {
                                                 key: state.val,
                                             },
+                                        }).catch(() => {
+                                            adapter.log.error("Put active failed " + haId + state.val);
                                         });
                                     })
                                     .then(() => updateOptions(token, haId, "/programs/active"))
