@@ -841,7 +841,7 @@ function startAdapter(options) {
                                     if (option.type === "Boolean") {
                                         type = "boolean";
                                     }
-                                    let common = {
+                                    const common = {
                                         name: option.name,
                                         type: type,
                                         role: "indicator",
@@ -977,7 +977,7 @@ function startAdapter(options) {
                                 if (typeof subElement.value === "number") {
                                     type = "number";
                                 }
-                                let common = {
+                                const common = {
                                     name: subElement.name,
                                     type: type,
                                     role: "indicator",
@@ -1148,7 +1148,7 @@ function startAdapter(options) {
         if (adapter.config.resetAccess) {
             adapter.log.info("Reset access");
             adapter.setState("dev.authUriComplete", "", true);
-            adapter.setState("dev.devCode", ""), true;
+            adapter.setState("dev.devCode", "", true);
             adapter.setState("dev.access", false, true);
             adapter.setState("dev.token", "", true);
             adapter.setState("dev.refreshToken", "", true);
