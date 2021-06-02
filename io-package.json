@@ -4,7 +4,7 @@
         "version": "0.0.33",
         "news": {
             "0.0.33": {
-                "en": "fix for js.controller 3.3)"
+                "en": "fix for js.controller 3.3"
             },
             "0.0.32": {
                 "en": "bugfix for devices that are completely switched off (e.g. washing machine, dryer)"
@@ -33,14 +33,8 @@
         },
         "title": "Home Connect",
         "titleLang": {
-            "en": "BSH Home-Connect Adapter",
-            "de": "BSH Home-Connect Adapter",
-            "ru": "Адаптер шаблонов на основе Javascript / Node.js",
-            "pt": "Adaptador de modelo baseado em Javascript / Node.js",
-            "nl": "Javascript / Node.js gebaseerde sjabloonadapter",
-            "fr": "Javascript / Node.js basé adaptateur de modèle",
-            "it": "Adattatore modello basato su Javascript / Node.js",
-            "es": "Adaptador de plantilla basado en JavaScript / Node.js"
+            "en": "BSH Home-Connect",
+            "de": "BSH Home-Connect "
         },
         "desc": {
             "en": "ioBroker Homeconnect",
