@@ -1,18 +1,20 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.32",
+        "version": "0.0.33",
         "news": {
+            "0.0.33": {
+                "en": "fix for js.controller 3.3)"
+            },
             "0.0.32": {
                 "en": "bugfix for devices that are completely switched off (e.g. washing machine, dryer)"
-            },   
+            },
             "0.0.31": {
                 "en": "fix pause start command bug"
-            },     
+            },
             "0.0.30": {
                 "en": "fix js controller 3 issues"
-            },            
-
+            },
             "0.0.27": {
                 "en": "improve option selecting"
             },

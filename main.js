@@ -122,7 +122,7 @@ function startAdapter(options) {
                                 });
                                 clearInterval(getTokenInterval);
 
-                                adapter.setState("dev.access", true);
+                                adapter.setState("dev.access", true, true);
                                 auth.getAppliances(token)
                                     .then(
                                         (appliances) => {
@@ -148,6 +148,7 @@ function startAdapter(options) {
                                         .then(
                                             (value) => {
                                                 adapter.log.error("Please visit this url:  " + value);
+                                                adapter.log.info("If u dont see a login form reset 'Zugang/Token' in the instance settings");
                                             },
                                             (err) => {
                                                 adapter.log.error("FEHLER: " + err);
@@ -273,18 +274,18 @@ function startAdapter(options) {
             }
             if (stream.type == "CONNECTED") {
                 adapter.setState(lastEventId + ".general.connected", true, true);
-				const tokenID = adapter.namespace + ".dev.token";
+                const tokenID = adapter.namespace + ".dev.token";
                 stateGet(tokenID)
                     .then(
                         (value) => {
                             const token = value;
-							getAPIValues(token, lastEventId, "/status");
-							getAPIValues(token, lastEventId, "/settings");
-							getAPIValues(token, lastEventId, "/programs");
-							getAPIValues(token, lastEventId, "/programs/active");
-							getAPIValues(token, lastEventId, "/programs/selected");
-							updateOptions(token, lastEventId, "/programs/active");
-							updateOptions(token, lastEventId, "/programs/selected");
+                            getAPIValues(token, lastEventId, "/status");
+                            getAPIValues(token, lastEventId, "/settings");
+                            getAPIValues(token, lastEventId, "/programs");
+                            getAPIValues(token, lastEventId, "/programs/active");
+                            getAPIValues(token, lastEventId, "/programs/selected");
+                            updateOptions(token, lastEventId, "/programs/active");
+                            updateOptions(token, lastEventId, "/programs/selected");
                         },
                         (err) => {
                             adapter.log.error("FEHLER: " + err);
@@ -292,7 +293,7 @@ function startAdapter(options) {
                     )
                     .catch(() => {
                         adapter.log.debug("No token found");
-                    });							
+                    });
                 return;
             }
 
@@ -316,20 +317,25 @@ function startAdapter(options) {
                     key = element.key.replace(/\./g, "_");
                 }
                 adapter.log.debug(haId + "." + folder + "." + key + ":" + element.value);
-                adapter.setObjectNotExists(haId + "." + folder + "." + key, {
-                    type: "state",
-                    common: {
-                        name: key,
-                        type: "mixed",
-                        role: "indicator",
-                        write: true,
-                        read: true,
-                        unit: element.unit || "",
-                    },
-                    native: {},
-                });
-
-                adapter.setState(haId + "." + folder + "." + key, element.value, true);
+                adapter
+                    .setObjectNotExistsAsync(haId + "." + folder + "." + key, {
+                        type: "state",
+                        common: {
+                            name: key,
+                            type: "mixed",
+                            role: "indicator",
+                            write: true,
+                            read: true,
+                            unit: element.unit || "",
+                        },
+                        native: {},
+                    })
+                    .then(() => {
+                        adapter.setState(haId + "." + folder + "." + key, element.value, true);
+                    })
+                    .catch(() => {
+                        this.log.error("failed set state");
+                    });
             });
         } catch (error) {
             adapter.log.error("Parsemessage: " + error);
@@ -387,7 +393,7 @@ function startAdapter(options) {
             }
             if (id.indexOf(".commands.") !== -1) {
                 adapter.log.debug(id + " " + state.val);
-                if (id.indexOf("StopProgram") !==-1 && state.val) {
+                if (id.indexOf("StopProgram") !== -1 && state.val) {
                     stateGet(adapter.namespace + ".dev.token")
                         .then((token) => {
                             deleteAPIValues(token, haId, "/programs/active");
@@ -448,9 +454,9 @@ function startAdapter(options) {
             }
             if (id.indexOf("BSH_Common_Root_") !== -1) {
                 const pre = adapter.name + "." + adapter.instance;
-                if(!state.val) {
-                        adapter.log.warn("No state val: " + JSON.stringify(state));
-                        return;
+                if (!state.val) {
+                    adapter.log.warn("No state val: " + JSON.stringify(state));
+                    return;
                 }
                 const key = state.val.split(".").pop();
                 adapter.getStates(pre + "." + haId + ".programs.selected.options." + key + ".*", (err, states) => {
@@ -494,7 +500,10 @@ function startAdapter(options) {
                                             },
                                         });
                                     })
-                                    .then(() => updateOptions(token, haId, "/programs/active"));
+                                    .then(() => updateOptions(token, haId, "/programs/active"))
+                                    .catch(() => {
+                                        adapter.log.error("Error update active program");
+                                    });
                             })
                             .catch(() => {
                                 adapter.log.debug("No token found");
@@ -503,20 +512,24 @@ function startAdapter(options) {
                     if (id.indexOf("Selected") !== -1) {
                         if (state.val) {
                             currentSelected[haId] = { key: state.val };
-                            stateGet(adapter.namespace + ".dev.token").then((token) => {
-                                putAPIValues(token, haId, "/programs/selected", data)
-                                    .then(
-                                        () => {
-                                            updateOptions(token, haId, "/programs/selected");
-                                        },
-                                        () => {
-                                            adapter.log.warn("Setting selected program was not succesful");
-                                        }
-                                    )
-                                    .catch(() => {
-                                        adapter.log.debug("No program selected found");
-                                    });
-                            });
+                            stateGet(adapter.namespace + ".dev.token")
+                                .then((token) => {
+                                    putAPIValues(token, haId, "/programs/selected", data)
+                                        .then(
+                                            () => {
+                                                updateOptions(token, haId, "/programs/selected");
+                                            },
+                                            () => {
+                                                adapter.log.warn("Setting selected program was not succesful");
+                                            }
+                                        )
+                                        .catch(() => {
+                                            adapter.log.debug("No program selected found");
+                                        });
+                                })
+                                .catch(() => {
+                                    adapter.log.error("Cannot get token");
+                                });
                         } else {
                             adapter.log.warn("No state val: " + JSON.stringify(state));
                         }
@@ -561,9 +574,21 @@ function startAdapter(options) {
                             const valArray = state.val.split(".");
                             common.states = {};
                             common.states[state.val] = valArray[valArray.length - 1];
-                            adapter.extendObject(id, {
-                                common: common,
-                            });
+                            adapter.log.silly("Extend common option: " + id);
+                            adapter
+                                .setObjectNotExistsAsync(id, {
+                                    type: "state",
+                                    common: common,
+                                    native: {},
+                                })
+                                .then(() => {
+                                    adapter.extendObject(id, {
+                                        common: common,
+                                    });
+                                })
+                                .catch(() => {
+                                    this.log.error("failed set state");
+                                });
                         }
                     });
                 }
@@ -614,6 +639,7 @@ function startAdapter(options) {
             //     return;
             // }
             const haId = element.haId;
+            adapter.log.silly("Extend Parse: " + haId);
             adapter.extendObject(haId, {
                 type: "device",
                 common: {
@@ -626,18 +652,24 @@ function startAdapter(options) {
                 native: {},
             });
             for (const key in element) {
-                adapter.setObjectNotExists(haId + ".general." + key, {
-                    type: "state",
-                    common: {
-                        name: key,
-                        type: "object",
-                        role: "indicator",
-                        write: false,
-                        read: true,
-                    },
-                    native: {},
-                });
-                adapter.setState(haId + ".general." + key, element[key]);
+                adapter
+                    .setObjectNotExistsAsync(haId + ".general." + key, {
+                        type: "state",
+                        common: {
+                            name: key,
+                            type: typeof element[key],
+                            role: "indicator",
+                            write: false,
+                            read: true,
+                        },
+                        native: {},
+                    })
+                    .then(() => {
+                        adapter.setState(haId + ".general." + key, element[key], true);
+                    })
+                    .catch(() => {
+                        this.log.error("failed set state");
+                    });
             }
             adapter.extendObject(haId + ".commands.BSH_Common_Command_StopProgram", {
                 type: "state",
@@ -788,6 +820,7 @@ function startAdapter(options) {
                                 common.states = states;
                             }
                             const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
+                            adapter.log.silly("Extend Settings: " + haId + folder);
                             adapter.extendObject(haId + folder, {
                                 type: "state",
                                 common: common,
@@ -799,7 +832,7 @@ function startAdapter(options) {
                         if (url.indexOf("/programs/available/") !== -1) {
                             if (returnValue.data.options) {
                                 availableProgramOptions[returnValue.data.key] = availableProgramOptions[returnValue.data.key] || [];
-                                returnValue.data.options.forEach((option) => {
+                                returnValue.data.options.forEach(async (option) => {
                                     availableProgramOptions[returnValue.data.key].push(option.key);
                                     let type = "string";
                                     if (option.type === "Int" || option.type === "Double") {
@@ -808,16 +841,20 @@ function startAdapter(options) {
                                     if (option.type === "Boolean") {
                                         type = "boolean";
                                     }
-                                    const common = {
+                                    let common = {
                                         name: option.name,
                                         type: type,
                                         role: "indicator",
                                         unit: option.unit || "",
                                         write: true,
                                         read: true,
-                                        min: option.constraints.min || null,
-                                        max: option.constraints.max || null,
                                     };
+                                    if (option.constraints.min) {
+                                        common.min = option.constraints.min;
+                                    }
+                                    if (option.constraints.max) {
+                                        common.max = option.constraints.max;
+                                    }
 
                                     if (option.constraints.allowedvalues) {
                                         common.states = {};
@@ -826,6 +863,16 @@ function startAdapter(options) {
                                         });
                                     }
                                     let folder = ".programs.available.options." + option.key.replace(/\./g, "_");
+                                    adapter.log.silly("Extend Options: " + haId + folder);
+                                    await adapter
+                                        .setObjectNotExistsAsync(haId + folder, {
+                                            type: "state",
+                                            common: common,
+                                            native: {},
+                                        })
+                                        .catch(() => {
+                                            this.log.error("failed set state");
+                                        });
 
                                     adapter.extendObject(haId + folder, {
                                         type: "state",
@@ -834,17 +881,23 @@ function startAdapter(options) {
                                     });
                                     adapter.setState(haId + folder, option.constraints.default, true);
                                     const key = returnValue.data.key.split(".").pop();
-                                    adapter.setObjectNotExists(haId + ".programs.selected.options." + key, {
-                                        type: "state",
-                                        common: { name: returnValue.data.name, type: "mixed", role: "indicator", write: true, read: true },
-                                        native: {},
-                                    });
-                                    folder = ".programs.selected.options." + key + "." + option.key.replace(/\./g, "_");
-                                    adapter.extendObject(haId + folder, {
-                                        type: "state",
-                                        common: common,
-                                        native: {},
-                                    });
+                                    adapter
+                                        .setObjectNotExistsAsync(haId + ".programs.selected.options." + key, {
+                                            type: "state",
+                                            common: { name: returnValue.data.name, type: "mixed", role: "indicator", write: true, read: true },
+                                            native: {},
+                                        })
+                                        .then(() => {
+                                            folder = ".programs.selected.options." + key + "." + option.key.replace(/\./g, "_");
+                                            adapter.extendObject(haId + folder, {
+                                                type: "state",
+                                                common: common,
+                                                native: {},
+                                            });
+                                        })
+                                        .catch(() => {
+                                            this.log.error("failed set state");
+                                        });
                                 });
                             }
                             return;
@@ -856,7 +909,7 @@ function startAdapter(options) {
                             };
                         }
                         for (const item in returnValue.data) {
-                            returnValue.data[item].forEach((subElement) => {
+                            returnValue.data[item].forEach(async (subElement) => {
                                 let folder = url.replace(/\//g, ".");
                                 if (url === "/programs/active") {
                                     subElement.value = subElement.key;
@@ -906,11 +959,15 @@ function startAdapter(options) {
                                     const key = currentSelected[haId].key.split(".").pop();
                                     folder += "." + key;
 
-                                    adapter.setObjectNotExists(haId + folder, {
-                                        type: "state",
-                                        common: { name: currentSelected[haId].name, type: "mixed", role: "indicator", write: true, read: true },
-                                        native: {},
-                                    });
+                                    await adapter
+                                        .setObjectNotExistsAsync(haId + folder, {
+                                            type: "state",
+                                            common: { name: currentSelected[haId].name, type: "mixed", role: "indicator", write: true, read: true },
+                                            native: {},
+                                        })
+                                        .catch(() => {
+                                            this.log.error("failed set state");
+                                        });
                                 }
                                 adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
                                 let type = "mixed";
@@ -920,22 +977,35 @@ function startAdapter(options) {
                                 if (typeof subElement.value === "number") {
                                     type = "number";
                                 }
-                                const common = {
+                                let common = {
                                     name: subElement.name,
                                     type: type,
                                     role: "indicator",
                                     write: true,
                                     read: true,
                                     unit: subElement.unit || "",
-                                    min: (subElement.constraints && subElement.constraints.min) || null,
-                                    max: (subElement.constraints && subElement.constraints.max) || null,
                                 };
-                                adapter.setObjectNotExists(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
-                                    type: "state",
-                                    common: common,
-                                    native: {},
-                                });
-                                adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
+
+                                if (subElement.constraints && subElement.constraints.min) {
+                                    common.min = subElement.constraints.min;
+                                }
+                                if (subElement.constraints && subElement.constraints.max) {
+                                    common.max = subElement.constraints.max;
+                                }
+                                adapter
+                                    .setObjectNotExistsAsync(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
+                                        type: "state",
+                                        common: common,
+                                        native: {},
+                                    })
+                                    .then(() => {
+                                        if (subElement.value !== undefined) {
+                                            adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
+                                        }
+                                    })
+                                    .catch(() => {
+                                        this.log.error("failed set state");
+                                    });
                             });
                         }
                         if (url === "/programs") {
@@ -961,16 +1031,22 @@ function startAdapter(options) {
                                 availablePrograms[haId].forEach((program) => {
                                     common.states[program.key] = program.name;
                                 });
-                                adapter.setObjectNotExists(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
-                                    type: "state",
-                                    common: common,
-                                    native: {},
-                                });
-                                adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
-                                    type: "state",
-                                    common: common,
-                                    native: {},
-                                });
+                                adapter
+                                    .setObjectNotExistsAsync(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+                                        type: "state",
+                                        common: common,
+                                        native: {},
+                                    })
+                                    .then(() => {
+                                        adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+                                            type: "state",
+                                            common: common,
+                                            native: {},
+                                        });
+                                    })
+                                    .catch(() => {
+                                        this.log.error("failed set state");
+                                    });
                             });
                         }
                     } catch (error) {
@@ -1064,20 +1140,20 @@ function startAdapter(options) {
         });
     }
 
-    function main() {
+    async function main() {
         if (!adapter.config.clientID) {
             adapter.log.error("Client ID not specified!");
         }
 
         if (adapter.config.resetAccess) {
             adapter.log.info("Reset access");
-            adapter.setState("dev.authUriComplete", "");
-            adapter.setState("dev.devCode", "");
-            adapter.setState("dev.access", false);
-            adapter.setState("dev.token", "");
-            adapter.setState("dev.refreshToken", "");
-            adapter.setState("dev.expires", "");
-            adapter.setState("dev.tokenScope", "");
+            adapter.setState("dev.authUriComplete", "", true);
+            adapter.setState("dev.devCode", ""), true;
+            adapter.setState("dev.access", false, true);
+            adapter.setState("dev.token", "", true);
+            adapter.setState("dev.refreshToken", "", true);
+            adapter.setState("dev.expires", "", true);
+            adapter.setState("dev.tokenScope", "", true);
             const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
             adapter.getForeignObject(adapterConfig, (error, obj) => {
                 obj.native.authUri = "";
@@ -1119,9 +1195,9 @@ function startAdapter(options) {
                     auth.authUriGet(scope, clientID)
                         .then(
                             ([authUri, devCode, pollInterval]) => {
-                                adapter.setState("dev.authUriComplete", authUri);
-                                adapter.setState("dev.devCode", devCode);
-                                adapter.setState("dev.pollInterval", pollInterval);
+                                adapter.setState("dev.authUriComplete", authUri, true);
+                                adapter.setState("dev.devCode", devCode, true);
+                                adapter.setState("dev.pollInterval", pollInterval, true);
                                 const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
                                 adapter.getForeignObject(adapterConfig, (error, obj) => {
                                     if (!obj.native.authUri) {
@@ -1195,7 +1271,7 @@ function startAdapter(options) {
                 adapter.log.debug("No token found");
             });
 
-        adapter.setObjectNotExists("dev.authUriComplete", {
+        await adapter.setObjectNotExistsAsync("dev.authUriComplete", {
             type: "state",
             common: {
                 name: "AuthorizationURI",
@@ -1207,7 +1283,7 @@ function startAdapter(options) {
             native: {},
         });
 
-        adapter.setObjectNotExists("dev.devCode", {
+        await adapter.setObjectNotExistsAsync("dev.devCode", {
             type: "state",
             common: {
                 name: "DeviceCode",
@@ -1219,7 +1295,7 @@ function startAdapter(options) {
             native: {},
         });
 
-        adapter.setObjectNotExists("dev.pollInterval", {
+        await adapter.setObjectNotExistsAsync("dev.pollInterval", {
             type: "state",
             common: {
                 name: "Poll-Interval in sec.",
@@ -1231,7 +1307,7 @@ function startAdapter(options) {
             native: {},
         });
 
-        adapter.setObjectNotExists("dev.token", {
+        await adapter.setObjectNotExistsAsync("dev.token", {
             type: "state",
             common: {
                 name: "Access-Token",
@@ -1243,7 +1319,7 @@ function startAdapter(options) {
             native: {},
         });
 
-        adapter.setObjectNotExists("dev.refreshToken", {
+        await adapter.setObjectNotExistsAsync("dev.refreshToken", {
             type: "state",
             common: {
                 name: "Refresh-Token",
@@ -1255,7 +1331,7 @@ function startAdapter(options) {
             native: {},
         });
 
-        adapter.setObjectNotExists("dev.access", {
+        await adapter.setObjectNotExistsAsync("dev.access", {
             type: "state",
             common: {
                 name: "access",
@@ -1267,7 +1343,7 @@ function startAdapter(options) {
             native: {},
         });
 
-        adapter.setObjectNotExists("dev.expires", {
+        await adapter.setObjectNotExistsAsync("dev.expires", {
             type: "state",
             common: {
                 name: "Token expires in sec",
@@ -1279,7 +1355,7 @@ function startAdapter(options) {
             native: {},
         });
 
-        adapter.setObjectNotExists("dev.tokenScope", {
+        await adapter.setObjectNotExistsAsync("dev.tokenScope", {
             type: "state",
             common: {
                 name: "Scope",
@@ -1291,7 +1367,7 @@ function startAdapter(options) {
             native: {},
         });
 
-        adapter.setObjectNotExists("dev.eventStreamJSON", {
+        await adapter.setObjectNotExistsAsync("dev.eventStreamJSON", {
             type: "state",
             common: {
                 name: "Eventstream_JSON",

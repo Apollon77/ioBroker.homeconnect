@@ -14,31 +14,31 @@
     "email": "tombox2020@gmail.com"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^1.0.3",
-    "eventsource": "^1.0.7",
+    "@iobroker/adapter-core": "^2.4.0",
+    "eventsource": "^1.1.0",
     "request": "^2.88.0"
   },
   "deprecated": false,
   "description": "homeconnect",
   "devDependencies": {
-    "@iobroker/testing": "^1.2.0",
-    "@types/chai": "^4.1.7",
-    "@types/chai-as-promised": "^7.1.0",
-    "@types/gulp": "^4.0.6",
-    "@types/mocha": "^5.2.6",
-    "@types/node": "^10.14.6",
+    "@iobroker/testing": "^2.4.2",
+    "@types/chai": "^4.2.14",
+    "@types/chai-as-promised": "^7.1.2",
+    "@types/gulp": "^4.0.8",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^14.14.25",
     "@types/proxyquire": "^1.3.28",
-    "@types/sinon": "^7.0.11",
-    "@types/sinon-chai": "^3.2.2",
-    "axios": "^0.18.0",
-    "chai": "^4.2.0",
+    "@types/sinon": "^9.0.10",
+    "@types/sinon-chai": "^3.2.3",
+    "chai": "^4.3.0",
     "chai-as-promised": "^7.1.1",
-    "eslint": "^6.8.0",
+    "eslint": "^7.19.0",
+    "eslint-plugin-promise": "^4.3.1",
     "gulp": "^4.0.2",
-    "mocha": "^6.1.4",
-    "proxyquire": "^2.1.0",
-    "sinon": "^7.3.2",
-    "sinon-chai": "^3.3.0"
+    "mocha": "^8.2.1",
+    "proxyquire": "^2.1.3",
+    "sinon": "^7.5.0",
+    "sinon-chai": "^3.5.0"
   },
   "engines": {
     "node": ">=8"
@@ -65,5 +65,5 @@
     "test:package": "mocha test/package --exit",
     "test:unit": "mocha test/unit --exit"
   },
-  "version": "0.0.32"
+  "version": "0.0.33"
 }
