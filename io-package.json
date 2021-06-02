@@ -1,9 +1,9 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.34",
+        "version": "0.0.35",
         "news": {
-            "0.0.34": {
+            "0.0.35": {
                 "en": "fix for js.controller 3.3"
             },
             "0.0.32": {
