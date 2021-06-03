@@ -755,28 +755,30 @@ function startAdapter(options) {
     }
 
     function putAPIValues(token, haId, url, data) {
-        return new Promise((resolve, reject) => {
-            adapter.log.debug(haId + url);
-            adapter.log.debug(JSON.stringify(data));
-            sendRequest(token, haId, url, "PUT", JSON.stringify(data))
-                .then(
-                    ([statusCode, returnValue]) => {
-                        adapter.log.debug(statusCode + " " + returnValue);
-                        adapter.log.debug(JSON.stringify(returnValue));
-                        resolve();
-                    },
-                    ([statusCode, description]) => {
-                        if (statusCode === 403) {
-                            adapter.log.info("Homeconnect API has not the rights for this command and device");
+        return /** @type {Promise<void>} */ (
+            new Promise((resolve, reject) => {
+                adapter.log.debug(haId + url);
+                adapter.log.debug(JSON.stringify(data));
+                sendRequest(token, haId, url, "PUT", JSON.stringify(data))
+                    .then(
+                        ([statusCode, returnValue]) => {
+                            adapter.log.debug(statusCode + " " + returnValue);
+                            adapter.log.debug(JSON.stringify(returnValue));
+                            resolve();
+                        },
+                        ([statusCode, description]) => {
+                            if (statusCode === 403) {
+                                adapter.log.info("Homeconnect API has not the rights for this command and device");
+                            }
+                            adapter.log.info(statusCode + ": " + description);
+                            reject();
                         }
-                        adapter.log.info(statusCode + ": " + description);
-                        reject();
-                    }
-                )
-                .catch(() => {
-                    adapter.log.debug("request not successful found");
-                });
-        });
+                    )
+                    .catch(() => {
+                        adapter.log.debug("request not successful found");
+                    });
+            })
+        );
     }
 
     function deleteAPIValues(token, haId, url) {
@@ -1164,10 +1166,14 @@ function startAdapter(options) {
             adapter.setState("dev.tokenScope", "", true);
             const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
             adapter.getForeignObject(adapterConfig, (error, obj) => {
-                obj.native.authUri = "";
-                obj.native.clientID = "";
-                obj.native.resetAccess = false;
-                adapter.setForeignObject(adapterConfig, obj);
+                if (obj) {
+                    obj.native.authUri = "";
+                    obj.native.clientID = "";
+                    obj.native.resetAccess = false;
+                    adapter.setForeignObject(adapterConfig, obj);
+                } else {
+                    adapter.log.error("No reset possible no Adapterconfig found");
+                }
             });
             return;
         }
