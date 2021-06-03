@@ -72,7 +72,7 @@ Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to s
 
 ## Changelog
 
-### 0.0.33
+### 0.0.35
 
 - fix for js.controller 3.3
 
