@@ -72,9 +72,9 @@ Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to s
 
 ## Changelog
 
-### 0.0.35
+### 0.0.36
 
-- fix for js.controller 3.3
+- fix for js.controller 3.3. Please delete the device in Objects manually
 
 ### 0.0.32 (29.12.2020)
 

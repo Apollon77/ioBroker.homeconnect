@@ -1,10 +1,10 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.35",
+        "version": "0.0.36",
         "news": {
-            "0.0.35": {
-                "en": "fix for js.controller 3.3"
+            "0.0.36": {
+                "en": "fix for js.controller 3.3. Please delete the device in Objects manually"
             },
             "0.0.32": {
                 "en": "bugfix for devices that are completely switched off (e.g. washing machine, dryer)"
