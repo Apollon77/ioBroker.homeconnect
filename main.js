@@ -334,7 +334,7 @@ function startAdapter(options) {
                         adapter.setState(haId + "." + folder + "." + key, element.value, true);
                     })
                     .catch(() => {
-                        this.log.error("failed set state");
+                        adapter.log.error("failed set state");
                     });
             });
         } catch (error) {
@@ -595,7 +595,7 @@ function startAdapter(options) {
                                     });
                                 })
                                 .catch(() => {
-                                    this.log.error("failed set state");
+                                    adapter.log.error("failed set state");
                                 });
                         }
                     });
@@ -676,7 +676,7 @@ function startAdapter(options) {
                         adapter.setState(haId + ".general." + key, element[key], true);
                     })
                     .catch(() => {
-                        this.log.error("failed set state");
+                        adapter.log.error("failed set state");
                     });
             }
             adapter.extendObject(haId + ".commands.BSH_Common_Command_StopProgram", {
@@ -881,7 +881,7 @@ function startAdapter(options) {
                                             native: {},
                                         })
                                         .catch(() => {
-                                            this.log.error("failed set state");
+                                            adapter.log.error("failed set state");
                                         });
 
                                     adapter.extendObject(haId + folder, {
@@ -906,7 +906,7 @@ function startAdapter(options) {
                                             });
                                         })
                                         .catch(() => {
-                                            this.log.error("failed set state");
+                                            adapter.log.error("failed set state");
                                         });
                                 });
                             }
@@ -976,7 +976,7 @@ function startAdapter(options) {
                                             native: {},
                                         })
                                         .catch(() => {
-                                            this.log.error("failed set state");
+                                            adapter.log.error("failed set state");
                                         });
                                 }
                                 adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
@@ -1014,7 +1014,7 @@ function startAdapter(options) {
                                         }
                                     })
                                     .catch(() => {
-                                        this.log.error("failed set state");
+                                        adapter.log.error("failed set state");
                                     });
                             });
                         }
@@ -1055,7 +1055,7 @@ function startAdapter(options) {
                                         });
                                     })
                                     .catch(() => {
-                                        this.log.error("failed set state");
+                                        adapter.log.error("failed set state");
                                     });
                             });
                         }
