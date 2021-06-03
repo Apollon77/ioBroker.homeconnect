@@ -1242,8 +1242,19 @@ function startAdapter(options) {
                                             },
 
                                             ([statusCode, description]) => {
-                                                adapter.log.error("Error getting Aplliances with existing Token: " + statusCode + " " + description);
+                                                let desc = description.replace(' seconds','');
+                                                
+                                                // sec to hhmmss
+                                                const descInd = desc.indexOf('of');
+                                                const delTime = desc.substring(descInd+3);
+                                                let hhmmss = secondstotime(delTime);
+                                                
+                                                desc = desc.replace(delTime, '');
+                                                description = `${desc} ${hhmmss}`;
+
+                                                adapter.log.error(`Error getting Aplliances with existing Token: ${statusCode}  ${description} `);
                                                 adapter.log.warn("Restart the Adapter to get all devices correctly.");
+                                                
                                                 if (statusCode === 401) {
                                                     if (description && description.indexOf("malformed") !== -1) {
                                                         adapter.log.warn(
@@ -1394,6 +1405,20 @@ function startAdapter(options) {
         });
 
         adapter.subscribeStates("*");
+    }
+    function secondstotime(totalSeconds) {
+        var hours   = Math.floor(totalSeconds / 3600);
+        var minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
+        var seconds = totalSeconds - (hours * 3600) - (minutes * 60);
+
+        // round seconds
+        seconds = Math.round(seconds * 100) / 100
+
+        var result = (hours < 10 ? "0" + hours : hours);
+        result += ":" + (minutes < 10 ? "0" + minutes : minutes);
+        result += ":" + (seconds  < 10 ? "0" + seconds : seconds);
+
+        return result;
     }
     return adapter;
 }
