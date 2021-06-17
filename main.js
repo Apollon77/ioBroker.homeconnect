@@ -1030,6 +1030,10 @@ function startAdapter(options) {
                                     folder: ".programs.selected",
                                 },
                             ];
+                            if (!availablePrograms[haId]) {
+                                adapter.log.info("No available programs found for: " + haId);
+                                return;
+                            }
                             rootItems.forEach((rootItem) => {
                                 const common = {
                                     name: rootItem.key,
