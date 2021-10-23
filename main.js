@@ -274,6 +274,9 @@ function startAdapter(options) {
             }
             if (stream.type == "CONNECTED") {
                 adapter.setState(lastEventId + ".general.connected", true, true);
+                if (adapter.config.disableFetchConnect) {
+                    return;
+                }
                 const tokenID = adapter.namespace + ".dev.token";
                 stateGet(tokenID)
                     .then(
