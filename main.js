@@ -129,7 +129,7 @@ function startAdapter(options) {
                                             parseHomeappliances(appliances);
                                         },
                                         ([statusCode, description]) => {
-                                            adapter.log.error("Error getting Aplliances Error: " + statusCode);
+                                            adapter.log.error("Error getting Appliances Error: " + statusCode);
                                             adapter.log.error(description);
                                         }
                                     )
