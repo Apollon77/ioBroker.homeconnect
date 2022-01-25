@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.36",
+        "version": "0.0.37",
         "news": {
+            "0.0.37": {
+                "en": "add option to disable auto fesh in case of retry limit reached"
+            },
             "0.0.36": {
                 "en": "fix for js.controller 3.3. Please delete the device in Objects manually"
             },

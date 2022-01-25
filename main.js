@@ -566,7 +566,7 @@ function startAdapter(options) {
                     if (state && state.val) {
                         currentSelected[haId] = { key: state.val };
                     } else {
-                        adapter.log.warn("Selected program is empty: " + JSON.stringify(state));
+                        adapter.log.debug("Selected program is empty: " + JSON.stringify(state));
                     }
                     stateGet(adapter.namespace + ".dev.token")
                         .then((token) => {
