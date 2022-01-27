@@ -200,11 +200,11 @@ function startAdapter(options) {
         eventSourceList[haId] = new EventSource(baseUrl, header);
         // Error handling
         eventSourceList[haId].onerror = (err) => {
-            adapter.log.error("EventSource error: " + JSON.stringify(err));
             if (err.status) {
                 adapter.log.error(err.status + " " + err.message);
             } else {
-                adapter.log.info("Undefined Error from Homeconnect this happens sometimes.");
+                adapter.log.debug("EventSource error: " + JSON.stringify(err));
+                adapter.log.debug("Undefined Error from Homeconnect this happens sometimes.");
             }
             if (err.status !== undefined) {
                 adapter.log.error("Error (" + haId + ")", err);
