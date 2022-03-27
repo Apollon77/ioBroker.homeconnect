@@ -87,7 +87,7 @@ function startAdapter(options) {
                         }
                     )
                     .catch(() => {
-                        adapter.log.debug("No able to get refesh token ");
+                        adapter.log.error("No able to get refesh token ");
                     });
             })
             .catch(() => {
@@ -190,6 +190,8 @@ function startAdapter(options) {
         };
         if (eventSourceList[haId]) {
             eventSourceList[haId].close();
+            eventSourceList[haId].removeEventListener("PAIRED", (e) => processEvent(e), false);
+            eventSourceList[haId].removeEventListener("DEPAIRED", (e) => processEvent(e), false);
             eventSourceList[haId].removeEventListener("STATUS", (e) => processEvent(e), false);
             eventSourceList[haId].removeEventListener("NOTIFY", (e) => processEvent(e), false);
             eventSourceList[haId].removeEventListener("EVENT", (e) => processEvent(e), false);
@@ -269,10 +271,12 @@ function startAdapter(options) {
             }
             resetReconnectTimeout(lastEventId);
             if (stream.type == "DISCONNECTED") {
+                adapter.log.info("DISCONNECTED: " + lastEventId);
                 adapter.setState(lastEventId + ".general.connected", false, true);
                 return;
             }
             if (stream.type == "CONNECTED") {
+                adapter.log.info("CONNECTED: " + lastEventId);
                 adapter.setState(lastEventId + ".general.connected", true, true);
                 if (adapter.config.disableFetchConnect) {
                     return;
@@ -283,12 +287,12 @@ function startAdapter(options) {
                         (value) => {
                             const token = value;
                             getAPIValues(token, lastEventId, "/status");
-                            getAPIValues(token, lastEventId, "/settings");
-                            getAPIValues(token, lastEventId, "/programs");
-                            getAPIValues(token, lastEventId, "/programs/active");
-                            getAPIValues(token, lastEventId, "/programs/selected");
-                            updateOptions(token, lastEventId, "/programs/active");
-                            updateOptions(token, lastEventId, "/programs/selected");
+                            // getAPIValues(token, lastEventId, "/settings");
+                            // getAPIValues(token, lastEventId, "/programs");
+                            // getAPIValues(token, lastEventId, "/programs/active");
+                            // getAPIValues(token, lastEventId, "/programs/selected");
+                            // updateOptions(token, lastEventId, "/programs/active");
+                            // updateOptions(token, lastEventId, "/programs/selected");
                         },
                         (err) => {
                             adapter.log.error("FEHLER: " + err);
@@ -342,7 +346,7 @@ function startAdapter(options) {
             });
         } catch (error) {
             adapter.log.error("Parsemessage: " + error);
-            adapter.log.error("Error Event: " + msg);
+            adapter.log.error("Error Event: " + JSON.stringify(msg));
         }
     };
 
@@ -723,12 +727,12 @@ function startAdapter(options) {
                         const token = value;
                         if (element.connected) {
                             getAPIValues(token, haId, "/status");
-                            getAPIValues(token, haId, "/settings");
-                            getAPIValues(token, haId, "/programs");
-                            getAPIValues(token, haId, "/programs/active");
-                            getAPIValues(token, haId, "/programs/selected");
-                            updateOptions(token, haId, "/programs/active");
-                            updateOptions(token, haId, "/programs/selected");
+                            // getAPIValues(token, haId, "/settings");
+                            // getAPIValues(token, haId, "/programs");
+                            // getAPIValues(token, haId, "/programs/active");
+                            // getAPIValues(token, haId, "/programs/selected");
+                            // updateOptions(token, haId, "/programs/active");
+                            // updateOptions(token, haId, "/programs/selected");
                         }
                         startEventStream(token, haId);
                     },
@@ -1284,7 +1288,7 @@ function startAdapter(options) {
                                     stateGet(adapter.namespace + ".dev.refreshToken")
                                         .then((refreshToken) => {
                                             getRefreshToken(true);
-                                            getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
+                                            getTokenRefreshInterval = setInterval(getRefreshToken(true), 20 * 60 * 60 * 1000); //every 20h
                                         })
                                         .catch(() => {
                                             adapter.log.debug("Not able to get refresh token");
