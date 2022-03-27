@@ -180,7 +180,7 @@ function startAdapter(options) {
     /* Eventstream
      */
     function startEventStream(token, haId) {
-        adapter.log.debug("Start EventStream " + haId);
+        adapter.log.info("Start EventStream " + haId);
         const baseUrl = "https://api.home-connect.com/api/homeappliances/" + haId + "/events";
         const header = {
             headers: {
@@ -651,11 +651,8 @@ function startAdapter(options) {
 
     function parseHomeappliances(appliancesArray) {
         appliancesArray.data.homeappliances.forEach((element) => {
-            // if (element.haId.indexOf("BOSCH-WTX87K80") === -1) {
-            //     return;
-            // }
             const haId = element.haId;
-            adapter.log.silly("Extend Parse: " + haId);
+            adapter.log.info("Found Device: " + haId);
             adapter.extendObject(haId, {
                 type: "device",
                 common: {
