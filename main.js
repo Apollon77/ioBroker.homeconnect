@@ -29,6 +29,7 @@ function startAdapter(options) {
     const currentSelected = {};
 
     let rateCalculation = [];
+    adapter.fetchedDevice = {};
 
     function stateGet(stat) {
         return new Promise((resolve, reject) => {
@@ -225,6 +226,9 @@ function startAdapter(options) {
                 }
             }
         };
+
+        eventSourceList[haId].addEventListener("PAIRED", (e) => processEvent(e), false);
+        eventSourceList[haId].addEventListener("DEPAIRED", (e) => processEvent(e), false);
         eventSourceList[haId].addEventListener("STATUS", (e) => processEvent(e), false);
         eventSourceList[haId].addEventListener("NOTIFY", (e) => processEvent(e), false);
         eventSourceList[haId].addEventListener("EVENT", (e) => processEvent(e), false);
@@ -287,12 +291,15 @@ function startAdapter(options) {
                         (value) => {
                             const token = value;
                             getAPIValues(token, lastEventId, "/status");
-                            // getAPIValues(token, lastEventId, "/settings");
-                            // getAPIValues(token, lastEventId, "/programs");
-                            // getAPIValues(token, lastEventId, "/programs/active");
-                            // getAPIValues(token, lastEventId, "/programs/selected");
-                            // updateOptions(token, lastEventId, "/programs/active");
-                            // updateOptions(token, lastEventId, "/programs/selected");
+                            getAPIValues(token, lastEventId, "/settings");
+                            getAPIValues(token, lastEventId, "/programs/active");
+                            getAPIValues(token, lastEventId, "/programs/selected");
+                            if (!adapter.fetchedDevice[lastEventId]) {
+                                adapter.fetchedDevice[lastEventId] = true;
+                                getAPIValues(token, lastEventId, "/programs");
+                                updateOptions(token, lastEventId, "/programs/active");
+                                updateOptions(token, lastEventId, "/programs/selected");
+                            }
                         },
                         (err) => {
                             adapter.log.error("FEHLER: " + err);
@@ -723,13 +730,14 @@ function startAdapter(options) {
                     (value) => {
                         const token = value;
                         if (element.connected) {
+                            adapter.fetchedDevice[haId] = true;
                             getAPIValues(token, haId, "/status");
-                            // getAPIValues(token, haId, "/settings");
-                            // getAPIValues(token, haId, "/programs");
-                            // getAPIValues(token, haId, "/programs/active");
-                            // getAPIValues(token, haId, "/programs/selected");
-                            // updateOptions(token, haId, "/programs/active");
-                            // updateOptions(token, haId, "/programs/selected");
+                            getAPIValues(token, haId, "/settings");
+                            getAPIValues(token, haId, "/programs");
+                            getAPIValues(token, haId, "/programs/active");
+                            getAPIValues(token, haId, "/programs/selected");
+                            updateOptions(token, haId, "/programs/active");
+                            updateOptions(token, haId, "/programs/selected");
                         }
                         startEventStream(token, haId);
                     },
@@ -1285,7 +1293,7 @@ function startAdapter(options) {
                                     stateGet(adapter.namespace + ".dev.refreshToken")
                                         .then((refreshToken) => {
                                             getRefreshToken(true);
-                                            getTokenRefreshInterval = setInterval(getRefreshToken(true), 20 * 60 * 60 * 1000); //every 20h
+                                            getTokenRefreshInterval = setInterval(getRefreshToken(), 20 * 60 * 60 * 1000); //every 20h
                                         })
                                         .catch(() => {
                                             adapter.log.debug("Not able to get refresh token");
