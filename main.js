@@ -18,14 +18,15 @@ function startAdapter(options) {
     let getTokenInterval;
     let getTokenRefreshInterval;
     let reconnectEventStreamInterval;
+    let reconnectEventStreamIntervalWorkaround;
     let retryTimeout;
     let rateLimitTimeout;
     let restartTimeout;
     let eventSource;
     const availablePrograms = {};
     const availableProgramOptions = {};
-    const eventSourceList = {};
-    const reconnectTimeouts = {};
+    let eventSourceState;
+    let reconnectTimeout;
     const currentSelected = {};
 
     let rateCalculation = [];
@@ -74,9 +75,7 @@ function startAdapter(options) {
                                 ack: true,
                             });
                             if (!disableReconnectStream) {
-                                Object.keys(eventSourceList).forEach(function (key) {
-                                    startEventStream(token, key);
-                                });
+                                startEventStream(token);
                             }
                         },
                         ([statusCode, description]) => {
@@ -128,6 +127,7 @@ function startAdapter(options) {
                                     .then(
                                         (appliances) => {
                                             parseHomeappliances(appliances);
+                                            startEventStream(token);
                                         },
                                         ([statusCode, description]) => {
                                             adapter.log.error("Error getting Appliances Error: " + statusCode);
@@ -140,6 +140,7 @@ function startAdapter(options) {
 
                                 adapter.log.debug("Start Refreshinterval");
                                 getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
+                                reconnectEventStreamIntervalWorkaround = setInterval(startEventStream, 30 * 60 * 1000); //every 30min
                             },
                             (statusPost) => {
                                 if (statusPost == "400") {
@@ -180,29 +181,29 @@ function startAdapter(options) {
 
     /* Eventstream
      */
-    function startEventStream(token, haId) {
-        adapter.log.info("Start EventStream " + haId);
-        const baseUrl = "https://api.home-connect.com/api/homeappliances/" + haId + "/events";
+    function startEventStream(token) {
+        adapter.log.info("Start EventStream");
+        const baseUrl = "https://api.home-connect.com/api/homeappliances/events";
         const header = {
             headers: {
                 Authorization: "Bearer " + token,
                 Accept: "text/event-stream",
             },
         };
-        if (eventSourceList[haId]) {
-            eventSourceList[haId].close();
-            eventSourceList[haId].removeEventListener("PAIRED", (e) => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("DEPAIRED", (e) => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("STATUS", (e) => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("NOTIFY", (e) => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("EVENT", (e) => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("CONNECTED", (e) => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("DISCONNECTED", (e) => processEvent(e), false);
-            eventSourceList[haId].removeEventListener("KEEP-ALIVE", (e) => resetReconnectTimeout(e.lastEventId), false);
+        if (eventSourceState) {
+            eventSourceState.close();
+            eventSourceState.removeEventListener("PAIRED", (e) => processEvent(e), false);
+            eventSourceState.removeEventListener("DEPAIRED", (e) => processEvent(e), false);
+            eventSourceState.removeEventListener("STATUS", (e) => processEvent(e), false);
+            eventSourceState.removeEventListener("NOTIFY", (e) => processEvent(e), false);
+            eventSourceState.removeEventListener("EVENT", (e) => processEvent(e), false);
+            eventSourceState.removeEventListener("CONNECTED", (e) => processEvent(e), false);
+            eventSourceState.removeEventListener("DISCONNECTED", (e) => processEvent(e), false);
+            eventSourceState.removeEventListener("KEEP-ALIVE", (e) => resetReconnectTimeout(e.lastEventId), false);
         }
-        eventSourceList[haId] = new EventSource(baseUrl, header);
+        eventSourceState = new EventSource(baseUrl, header);
         // Error handling
-        eventSourceList[haId].onerror = (err) => {
+        eventSourceState.onerror = (err) => {
             if (err.status) {
                 adapter.log.error(err.status + " " + err.message);
             } else {
@@ -210,7 +211,7 @@ function startAdapter(options) {
                 adapter.log.debug("Undefined Error from Homeconnect this happens sometimes.");
             }
             if (err.status !== undefined) {
-                adapter.log.error("Error (" + haId + ")", err);
+                adapter.log.error("Error: ", err);
                 if (err.status === 401) {
                     getRefreshToken();
                     // Most likely the token has expired, try to refresh the token
@@ -227,33 +228,32 @@ function startAdapter(options) {
             }
         };
 
-        eventSourceList[haId].addEventListener("PAIRED", (e) => processEvent(e), false);
-        eventSourceList[haId].addEventListener("DEPAIRED", (e) => processEvent(e), false);
-        eventSourceList[haId].addEventListener("STATUS", (e) => processEvent(e), false);
-        eventSourceList[haId].addEventListener("NOTIFY", (e) => processEvent(e), false);
-        eventSourceList[haId].addEventListener("EVENT", (e) => processEvent(e), false);
-        eventSourceList[haId].addEventListener("CONNECTED", (e) => processEvent(e), false);
-        eventSourceList[haId].addEventListener("DISCONNECTED", (e) => processEvent(e), false);
-        eventSourceList[haId].addEventListener(
+        eventSourceState.addEventListener("PAIRED", (e) => processEvent(e), false);
+        eventSourceState.addEventListener("DEPAIRED", (e) => processEvent(e), false);
+        eventSourceState.addEventListener("STATUS", (e) => processEvent(e), false);
+        eventSourceState.addEventListener("NOTIFY", (e) => processEvent(e), false);
+        eventSourceState.addEventListener("EVENT", (e) => processEvent(e), false);
+        eventSourceState.addEventListener("CONNECTED", (e) => processEvent(e), false);
+        eventSourceState.addEventListener("DISCONNECTED", (e) => processEvent(e), false);
+        eventSourceState.addEventListener(
             "KEEP-ALIVE",
             (e) => {
                 //adapter.log.debug(JSON.stringify(e));
-                resetReconnectTimeout(e.lastEventId);
+                resetReconnectTimeout();
             },
             false
         );
 
-        resetReconnectTimeout(haId);
+        resetReconnectTimeout();
     }
 
-    function resetReconnectTimeout(haId) {
-        haId = haId.replace(/\.?\-001*$/, "");
-        clearInterval(reconnectTimeouts[haId]);
-        reconnectTimeouts[haId] = setInterval(() => {
+    function resetReconnectTimeout() {
+        clearInterval(reconnectTimeout);
+        reconnectTimeout = setInterval(() => {
             stateGet(adapter.namespace + ".dev.token")
                 .then((value) => {
-                    adapter.log.debug("reconnect EventStream " + haId);
-                    startEventStream(value, haId);
+                    adapter.log.info("Keep Alive failed Reconnect EventStream");
+                    startEventStream(value);
                 })
                 .catch(() => {
                     adapter.log.debug("No token found");
@@ -279,7 +279,7 @@ function startAdapter(options) {
                 adapter.setState(lastEventId + ".general.connected", false, true);
                 return;
             }
-            if (stream.type == "CONNECTED") {
+            if (stream.type == "CONNECTED" || stream.type == "PAIRED") {
                 adapter.log.info("CONNECTED: " + lastEventId);
                 adapter.setState(lastEventId + ".general.connected", true, true);
                 if (adapter.config.disableFetchConnect) {
@@ -360,6 +360,7 @@ function startAdapter(options) {
     adapter.on("unload", function (callback) {
         try {
             adapter.log.info("cleaned everything up...");
+            clearInterval(reconnectEventStreamIntervalWorkaround);
             clearInterval(getTokenRefreshInterval);
             clearInterval(getTokenInterval);
             clearInterval(reconnectEventStreamInterval);
@@ -367,15 +368,15 @@ function startAdapter(options) {
             clearTimeout(rateLimitTimeout);
             clearTimeout(restartTimeout);
             Object.keys(eventSourceList).forEach((haId) => {
-                if (eventSourceList[haId]) {
+                if (eventSourceState) {
                     console.log("Clean event " + haId);
-                    eventSourceList[haId].close();
-                    eventSourceList[haId].removeEventListener("STATUS", (e) => processEvent(e), false);
-                    eventSourceList[haId].removeEventListener("NOTIFY", (e) => processEvent(e), false);
-                    eventSourceList[haId].removeEventListener("EVENT", (e) => processEvent(e), false);
-                    eventSourceList[haId].removeEventListener("CONNECTED", (e) => processEvent(e), false);
-                    eventSourceList[haId].removeEventListener("DISCONNECTED", (e) => processEvent(e), false);
-                    eventSourceList[haId].removeEventListener("KEEP-ALIVE", (e) => resetReconnectTimeout(e.lastEventId), false);
+                    eventSourceState.close();
+                    eventSourceState.removeEventListener("STATUS", (e) => processEvent(e), false);
+                    eventSourceState.removeEventListener("NOTIFY", (e) => processEvent(e), false);
+                    eventSourceState.removeEventListener("EVENT", (e) => processEvent(e), false);
+                    eventSourceState.removeEventListener("CONNECTED", (e) => processEvent(e), false);
+                    eventSourceState.removeEventListener("DISCONNECTED", (e) => processEvent(e), false);
+                    eventSourceState.removeEventListener("KEEP-ALIVE", (e) => resetReconnectTimeout(e.lastEventId), false);
                 }
             });
             callback();
@@ -646,6 +647,8 @@ function startAdapter(options) {
                 adapter.log.debug(searchString);
                 //delete only for active options
                 adapter.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options");
+                adapter.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
+                adapter.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
                 allIds.forEach(function (keyName) {
                     if (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) {
                         adapter.delObject(keyName.split(".").slice(2).join("."));
@@ -732,14 +735,13 @@ function startAdapter(options) {
                         if (element.connected) {
                             adapter.fetchedDevice[haId] = true;
                             getAPIValues(token, haId, "/status");
-                            getAPIValues(token, haId, "/settings");
-                            getAPIValues(token, haId, "/programs");
-                            getAPIValues(token, haId, "/programs/active");
-                            getAPIValues(token, haId, "/programs/selected");
-                            updateOptions(token, haId, "/programs/active");
-                            updateOptions(token, haId, "/programs/selected");
+                            // getAPIValues(token, haId, "/settings");
+                            // getAPIValues(token, haId, "/programs");
+                            // getAPIValues(token, haId, "/programs/active");
+                            // getAPIValues(token, haId, "/programs/selected");
+                            // updateOptions(token, haId, "/programs/active");
+                            // updateOptions(token, haId, "/programs/selected");
                         }
-                        startEventStream(token, haId);
                     },
                     (err) => {
                         adapter.log.error("FEHLER: " + err);
@@ -1256,6 +1258,7 @@ function startAdapter(options) {
                                         .then(
                                             (appliances) => {
                                                 parseHomeappliances(appliances);
+                                                startEventStream(token);
                                             },
 
                                             ([statusCode, description]) => {
@@ -1294,6 +1297,8 @@ function startAdapter(options) {
                                         .then((refreshToken) => {
                                             getRefreshToken(true);
                                             getTokenRefreshInterval = setInterval(getRefreshToken(), 20 * 60 * 60 * 1000); //every 20h
+
+                                            reconnectEventStreamIntervalWorkaround = setInterval(startEventStream, 30 * 60 * 1000); //every 30min
                                         })
                                         .catch(() => {
                                             adapter.log.debug("Not able to get refresh token");
