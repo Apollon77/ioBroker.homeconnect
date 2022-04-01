@@ -140,7 +140,7 @@ function startAdapter(options) {
 
                                 adapter.log.debug("Start Refreshinterval");
                                 getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
-                                reconnectEventStreamIntervalWorkaround = setInterval(startEventStream, 30 * 60 * 1000); //every 30min
+                                reconnectEventStreamIntervalWorkaround = setInterval(startEventStream(token), 30 * 60 * 1000); //every 30min
                             },
                             (statusPost) => {
                                 if (statusPost == "400") {
@@ -1298,7 +1298,7 @@ function startAdapter(options) {
                                             getRefreshToken(true);
                                             getTokenRefreshInterval = setInterval(getRefreshToken(), 20 * 60 * 60 * 1000); //every 20h
 
-                                            reconnectEventStreamIntervalWorkaround = setInterval(startEventStream, 30 * 60 * 1000); //every 30min
+                                            reconnectEventStreamIntervalWorkaround = setInterval(startEventStream(token), 30 * 60 * 1000); //every 30min
                                         })
                                         .catch(() => {
                                             adapter.log.debug("Not able to get refresh token");
