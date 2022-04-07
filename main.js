@@ -45,10 +45,6 @@ class Homeconnect extends utils.Adapter {
         // Reset the connection indicator during startup
         this.setState("info.connection", false, true);
 
-        if (!this.config.username || !this.config.password) {
-            this.log.error("Please set username and password in the instance settings");
-            return;
-        }
         this.userAgent = "ioBroker v1.0.0";
         const axiosClient = axios.create();
         this.requestClient = rateLimit(axiosClient, { maxRequests: 50, perMilliseconds: 60000 });
@@ -60,21 +56,25 @@ class Homeconnect extends utils.Adapter {
         const sessionState = await this.getStateAsync("auth.session");
 
         if (sessionState && sessionState.val) {
+            this.log.debug("Found current session");
             this.session = JSON.parse(sessionState.val);
         } else {
             const refreshToken = await this.getStateAsync("dev.refreshToken");
             if (refreshToken && refreshToken.val) {
+                this.log.debug("Found old refreshtoken");
                 this.session.refresh_token = refreshToken.val;
             }
         }
 
         if (this.session.refresh_token) {
-            this.refreshToken();
+            await this.refreshToken();
         } else {
             if (!this.config.username || !this.config.password || !this.config.clientID) {
                 this.log.warn("please enter homeconnect app username and password and clientId in the instance settings");
                 return;
             }
+
+            this.log.debug("Start normal login");
             await this.login();
         }
         if (this.session.access_token) {
@@ -186,6 +186,7 @@ class Homeconnect extends utils.Adapter {
     }
     async getDeviceList() {
         this.deviceArray = [];
+        this.log.debug("Get device list");
         await this.requestClient({
             method: "get",
             url: "https://api.home-connect.com/api/homeappliances",
@@ -252,6 +253,7 @@ class Homeconnect extends utils.Adapter {
                         });
                         this.setState(haID + ".general." + key, device[key], true);
                     }
+                    this.fetchDeviceInformation(haID);
                 }
             })
             .catch((error) => {
@@ -770,6 +772,7 @@ class Homeconnect extends utils.Adapter {
             .then((res) => {
                 this.log.debug(JSON.stringify(res.data));
                 this.session = res.data;
+                this.headers.authorization = "Bearer " + this.session.access_token;
                 this.setState("info.connection", true, true);
             })
             .catch((error) => {
