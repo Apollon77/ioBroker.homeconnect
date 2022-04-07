@@ -253,7 +253,9 @@ class Homeconnect extends utils.Adapter {
                         });
                         this.setState(haID + ".general." + key, device[key], true);
                     }
-                    this.fetchDeviceInformation(haID);
+                    if (device.connected) {
+                        this.fetchDeviceInformation(haID);
+                    }
                 }
             })
             .catch((error) => {
@@ -282,6 +284,7 @@ class Homeconnect extends utils.Adapter {
         })
             .then((res) => {
                 this.log.info(JSON.stringify(res.data));
+
                 return res.data;
             })
             .catch((error) => {
@@ -289,8 +292,12 @@ class Homeconnect extends utils.Adapter {
                 if (error.response) {
                     this.log.error(JSON.stringify(error.response.data));
                 }
+                return;
             });
-
+        if (!returnValue || returnValue.error) {
+            returnValue && this.log.debug("Error: " + returnValue.error);
+            return;
+        }
         try {
             this.log.debug(url);
             this.log.debug(JSON.stringify(returnValue));
