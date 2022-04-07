@@ -1,9 +1,5 @@
 {
-  "Auto": "Auto",
-  "Manual": "Manuel",
-  "My select": "Mon choix",
-  "on save adapter restarts with new config immediately": "sur l'adaptateur de sauvegarde redémarre avec la nouvelle config immédiatement",
-  "template adapter settings": "paramètres de l'adaptateur de modèle",
-  "test1": "Test 1",
-  "test2": "Test 2"
+    "homeconnect adapter settings": "Paramètres d'adaptateur pour homeconnect",
+    "option1": "Option 1",
+    "option2": "Option 2"
 }

@@ -1,78 +1,70 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "0.0.37",
+        "version": "0.0.1",
         "news": {
-            "0.0.37": {
-                "en": "add option to disable auto fesh in case of retry limit reached"
-            },
-            "0.0.36": {
-                "en": "fix for js.controller 3.3. Please delete the device in Objects manually"
-            },
-            "0.0.32": {
-                "en": "bugfix for devices that are completely switched off (e.g. washing machine, dryer)"
-            },
-            "0.0.31": {
-                "en": "fix pause start command bug"
-            },
-            "0.0.30": {
-                "en": "fix js controller 3 issues"
-            },
-            "0.0.27": {
-                "en": "improve option selecting"
-            },
-            "0.0.26": {
-                "en": "fix boolean settings"
-            },
-            "0.0.25": {
-                "en": "fix compact mode, reduce query per minute to prevent too much request error"
-            },
-            "0.0.24": {
-                "en": "improve error messaging"
-            },
-            "0.0.23": {
-                "en": "improve error messaging"
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "zh-cn": "首次出版"
             }
         },
-        "title": "Home Connect",
+        "title": "Homeconnect",
         "titleLang": {
-            "en": "BSH Home-Connect",
-            "de": "BSH Home-Connect "
+            "en": "Homeconnect",
+            "de": "Homeconnect",
+            "ru": "Домашнее подключение",
+            "pt": "Homeconnect",
+            "nl": "Homeconnect",
+            "fr": "Homeconnect",
+            "it": "Connessione domestica",
+            "es": "Conectar a casa",
+            "pl": "Homeconnect",
+            "zh-cn": "家庭连接"
         },
         "desc": {
-            "en": "ioBroker Homeconnect",
-            "de": "ioBroker Homeconnect",
-            "ru": "ioBroker Homeconnect как образец",
-            "pt": "Modelo de adaptador para o ioBroker",
-            "fr": "ioBroker adaptateur modèle",
-            "nl": "ioBroker Homeconnect",
-            "it": "Adattatore modello ioBroker",
-            "es": "Adaptador de plantilla ioBroker"
+            "en": "Adapter for Homeconnect devices",
+            "de": "Adapter für Homeconnect-Geräte",
+            "ru": "Адаптер для устройств Homeconnect",
+            "pt": "Adaptador para dispositivos Homeconnect",
+            "nl": "Adapter voor Homeconnect-apparaten",
+            "fr": "Adaptateur pour appareils Homeconnect",
+            "it": "Adattatore per dispositivi Homeconnect",
+            "es": "Adaptador para dispositivos Homeconnect",
+            "pl": "Adapter do urządzeń Homeconnect",
+            "zh-cn": "Homeconnect 设备的适配器"
         },
         "authors": [
-            "dna909 <dna909@googlemail.com>"
+            "TA2k <tombox2020@gmail.com>"
         ],
-        "platform": "Javascript/Node.js",
-        "mode": "daemon",
-        "icon": "homeconnect.png",
-        "materialize": true,
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.homeconnect/master/admin/homeconnect.png",
         "keywords": [
             "homeconnect",
-            "vis",
-            "GUI",
-            "graphical",
-            "scada"
+            "BSH",
+            "bosch",
+            "siemens",
+            "neff"
         ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "main": "main.js",
+        "icon": "homeconnect.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.homeconnect/master/admin/homeconnect.png",
         "readme": "https://github.com/iobroker-community-adapters/ioBroker.homeconnect/blob/master/README.md",
         "loglevel": "info",
+        "mode": "daemon",
         "type": "household",
         "compact": true,
-        "license": "MIT",
         "connectionType": "cloud",
         "dataSource": "push",
-        "messagebox": false,
+        "materialize": true,
         "plugins": {
             "sentry": {
                 "dsn": "https://0d0cad2f2cc44d5e889a2bd7ee0fcc42@sentry.iobroker.net/65"
@@ -80,19 +72,70 @@
         },
         "dependencies": [
             {
-                "admin": ">=3.0.0"
-            },
+                "js-controller": ">=3.2.0"
+            }
+        ],
+        "globalDependencies": [
             {
-                "js-controller": ">=1.4.2"
+                "admin": ">=4.0.9"
             }
         ]
     },
+    "encryptedNative": [
+        "password"
+    ],
+    "protectedNative": [
+        "password"
+    ],
     "native": {
         "clientID": "",
-        "scope": "",
-        "authUri": "",
+        "username": "",
+        "password": "",
         "resetAccess": false,
         "disableFetchConnect": false
     },
-    "objects": []
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "auth",
+            "type": "channel",
+            "common": {
+                "name": "Auth Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "auth.session",
+            "type": "state",
+            "common": {
+                "role": "json",
+                "name": "Session state",
+                "type": "string",
+                "read": true,
+                "write": false
+            },
+            "native": {}
+        },
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Device or service connected",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ]
 }

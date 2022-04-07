@@ -1,313 +1,710 @@
 "use strict";
 
+/*
+ * Created with @iobroker/create-adapter v2.1.1
+ */
+
+// The adapter-core module gives you access to the core ioBroker functions
+// you need to create an adapter
 const utils = require("@iobroker/adapter-core");
-const auth = require(__dirname + "/lib/auth.js");
-const EventEmitter = require("events");
+const axios = require("axios");
+const rateLimit = require("axios-rate-limit");
+const qs = require("qs");
 const EventSource = require("eventsource");
-const request = require("request");
+class Homeconnect extends utils.Adapter {
+    /**
+     * @param {Partial<utils.AdapterOptions>} [options={}]
+     */
+    constructor(options) {
+        super({
+            ...options,
+            name: "homeconnect",
+        });
+        this.on("ready", this.onReady.bind(this));
+        this.on("stateChange", this.onStateChange.bind(this));
+        this.on("unload", this.onUnload.bind(this));
+        this.headers = {
+            "user-agent": this.userAgent,
+            Accept: "application/vnd.bsh.sdk.v1+json",
+            "Accept-Language": "de-DE",
+        };
+        this.deviceArray = [];
+        this.fetchedDevice = {};
 
-let adapter;
+        this.availablePrograms = {};
+        this.availableProgramOptions = {};
+        this.eventSourceState;
 
-function startAdapter(options) {
-    options = options || {};
-    Object.assign(options, {
-        name: "homeconnect",
-    });
-    adapter = new utils.Adapter(options);
+        this.currentSelected = {};
+    }
 
-    let getTokenInterval;
-    let getTokenRefreshInterval;
-    let reconnectEventStreamInterval;
-    let reconnectEventStreamIntervalWorkaround;
-    let retryTimeout;
-    let rateLimitTimeout;
-    let restartTimeout;
-    let eventSource;
-    const availablePrograms = {};
-    const availableProgramOptions = {};
-    let eventSourceState;
-    let reconnectTimeout;
-    const currentSelected = {};
+    /**
+     * Is called when databases are connected and adapter received configuration.
+     */
+    async onReady() {
+        // Reset the connection indicator during startup
+        this.setState("info.connection", false, true);
 
-    let rateCalculation = [];
-    adapter.fetchedDevice = {};
+        if (!this.config.username || !this.config.password) {
+            this.log.error("Please set username and password in the instance settings");
+            return;
+        }
+        this.userAgent = "ioBroker v1.0.0";
+        const axiosClient = axios.create();
+        this.requestClient = rateLimit(axiosClient, { maxRequests: 50, perMilliseconds: 60000 });
 
-    function stateGet(stat) {
-        return new Promise((resolve, reject) => {
-            adapter.getState(stat, function (err, state) {
-                if (err) {
-                    reject(err);
-                } else {
-                    if (typeof state != undefined && state != null) {
-                        const value = state.val;
-                        resolve(value);
-                    } else {
-                        const value = false;
-                        resolve(value);
+        this.reLoginTimeout = null;
+        this.refreshTokenTimeout = null;
+        this.session = {};
+        this.subscribeStates("*");
+        const sessionState = await this.getStateAsync("auth.session");
+
+        if (sessionState && sessionState.val) {
+            this.session = JSON.parse(sessionState.val);
+        } else {
+            const refreshToken = await this.getStateAsync("dev.refreshToken");
+            if (refreshToken && refreshToken.val) {
+                this.session.refresh_token = refreshToken.val;
+            }
+        }
+
+        if (this.session.refresh_token) {
+            this.refreshToken();
+        } else {
+            if (!this.config.username || !this.config.password || !this.config.clientID) {
+                this.log.warn("please enter homeconnect app username and password and clientId in the instance settings");
+                return;
+            }
+            await this.login();
+        }
+        if (this.session.access_token) {
+            this.headers.authorization = "Bearer " + this.session.access_token;
+            await this.getDeviceList();
+            await this.startEventStream();
+
+            this.refreshTokenInterval = setInterval(() => {
+                this.refreshToken();
+            }, (this.session.expires_in - 200) * 1000);
+        }
+    }
+    async login() {
+        const deviceAuth = await this.requestClient({
+            method: "post",
+            url: "https://api.home-connect.com/security/oauth/device_authorization",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data: "client_id=" + this.config.clientID + "&scope=IdentifyAppliance%20Monitor%20Settings%20Control",
+        })
+            .then((res) => {
+                this.log.debug(JSON.stringify(res.data));
+                return res.data;
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    this.log.error(JSON.stringify(error.response.data));
+                }
+            });
+        if (!deviceAuth.verification_uri_complete) {
+            this.log.error("No verification_uri_complete in device_authorization");
+            return;
+        }
+
+        const formData = await this.requestClient({
+            method: "post",
+            url: deviceAuth.verification_uri_complete,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+
+            data: qs.stringify({
+                user_code: deviceAuth.user_code,
+                client_id: this.config.clientID,
+                accept_language: "de",
+                region: "EU",
+                environment: "PRD",
+                email: this.config.username,
+                password: this.config.password,
+            }),
+        })
+            .then((res) => {
+                this.log.debug(JSON.stringify(res.data));
+                return this.extractHidden(res.data);
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    this.log.error(JSON.stringify(error.response.data));
+                }
+            });
+
+        await this.requestClient({
+            method: "post",
+            url: "https://api.home-connect.com/security/oauth/device_grant",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+
+            data: qs.stringify(formData),
+        })
+            .then((res) => {
+                this.log.debug(JSON.stringify(res.data));
+                return;
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    this.log.error(JSON.stringify(error.response.data));
+                }
+            });
+        await this.sleep(6000);
+        await this.requestClient({
+            method: "post",
+            url: "https://api.home-connect.com/security/oauth/token",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+
+            data: qs.stringify({
+                grant_type: "device_code",
+                device_code: deviceAuth.device_code,
+                client_id: this.config.clientID,
+            }),
+        })
+            .then((res) => {
+                this.log.debug(JSON.stringify(res.data));
+                this.session = res.data;
+                this.setState("info.connection", true, true);
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    this.log.error(JSON.stringify(error.response.data));
+                }
+            });
+    }
+    async getDeviceList() {
+        this.deviceArray = [];
+        await this.requestClient({
+            method: "get",
+            url: "https://api.home-connect.com/api/homeappliances",
+            headers: this.headers,
+        })
+            .then(async (res) => {
+                this.log.debug(JSON.stringify(res.data));
+                for (const device of res.data.data.homeappliances) {
+                    const haID = device.haId;
+                    this.deviceArray.push(haID);
+                    const name = device.name;
+
+                    await this.setObjectNotExistsAsync(haID, {
+                        type: "device",
+                        common: {
+                            name: name,
+                        },
+                        native: {},
+                    });
+                    await this.setObjectNotExistsAsync(haID + ".commands", {
+                        type: "channel",
+                        common: {
+                            name: "Commands",
+                        },
+                        native: {},
+                    });
+                    await this.setObjectNotExistsAsync(haID + ".general", {
+                        type: "channel",
+                        common: {
+                            name: "General Information",
+                        },
+                        native: {},
+                    });
+
+                    const remoteArray = [
+                        { command: "BSH_Common_Command_PauseProgram", name: "True = Pause" },
+                        { command: "BSH_Common_Command_ResumeProgram", name: "True = Resume" },
+                        { command: "BSH_Common_Command_StopProgram", name: "True = Stop" },
+                    ];
+                    remoteArray.forEach((remote) => {
+                        this.setObjectNotExists(device.vin + ".commands." + remote.command, {
+                            type: "state",
+                            common: {
+                                name: remote.name || "",
+                                type: remote.type || "boolean",
+                                role: remote.role || "boolean",
+                                write: true,
+                                read: true,
+                            },
+                            native: {},
+                        });
+                    });
+                    for (const key in device) {
+                        await this.setObjectNotExistsAsync(haID + ".general." + key, {
+                            type: "state",
+                            common: {
+                                name: key,
+                                type: typeof device[key],
+                                role: "indicator",
+                                write: false,
+                                read: true,
+                            },
+                            native: {},
+                        });
+                        this.setState(haID + ".general." + key, device[key], true);
                     }
                 }
-            });
-        });
-    }
-
-    function getRefreshToken(disableReconnectStream) {
-        const stat = adapter.namespace + ".dev.refreshToken";
-        stateGet(stat)
-            .then((value) => {
-                auth.tokenRefresh(value)
-                    .then(
-                        ([token, refreshToken, expires, tokenScope]) => {
-                            adapter.log.info("Accesstoken renewed...");
-                            adapter.setState("dev.token", {
-                                val: token,
-                                ack: true,
-                            });
-                            adapter.setState("dev.refreshToken", {
-                                val: refreshToken,
-                                ack: true,
-                            });
-                            adapter.setState("dev.expires", {
-                                val: expires,
-                                ack: true,
-                            });
-                            adapter.setState("dev.tokenScope", {
-                                val: tokenScope,
-                                ack: true,
-                            });
-                            if (!disableReconnectStream) {
-                                startEventStream(token);
-                            }
-                        },
-                        ([statusCode, description]) => {
-                            retryTimeout = setTimeout(() => {
-                                getRefreshToken();
-                            }, 5 * 60 * 1000); //5min
-                            adapter.log.error("Error Refresh-Token: " + statusCode + " " + description);
-                            adapter.log.warn("Retry Refresh Token in 5min");
-                        }
-                    )
-                    .catch(() => {
-                        adapter.log.error("No able to get refesh token ");
-                    });
             })
-            .catch(() => {
-                adapter.log.debug("No refreshtoken found");
+            .catch((error) => {
+                this.log.error(error);
+                error.response && this.log.error(JSON.stringify(error.response.data));
             });
     }
 
-    function getToken() {
-        stateGet("dev.devCode")
-            .then(
-                (deviceCode) => {
-                    const clientID = adapter.config.clientID;
-                    auth.tokenGet(deviceCode, clientID)
-                        .then(
-                            ([token, refreshToken, expires, tokenScope]) => {
-                                adapter.log.debug("Accesstoken created: " + token);
-                                adapter.setState("dev.token", {
-                                    val: token,
-                                    ack: true,
-                                });
-                                adapter.setState("dev.refreshToken", {
-                                    val: refreshToken,
-                                    ack: true,
-                                });
-                                adapter.setState("dev.expires", {
-                                    val: expires,
-                                    ack: true,
-                                });
-                                adapter.setState("dev.tokenScope", {
-                                    val: tokenScope,
-                                    ack: true,
-                                });
-                                clearInterval(getTokenInterval);
-
-                                adapter.setState("dev.access", true, true);
-                                auth.getAppliances(token)
-                                    .then(
-                                        (appliances) => {
-                                            parseHomeappliances(appliances);
-                                            startEventStream(token);
-                                        },
-                                        ([statusCode, description]) => {
-                                            adapter.log.error("Error getting Appliances Error: " + statusCode);
-                                            adapter.log.error(description);
-                                        }
-                                    )
-                                    .catch(() => {
-                                        adapter.log.debug("No appliance found");
-                                    });
-
-                                adapter.log.debug("Start Refreshinterval");
-                                getTokenRefreshInterval = setInterval(getRefreshToken, 20 * 60 * 60 * 1000); //every 20h
-                                reconnectEventStreamIntervalWorkaround = setInterval(startEventStream(token), 30 * 60 * 1000); //every 30min
-                            },
-                            (statusPost) => {
-                                if (statusPost == "400") {
-                                    const stat = "dev.authUriComplete";
-
-                                    stateGet(stat)
-                                        .then(
-                                            (value) => {
-                                                adapter.log.error("Please visit this url:  " + value);
-                                                adapter.log.info("If u dont see a login form reset 'Zugang/Token' in the instance settings");
-                                            },
-                                            (err) => {
-                                                adapter.log.error("FEHLER: " + err);
-                                            }
-                                        )
-                                        .catch(() => {
-                                            adapter.log.debug("No state" + stat + " found");
-                                        });
-                                } else {
-                                    adapter.log.error("Error GetToken: " + statusPost);
-                                    clearInterval(getTokenInterval);
-                                }
-                            }
-                        )
-                        .catch(() => {
-                            adapter.log.debug("No token found");
-                        });
-                },
-                (err) => {
-                    adapter.log.error("getToken FEHLER: " + err);
-                    clearInterval(getTokenInterval);
+    async fetchDeviceInformation(haId) {
+        this.getAPIValues(haId, "/status");
+        this.getAPIValues(haId, "/settings");
+        this.getAPIValues(haId, "/programs/active");
+        this.getAPIValues(haId, "/programs/selected");
+        if (!this.fetchedDevice[haId]) {
+            this.fetchedDevice[haId] = true;
+            this.getAPIValues(haId, "/programs");
+            this.updateOptions(haId, "/programs/active");
+            this.updateOptions(haId, "/programs/selected");
+        }
+    }
+    async getAPIValues(haId, url) {
+        const returnValue = await this.requestClient({
+            method: "get",
+            url: "https://api.home-connect.com/api/homeappliances/" + haId + url,
+            headers: this.headers,
+        })
+            .then((res) => {
+                this.log.info(JSON.stringify(res.data));
+                return res.data;
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    this.log.error(JSON.stringify(error.response.data));
                 }
-            )
-            .catch(() => {
-                adapter.log.debug("No token found");
+            });
+
+        try {
+            this.log.debug(url);
+            this.log.debug(JSON.stringify(returnValue));
+            if (url.indexOf("/settings/") !== -1) {
+                let type = "string";
+                if (returnValue.data.type === "Int" || returnValue.data.type === "Double") {
+                    type = "number";
+                }
+                if (returnValue.data.type === "Boolean") {
+                    type = "boolean";
+                }
+                const common = {
+                    name: returnValue.data.name,
+                    type: type,
+                    role: "indicator",
+                    write: true,
+                    read: true,
+                };
+                if (returnValue.data.constraints && returnValue.data.constraints.allowedvalues) {
+                    const states = {};
+                    returnValue.data.constraints.allowedvalues.forEach((element, index) => {
+                        states[element] = returnValue.data.constraints.displayvalues[index];
+                    });
+                    common.states = states;
+                }
+                const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
+                this.log.silly("Extend Settings: " + haId + folder);
+                this.extendObject(haId + folder, {
+                    type: "state",
+                    common: common,
+                    native: {},
+                });
+                return;
+            }
+
+            if (url.indexOf("/programs/available/") !== -1) {
+                if (returnValue.data.options) {
+                    this.availableProgramOptions[returnValue.data.key] = this.availableProgramOptions[returnValue.data.key] || [];
+                    returnValue.data.options.forEach(async (option) => {
+                        this.availableProgramOptions[returnValue.data.key].push(option.key);
+                        let type = "string";
+                        if (option.type === "Int" || option.type === "Double") {
+                            type = "number";
+                        }
+                        if (option.type === "Boolean") {
+                            type = "boolean";
+                        }
+                        const common = {
+                            name: option.name,
+                            type: type,
+                            role: "indicator",
+                            unit: option.unit || "",
+                            write: true,
+                            read: true,
+                        };
+                        if (option.constraints.min) {
+                            common.min = option.constraints.min;
+                        }
+                        if (option.constraints.max) {
+                            common.max = option.constraints.max;
+                        }
+
+                        if (option.constraints.allowedvalues) {
+                            common.states = {};
+                            option.constraints.allowedvalues.forEach((element, index) => {
+                                common.states[element] = option.constraints.displayvalues[index];
+                            });
+                        }
+                        let folder = ".programs.available.options." + option.key.replace(/\./g, "_");
+                        this.log.silly("Extend Options: " + haId + folder);
+                        await this.setObjectNotExistsAsync(haId + folder, {
+                            type: "state",
+                            common: common,
+                            native: {},
+                        }).catch(() => {
+                            this.log.error("failed set state");
+                        });
+
+                        this.extendObject(haId + folder, {
+                            type: "state",
+                            common: common,
+                            native: {},
+                        });
+                        this.setState(haId + folder, option.constraints.default, true);
+                        const key = returnValue.data.key.split(".").pop();
+                        this.setObjectNotExistsAsync(haId + ".programs.selected.options." + key, {
+                            type: "state",
+                            common: { name: returnValue.data.name, type: "mixed", role: "indicator", write: true, read: true },
+                            native: {},
+                        })
+                            .then(() => {
+                                folder = ".programs.selected.options." + key + "." + option.key.replace(/\./g, "_");
+                                this.extendObject(haId + folder, {
+                                    type: "state",
+                                    common: common,
+                                    native: {},
+                                });
+                            })
+                            .catch(() => {
+                                this.log.error("failed set state");
+                            });
+                    });
+                }
+                return;
+            }
+
+            if ("key" in returnValue.data) {
+                returnValue.data = {
+                    items: [returnValue.data],
+                };
+            }
+            for (const item in returnValue.data) {
+                returnValue.data[item].forEach(async (subElement) => {
+                    let folder = url.replace(/\//g, ".");
+                    if (url === "/programs/active") {
+                        subElement.value = subElement.key;
+                        subElement.key = "BSH_Common_Root_ActiveProgram";
+                        subElement.name = "BSH_Common_Root_ActiveProgram";
+                    }
+                    if (url === "/programs/selected") {
+                        if (subElement.key) {
+                            subElement.value = subElement.key;
+                            this.currentSelected[haId] = { key: subElement.value, name: subElement.name };
+                            subElement.key = "BSH_Common_Root_SelectedProgram";
+                            subElement.name = "BSH_Common_Root_SelectedProgram";
+                        } else {
+                            this.log.warn("Empty sublement: " + JSON.stringify(subElement));
+                        }
+                    }
+                    if (url === "/programs") {
+                        this.log.debug(haId + " available: " + JSON.stringify(subElement));
+                        if (this.availablePrograms[haId]) {
+                            this.availablePrograms[haId].push({
+                                key: subElement.key,
+                                name: subElement.name,
+                            });
+                        } else {
+                            this.availablePrograms[haId] = [
+                                {
+                                    key: subElement.key,
+                                    name: subElement.name,
+                                },
+                            ];
+                        }
+                        this.getAPIValues(haId, "/programs/available/" + subElement.key);
+                        folder += ".available";
+                    }
+                    if (url === "/settings") {
+                        this.getAPIValues(haId, "/settings/" + subElement.key);
+                    }
+
+                    if (url.indexOf("/programs/selected/") !== -1) {
+                        if (!this.currentSelected[haId]) {
+                            return;
+                        }
+                        if (!this.currentSelected[haId].key) {
+                            this.log.warn(JSON.stringify(this.currentSelected[haId]) + " is selected but has no key selected ");
+                            return;
+                        }
+                        const key = this.currentSelected[haId].key.split(".").pop();
+                        folder += "." + key;
+
+                        await this.setObjectNotExistsAsync(haId + folder, {
+                            type: "state",
+                            common: { name: this.currentSelected[haId].name, type: "mixed", role: "indicator", write: true, read: true },
+                            native: {},
+                        }).catch(() => {
+                            this.log.error("failed set state");
+                        });
+                    }
+                    this.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
+                    let type = "mixed";
+                    if (typeof subElement.value === "boolean") {
+                        type = "boolean";
+                    }
+                    if (typeof subElement.value === "number") {
+                        type = "number";
+                    }
+                    const common = {
+                        name: subElement.name,
+                        type: type,
+                        role: "indicator",
+                        write: true,
+                        read: true,
+                        unit: subElement.unit || "",
+                    };
+
+                    if (subElement.constraints && subElement.constraints.min) {
+                        common.min = subElement.constraints.min;
+                    }
+                    if (subElement.constraints && subElement.constraints.max) {
+                        common.max = subElement.constraints.max;
+                    }
+                    this.setObjectNotExistsAsync(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
+                        type: "state",
+                        common: common,
+                        native: {},
+                    })
+                        .then(() => {
+                            if (subElement.value !== undefined) {
+                                this.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
+                            }
+                        })
+                        .catch(() => {
+                            this.log.error("failed set state");
+                        });
+                });
+            }
+            if (url === "/programs") {
+                const rootItems = [
+                    {
+                        key: "BSH_Common_Root_ActiveProgram",
+                        folder: ".programs.active",
+                    },
+                    {
+                        key: "BSH_Common_Root_SelectedProgram",
+                        folder: ".programs.selected",
+                    },
+                ];
+                if (!this.availablePrograms[haId]) {
+                    this.log.info("No available programs found for: " + haId);
+                    return;
+                }
+                rootItems.forEach((rootItem) => {
+                    const common = {
+                        name: rootItem.key,
+                        type: "string",
+                        role: "indicator",
+                        write: true,
+                        read: true,
+                        states: {},
+                    };
+                    this.availablePrograms[haId].forEach((program) => {
+                        common.states[program.key] = program.name;
+                    });
+                    this.setObjectNotExistsAsync(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+                        type: "state",
+                        common: common,
+                        native: {},
+                    })
+                        .then(() => {
+                            this.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+                                type: "state",
+                                common: common,
+                                native: {},
+                            });
+                        })
+                        .catch(() => {
+                            this.log.error("failed set state");
+                        });
+                });
+            }
+        } catch (error) {
+            this.log.error(error);
+            this.log.error(error.stack);
+            this.log.error(url);
+            this.log.error(JSON.stringify(returnValue));
+        }
+    }
+    async updateOptions(haId, url) {
+        const pre = this.name + "." + this.instance;
+        const states = await this.getStatesAsync(pre + "." + haId + ".programs.*");
+        const allIds = Object.keys(states);
+        let searchString = "selected.options.";
+        if (url.indexOf("/active") !== -1) {
+            searchString = "active.options.";
+            this.log.debug(searchString);
+            //delete only for active options
+            this.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options");
+            this.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
+            this.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
+
+            for (const keyName of allIds) {
+                if (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) {
+                    this.delObject(keyName.split(".").slice(2).join("."));
+                }
+            }
+        }
+        setTimeout(() => this.getAPIValues(haId, url + "/options"), 0);
+    }
+    async putAPIValues(haId, url, data) {
+        await this.requestClient({
+            method: "PUT",
+            url: "https://api.home-connect.com/api/homeappliances/" + haId + url,
+            headers: this.headers,
+            data: data,
+        })
+            .then((res) => {
+                this.log.info(JSON.stringify(res.data));
+                return res.data;
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    if (error.response.status === 403) {
+                        this.log.info("Homeconnect API has not the rights for this command and device");
+                    }
+                    this.log.error(JSON.stringify(error.response.data));
+                }
             });
     }
 
-    /* Eventstream
-     */
-    function startEventStream(token) {
-        adapter.log.info("Start EventStream");
+    async deleteAPIValues(haId, url) {
+        await this.requestClient({
+            method: "DELETE",
+            url: "https://api.home-connect.com/api/homeappliances/" + haId + url,
+            headers: this.headers,
+        })
+            .then((res) => {
+                this.log.info(JSON.stringify(res.data));
+                return res.data;
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    if (error.response.status === 403) {
+                        this.log.info("Homeconnect API has not the rights for this command and device");
+                    }
+                    this.log.error(JSON.stringify(error.response.data));
+                }
+            });
+    }
+    async startEventStream() {
+        this.log.info("Start EventStream");
         const baseUrl = "https://api.home-connect.com/api/homeappliances/events";
         const header = {
             headers: {
-                Authorization: "Bearer " + token,
+                Authorization: "Bearer " + this.session.access_token,
                 Accept: "text/event-stream",
             },
         };
-        if (eventSourceState) {
-            eventSourceState.close();
-            eventSourceState.removeEventListener("PAIRED", (e) => processEvent(e), false);
-            eventSourceState.removeEventListener("DEPAIRED", (e) => processEvent(e), false);
-            eventSourceState.removeEventListener("STATUS", (e) => processEvent(e), false);
-            eventSourceState.removeEventListener("NOTIFY", (e) => processEvent(e), false);
-            eventSourceState.removeEventListener("EVENT", (e) => processEvent(e), false);
-            eventSourceState.removeEventListener("CONNECTED", (e) => processEvent(e), false);
-            eventSourceState.removeEventListener("DISCONNECTED", (e) => processEvent(e), false);
-            eventSourceState.removeEventListener("KEEP-ALIVE", (e) => resetReconnectTimeout(e.lastEventId), false);
+        if (this.eventSourceState) {
+            this.eventSourceState.close();
+            this.eventSourceState.removeEventListener("PAIRED", (e) => this.processEvent(e), false);
+            this.eventSourceState.removeEventListener("DEPAIRED", (e) => this.processEvent(e), false);
+            this.eventSourceState.removeEventListener("STATUS", (e) => this.processEvent(e), false);
+            this.eventSourceState.removeEventListener("NOTIFY", (e) => this.processEvent(e), false);
+            this.eventSourceState.removeEventListener("EVENT", (e) => this.processEvent(e), false);
+            this.eventSourceState.removeEventListener("CONNECTED", (e) => this.processEvent(e), false);
+            this.eventSourceState.removeEventListener("DISCONNECTED", (e) => this.processEvent(e), false);
+            this.eventSourceState.removeEventListener("KEEP-ALIVE", (e) => this.resetReconnectTimeout(e.lastEventId), false);
         }
-        eventSourceState = new EventSource(baseUrl, header);
+        this.eventSourceState = new EventSource(baseUrl, header);
         // Error handling
-        eventSourceState.onerror = (err) => {
+        this.eventSourceState.onerror = (err) => {
             if (err.status) {
-                adapter.log.error(err.status + " " + err.message);
+                this.log.error(err.status + " " + err.message);
             } else {
-                adapter.log.debug("EventSource error: " + JSON.stringify(err));
-                adapter.log.debug("Undefined Error from Homeconnect this happens sometimes.");
+                this.log.debug("EventSource error: " + JSON.stringify(err));
+                this.log.debug("Undefined Error from Homeconnect this happens sometimes.");
             }
             if (err.status !== undefined) {
-                adapter.log.error("Error: ", err);
+                this.log.error("Error: " + JSON.stringify(err));
                 if (err.status === 401) {
-                    getRefreshToken();
+                    this.refreshToken();
                     // Most likely the token has expired, try to refresh the token
-                    adapter.log.info("Token abgelaufen");
+                    this.log.info("Token abgelaufen");
                 } else if (err.status === 429) {
-                    adapter.log.warn("Too many requests. Adapter sends too many requests per minute. Please wait 1min before restart the instance.");
+                    this.log.warn("Too many requests. Adapter sends too many requests per minute. Please wait 1min before restart the instance.");
                 } else {
-                    adapter.log.error("Error: " + err.status);
-                    adapter.log.error("Error: " + JSON.stringify(err));
+                    this.log.error("Error: " + err.status);
+                    this.log.error("Error: " + JSON.stringify(err));
                     if (err.status >= 500) {
-                        adapter.log.error("Homeconnect API are not available please try again later");
+                        this.log.error("Homeconnect API are not available please try again later");
                     }
                 }
             }
         };
 
-        eventSourceState.addEventListener("PAIRED", (e) => processEvent(e), false);
-        eventSourceState.addEventListener("DEPAIRED", (e) => processEvent(e), false);
-        eventSourceState.addEventListener("STATUS", (e) => processEvent(e), false);
-        eventSourceState.addEventListener("NOTIFY", (e) => processEvent(e), false);
-        eventSourceState.addEventListener("EVENT", (e) => processEvent(e), false);
-        eventSourceState.addEventListener("CONNECTED", (e) => processEvent(e), false);
-        eventSourceState.addEventListener("DISCONNECTED", (e) => processEvent(e), false);
-        eventSourceState.addEventListener(
+        this.eventSourceState.addEventListener("PAIRED", (e) => this.processEvent(e), false);
+        this.eventSourceState.addEventListener("DEPAIRED", (e) => this.processEvent(e), false);
+        this.eventSourceState.addEventListener("STATUS", (e) => this.processEvent(e), false);
+        this.eventSourceState.addEventListener("NOTIFY", (e) => this.processEvent(e), false);
+        this.eventSourceState.addEventListener("EVENT", (e) => this.processEvent(e), false);
+        this.eventSourceState.addEventListener("CONNECTED", (e) => this.processEvent(e), false);
+        this.eventSourceState.addEventListener("DISCONNECTED", (e) => this.processEvent(e), false);
+        this.eventSourceState.addEventListener(
             "KEEP-ALIVE",
             (e) => {
-                //adapter.log.debug(JSON.stringify(e));
-                resetReconnectTimeout();
+                this.resetReconnectTimeout();
             },
             false
         );
 
-        resetReconnectTimeout();
+        this.resetReconnectTimeout();
     }
-
-    function resetReconnectTimeout() {
-        clearInterval(reconnectTimeout);
-        reconnectTimeout = setInterval(() => {
-            stateGet(adapter.namespace + ".dev.token")
-                .then((value) => {
-                    adapter.log.info("Keep Alive failed Reconnect EventStream");
-                    startEventStream(value);
-                })
-                .catch(() => {
-                    adapter.log.debug("No token found");
-                });
+    resetReconnectTimeout() {
+        this.reconnectTimeout && clearInterval(this.reconnectTimeout);
+        this.reconnectTimeout = setInterval(() => {
+            this.log.info("Keep Alive failed Reconnect EventStream");
+            this.startEventStream();
         }, 70000);
     }
 
-    //Eventstream ==>> Datenpunkt
-
-    const processEvent = (msg) => {
-        /*Auswertung des Eventstreams*/
+    processEvent(msg) {
         try {
-            adapter.log.debug("event: " + JSON.stringify(msg));
+            this.log.debug("event: " + JSON.stringify(msg));
             const stream = msg;
             const lastEventId = stream.lastEventId.replace(/\.?\-001*$/, "");
             if (!stream) {
-                adapter.log.debug("No Return: " + stream);
+                this.log.debug("No Return: " + stream);
                 return;
             }
-            resetReconnectTimeout(lastEventId);
+            this.resetReconnectTimeout();
             if (stream.type == "DISCONNECTED") {
-                adapter.log.info("DISCONNECTED: " + lastEventId);
-                adapter.setState(lastEventId + ".general.connected", false, true);
+                this.log.info("DISCONNECTED: " + lastEventId);
+                this.setState(lastEventId + ".general.connected", false, true);
                 return;
             }
             if (stream.type == "CONNECTED" || stream.type == "PAIRED") {
-                adapter.log.info("CONNECTED: " + lastEventId);
-                adapter.setState(lastEventId + ".general.connected", true, true);
-                if (adapter.config.disableFetchConnect) {
+                this.log.info("CONNECTED: " + lastEventId);
+                this.setState(lastEventId + ".general.connected", true, true);
+                if (this.config.disableFetchConnect) {
                     return;
                 }
-                const tokenID = adapter.namespace + ".dev.token";
-                stateGet(tokenID)
-                    .then(
-                        (value) => {
-                            const token = value;
-                            getAPIValues(token, lastEventId, "/status");
-                            getAPIValues(token, lastEventId, "/settings");
-                            getAPIValues(token, lastEventId, "/programs/active");
-                            getAPIValues(token, lastEventId, "/programs/selected");
-                            if (!adapter.fetchedDevice[lastEventId]) {
-                                adapter.fetchedDevice[lastEventId] = true;
-                                getAPIValues(token, lastEventId, "/programs");
-                                updateOptions(token, lastEventId, "/programs/active");
-                                updateOptions(token, lastEventId, "/programs/selected");
-                            }
-                        },
-                        (err) => {
-                            adapter.log.error("FEHLER: " + err);
-                        }
-                    )
-                    .catch(() => {
-                        adapter.log.debug("No token found");
-                    });
+                this.fetchDeviceInformation(lastEventId);
                 return;
             }
 
@@ -330,1124 +727,312 @@ function startAdapter(options) {
                     folder = folder.join(".");
                     key = element.key.replace(/\./g, "_");
                 }
-                adapter.log.debug(haId + "." + folder + "." + key + ":" + element.value);
-                adapter
-                    .setObjectNotExistsAsync(haId + "." + folder + "." + key, {
-                        type: "state",
-                        common: {
-                            name: key,
-                            type: "mixed",
-                            role: "indicator",
-                            write: true,
-                            read: true,
-                            unit: element.unit || "",
-                        },
-                        native: {},
-                    })
+                this.log.debug(haId + "." + folder + "." + key + ":" + element.value);
+                this.setObjectNotExistsAsync(haId + "." + folder + "." + key, {
+                    type: "state",
+                    common: {
+                        name: key,
+                        type: "mixed",
+                        role: "indicator",
+                        write: true,
+                        read: true,
+                        unit: element.unit || "",
+                    },
+                    native: {},
+                })
                     .then(() => {
-                        adapter.setState(haId + "." + folder + "." + key, element.value, true);
+                        this.setState(haId + "." + folder + "." + key, element.value, true);
                     })
                     .catch(() => {
-                        adapter.log.error("failed set state");
+                        this.log.error("failed set state");
                     });
             });
         } catch (error) {
-            adapter.log.error("Parsemessage: " + error);
-            adapter.log.error("Error Event: " + JSON.stringify(msg));
+            this.log.error("Parsemessage: " + error);
+            this.log.error("Error Event: " + JSON.stringify(msg));
         }
-    };
+    }
 
-    adapter.on("unload", function (callback) {
-        try {
-            adapter.log.info("cleaned everything up...");
-            clearInterval(reconnectEventStreamIntervalWorkaround);
-            clearInterval(getTokenRefreshInterval);
-            clearInterval(getTokenInterval);
-            clearInterval(reconnectEventStreamInterval);
-            clearTimeout(retryTimeout);
-            clearTimeout(rateLimitTimeout);
-            clearTimeout(restartTimeout);
-            Object.keys(eventSourceList).forEach((haId) => {
-                if (eventSourceState) {
-                    console.log("Clean event " + haId);
-                    eventSourceState.close();
-                    eventSourceState.removeEventListener("STATUS", (e) => processEvent(e), false);
-                    eventSourceState.removeEventListener("NOTIFY", (e) => processEvent(e), false);
-                    eventSourceState.removeEventListener("EVENT", (e) => processEvent(e), false);
-                    eventSourceState.removeEventListener("CONNECTED", (e) => processEvent(e), false);
-                    eventSourceState.removeEventListener("DISCONNECTED", (e) => processEvent(e), false);
-                    eventSourceState.removeEventListener("KEEP-ALIVE", (e) => resetReconnectTimeout(e.lastEventId), false);
-                }
+    async refreshToken() {
+        if (!this.session) {
+            this.log.error("No session found relogin");
+            await this.login();
+            return;
+        }
+        await this.requestClient({
+            method: "post",
+            url: "https://api.home-connect.com/security/oauth/token",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data: "grant_type=refresh_token&refresh_token=" + this.session.refresh_token,
+        })
+            .then((res) => {
+                this.log.debug(JSON.stringify(res.data));
+                this.session = res.data;
+                this.setState("info.connection", true, true);
+            })
+            .catch((error) => {
+                this.log.error("refresh token failed");
+                this.log.error(error);
+                error.response && this.log.error(JSON.stringify(error.response.data));
+                this.log.error("Start relogin in 10min");
+                this.reLoginTimeout && clearTimeout(this.reLoginTimeout);
+                this.reLoginTimeout = setTimeout(() => {
+                    this.login();
+                }, 1000 * 60 * 10);
             });
+    }
+    extractHidden(body) {
+        const returnObject = {};
+        const matches = this.matchAll(/<input (?=[^>]* name=["']([^'"]*)|)(?=[^>]* value=["']([^'"]*)|)/g, body);
+        for (const match of matches) {
+            returnObject[match[1]] = match[2];
+        }
+        return returnObject;
+    }
+    matchAll(re, str) {
+        let match;
+        const matches = [];
+
+        while ((match = re.exec(str))) {
+            // add all matched groups
+            matches.push(match);
+        }
+
+        return matches;
+    }
+    sleep(ms) {
+        if (this.adapterStopped) {
+            ms = 0;
+        }
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+    /**
+     * Is called when adapter shuts down - callback has to be called under any circumstances!
+     * @param {() => void} callback
+     */
+    onUnload(callback) {
+        try {
+            this.setState("info.connection", false, true);
+            this.refreshTimeout && clearTimeout(this.refreshTimeout);
+            this.reLoginTimeout && clearTimeout(this.reLoginTimeout);
+            this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
+            this.updateInterval && clearInterval(this.updateInterval);
+            this.refreshTokenInterval && clearInterval(this.refreshTokenInterval);
+
+            if (this.eventSourceState) {
+                this.eventSourceState.close();
+                this.eventSourceState.removeEventListener("STATUS", (e) => this.processEvent(e), false);
+                this.eventSourceState.removeEventListener("NOTIFY", (e) => this.processEvent(e), false);
+                this.eventSourceState.removeEventListener("EVENT", (e) => this.processEvent(e), false);
+                this.eventSourceState.removeEventListener("CONNECTED", (e) => this.processEvent(e), false);
+                this.eventSourceState.removeEventListener("DISCONNECTED", (e) => this.processEvent(e), false);
+                this.eventSourceState.removeEventListener("KEEP-ALIVE", (e) => this.resetReconnectTimeout(), false);
+            }
+
             callback();
         } catch (e) {
             callback();
         }
-    });
+    }
 
-    adapter.on("objectChange", function (id, obj) {
-        adapter.log.info("objectChange " + id + " " + JSON.stringify(obj));
-    });
+    /**
+     * Is called if a subscribed state changes
+     * @param {string} id
+     * @param {ioBroker.State | null | undefined} state
+     */
+    async onStateChange(id, state) {
+        if (state) {
+            if (state && !state.ack) {
+                const idArray = id.split(".") || [];
+                const command = idArray.pop().replace(/_/g, ".");
+                const haId = idArray[2];
+                if (!isNaN(state.val) && !isNaN(parseFloat(state.val))) {
+                    state.val = parseFloat(state.val);
+                }
+                if (state.val === "true") {
+                    state.val = true;
+                }
+                if (state.val === "false") {
+                    state.val = false;
+                }
+                if (id.indexOf(".commands.") !== -1) {
+                    this.log.debug(id + " " + state.val);
+                    if (id.indexOf("StopProgram") !== -1 && state.val) {
+                        this.deleteAPIValues(haId, "/programs/active");
+                    } else {
+                        const data = {
+                            data: {
+                                key: command,
+                                value: state.val,
+                            },
+                        };
 
-    adapter.on("stateChange", function (id, state) {
-        if (id == adapter.namespace + ".dev.devCode") {
-            getTokenInterval = setInterval(getToken, 10000); // Polling bis Authorisation erfolgt ist
-        }
-        if (state && !state.ack) {
-            const idArray = id.split(".");
-            const command = idArray.pop().replace(/_/g, ".");
-            const haId = idArray[2];
-            if (!isNaN(state.val) && !isNaN(parseFloat(state.val))) {
-                state.val = parseFloat(state.val);
-            }
-            if (state.val === "true") {
-                state.val = true;
-            }
-            if (state.val === "false") {
-                state.val = false;
-            }
-            if (id.indexOf(".commands.") !== -1) {
-                adapter.log.debug(id + " " + state.val);
-                if (id.indexOf("StopProgram") !== -1 && state.val) {
-                    stateGet(adapter.namespace + ".dev.token")
-                        .then((token) => {
-                            deleteAPIValues(token, haId, "/programs/active");
-                        })
-                        .catch(() => {
-                            adapter.log.debug("No token found");
+                        this.putAPIValues(haId, "/commands/" + command, data).catch(() => {
+                            this.log.error("Put value failed " + haId + "/commands/" + command + JSON.stringify(data));
+                            this.log.error("Original state " + id + " change: " + JSON.stringify(state));
                         });
-                } else {
+                    }
+                }
+                if (id.indexOf(".settings.") !== -1) {
+                    const data = {
+                        data: {
+                            key: command,
+                            value: state.val,
+                            type: command,
+                        },
+                    };
+
+                    this.putAPIValues(haId, "/settings/" + command, data);
+                }
+                if (id.indexOf(".options.") !== -1) {
                     const data = {
                         data: {
                             key: command,
                             value: state.val,
                         },
                     };
-                    stateGet(adapter.namespace + ".dev.token")
-                        .then((token) => {
-                            putAPIValues(token, haId, "/commands/" + command, data).catch(() => {
-                                adapter.log.error("Put value failed " + haId + "/commands/" + command + JSON.stringify(data));
-                                adapter.log.error("Original state " + id + " change: " + JSON.stringify(state));
-                            });
-                        })
-                        .catch(() => {
-                            adapter.log.debug("No token found");
-                        });
+                    if (id.indexOf("selected") !== -1) {
+                        idArray.pop();
+                    }
+                    const folder = idArray.slice(3, idArray.length).join("/");
+
+                    this.putAPIValues(haId, "/" + folder + "/" + command, data);
                 }
-            }
-            if (id.indexOf(".settings.") !== -1) {
-                const data = {
-                    data: {
-                        key: command,
-                        value: state.val,
-                        type: command,
-                    },
-                };
-                stateGet(adapter.namespace + ".dev.token")
-                    .then((token) => {
-                        putAPIValues(token, haId, "/settings/" + command, data).catch(() => {
-                            adapter.log.error("Put settings failed " + haId + "/commands/" + command + JSON.stringify(data));
-                        });
-                    })
-                    .catch(() => {
-                        adapter.log.debug("No token found");
-                    });
-            }
-            if (id.indexOf(".options.") !== -1) {
-                const data = {
-                    data: {
-                        key: command,
-                        value: state.val,
-                    },
-                };
-                if (id.indexOf("selected") !== -1) {
-                    idArray.pop();
-                }
-                const folder = idArray.slice(3, idArray.length).join("/");
-                stateGet(adapter.namespace + ".dev.token")
-                    .then((token) => {
-                        putAPIValues(token, haId, "/" + folder + "/" + command, data).catch(() => {
-                            adapter.log.error("Put folder failed " + haId + "/commands/" + command + JSON.stringify(data));
-                        });
-                    })
-                    .catch(() => {
-                        adapter.log.debug("No token found");
-                    });
-            }
-            if (id.indexOf("BSH_Common_Root_") !== -1) {
-                const pre = adapter.name + "." + adapter.instance;
-                if (!state.val) {
-                    adapter.log.warn("No state val: " + JSON.stringify(state));
-                    return;
-                }
-                const key = state.val.split(".").pop();
-                adapter.getStates(pre + "." + haId + ".programs.selected.options." + key + ".*", (err, states) => {
-                    const allIds = Object.keys(states);
-                    options = [];
-                    allIds.forEach(function (keyName) {
-                        if (keyName.indexOf("BSH_Common_Option_ProgramProgress") === -1 && keyName.indexOf("BSH_Common_Option_RemainingProgramTime") === -1) {
-                            const idArray = keyName.split(".");
-                            const commandOption = idArray.pop().replace(/_/g, ".");
-                            if (
-                                ((availableProgramOptions[state.val] && availableProgramOptions[state.val].includes(commandOption)) || commandOption === "BSH.Common.Option.StartInRelative") &&
-                                states[keyName] !== null
-                            ) {
-                                if (commandOption === "BSH.Common.Option.StartInRelative" && command === "BSH.Common.Root.SelectedProgram") {
-                                } else {
-                                    options.push({
-                                        key: commandOption,
-                                        value: states[keyName].val,
-                                    });
+                if (id.indexOf("BSH_Common_Root_") !== -1) {
+                    const pre = this.name + "." + this.instance;
+                    if (!state.val) {
+                        this.log.warn("No state val: " + JSON.stringify(state));
+                        return;
+                    }
+                    const key = state.val.split(".").pop();
+                    this.getStates(pre + "." + haId + ".programs.selected.options." + key + ".*", (err, states) => {
+                        const allIds = Object.keys(states);
+                        const options = [];
+                        allIds.forEach((keyName) => {
+                            if (keyName.indexOf("BSH_Common_Option_ProgramProgress") === -1 && keyName.indexOf("BSH_Common_Option_RemainingProgramTime") === -1) {
+                                const idArray = keyName.split(".");
+                                const commandOption = idArray.pop().replace(/_/g, ".");
+                                if (
+                                    ((this.availableProgramOptions[state.val] && this.availableProgramOptions[state.val].includes(commandOption)) ||
+                                        commandOption === "BSH.Common.Option.StartInRelative") &&
+                                    states[keyName] !== null
+                                ) {
+                                    if (commandOption === "BSH.Common.Option.StartInRelative" && command === "BSH.Common.Root.SelectedProgram") {
+                                    } else {
+                                        options.push({
+                                            key: commandOption,
+                                            value: states[keyName].val,
+                                        });
+                                    }
                                 }
+                            }
+                        });
+
+                        const data = {
+                            data: {
+                                key: state.val,
+                                options: options,
+                            },
+                        };
+
+                        if (id.indexOf("Active") !== -1) {
+                            this.putAPIValues(haId, "/programs/active", data)
+                                .catch(() => {
+                                    this.log.info("Programm doesn't start with options. Try again without selected options.");
+                                    this.putAPIValues(haId, "/programs/active", {
+                                        data: {
+                                            key: state.val,
+                                        },
+                                    }).catch(() => {
+                                        this.log.error("Put active failed " + haId + state.val);
+                                    });
+                                })
+                                .then(() => this.updateOptions(haId, "/programs/active"))
+                                .catch(() => {
+                                    this.log.error("Error update active program");
+                                });
+                        }
+                        if (id.indexOf("Selected") !== -1) {
+                            if (state.val) {
+                                this.currentSelected[haId] = { key: state.val };
+
+                                this.putAPIValues(haId, "/programs/selected", data)
+                                    .then(
+                                        () => {
+                                            this.updateOptions(haId, "/programs/selected");
+                                        },
+                                        () => {
+                                            this.log.warn("Setting selected program was not succesful");
+                                        }
+                                    )
+                                    .catch(() => {
+                                        this.log.debug("No program selected found");
+                                    });
+                            } else {
+                                this.log.warn("No state val: " + JSON.stringify(state));
                             }
                         }
                     });
-
-                    const data = {
-                        data: {
-                            key: state.val,
-                            options: options,
-                        },
-                    };
-
+                }
+            } else {
+                const idArray = id.split(".");
+                const command = idArray.pop().replace(/_/g, ".");
+                const haId = idArray[2];
+                if (id.indexOf("BSH_Common_Root_") !== -1) {
                     if (id.indexOf("Active") !== -1) {
-                        stateGet(adapter.namespace + ".dev.token")
-                            .then((token) => {
-                                putAPIValues(token, haId, "/programs/active", data)
-                                    .catch(() => {
-                                        adapter.log.info("Programm doesn't start with options. Try again without selected options.");
-                                        putAPIValues(token, haId, "/programs/active", {
-                                            data: {
-                                                key: state.val,
-                                            },
-                                        }).catch(() => {
-                                            adapter.log.error("Put active failed " + haId + state.val);
-                                        });
-                                    })
-                                    .then(() => updateOptions(token, haId, "/programs/active"))
-                                    .catch(() => {
-                                        adapter.log.error("Error update active program");
-                                    });
-                            })
-                            .catch(() => {
-                                adapter.log.debug("No token found");
-                            });
+                        this.updateOptions(haId, "/programs/active");
                     }
                     if (id.indexOf("Selected") !== -1) {
-                        if (state.val) {
-                            currentSelected[haId] = { key: state.val };
-                            stateGet(adapter.namespace + ".dev.token")
-                                .then((token) => {
-                                    putAPIValues(token, haId, "/programs/selected", data)
-                                        .then(
-                                            () => {
-                                                updateOptions(token, haId, "/programs/selected");
-                                            },
-                                            () => {
-                                                adapter.log.warn("Setting selected program was not succesful");
-                                            }
-                                        )
-                                        .catch(() => {
-                                            adapter.log.debug("No program selected found");
-                                        });
-                                })
-                                .catch(() => {
-                                    adapter.log.error("Cannot get token");
-                                });
+                        if (state && state.val) {
+                            this.currentSelected[haId] = { key: state.val };
                         } else {
-                            adapter.log.warn("No state val: " + JSON.stringify(state));
+                            this.log.debug("Selected program is empty: " + JSON.stringify(state));
                         }
-                    }
-                });
-            }
-        } else {
-            const idArray = id.split(".");
-            const command = idArray.pop().replace(/_/g, ".");
-            const haId = idArray[2];
-            if (id.indexOf("BSH_Common_Root_") !== -1) {
-                if (id.indexOf("Active") !== -1) {
-                    stateGet(adapter.namespace + ".dev.token")
-                        .then((token) => {
-                            updateOptions(token, haId, "/programs/active");
-                        })
-                        .catch(() => {
-                            adapter.log.debug("No token found");
-                        });
-                }
-                if (id.indexOf("Selected") !== -1) {
-                    if (state && state.val) {
-                        currentSelected[haId] = { key: state.val };
-                    } else {
-                        adapter.log.debug("Selected program is empty: " + JSON.stringify(state));
-                    }
-                    stateGet(adapter.namespace + ".dev.token")
-                        .then((token) => {
-                            updateOptions(token, haId, "/programs/selected");
-                        })
-                        .catch(() => {
-                            adapter.log.debug("No token found");
-                        });
-                }
-            }
 
-            if (id.indexOf(".options.") !== -1 || id.indexOf(".events.") !== -1 || id.indexOf(".status.") !== -1) {
-                if (id.indexOf("BSH_Common_Option") === -1 && state && state.val && state.val.indexOf && state.val.indexOf(".") !== -1) {
-                    adapter.getObject(id, function (err, obj) {
-                        if (obj) {
-                            const common = obj.common;
-                            const valArray = state.val.split(".");
-                            common.states = {};
-                            common.states[state.val] = valArray[valArray.length - 1];
-                            adapter.log.silly("Extend common option: " + id);
-                            adapter
-                                .setObjectNotExistsAsync(id, {
+                        this.updateOptions(haId, "/programs/selected");
+                    }
+                }
+
+                if (id.indexOf(".options.") !== -1 || id.indexOf(".events.") !== -1 || id.indexOf(".status.") !== -1) {
+                    if (id.indexOf("BSH_Common_Option") === -1 && state && state.val && state.val.indexOf && state.val.indexOf(".") !== -1) {
+                        this.getObject(id, (err, obj) => {
+                            if (obj) {
+                                const common = obj.common;
+                                const valArray = state.val.split(".");
+                                common.states = {};
+                                common.states[state.val] = valArray[valArray.length - 1];
+                                this.log.silly("Extend common option: " + id);
+                                this.setObjectNotExistsAsync(id, {
                                     type: "state",
                                     common: common,
                                     native: {},
                                 })
-                                .then(() => {
-                                    adapter.extendObject(id, {
-                                        common: common,
-                                    });
-                                })
-                                .catch(() => {
-                                    adapter.log.error("failed set state");
-                                });
-                        }
-                    });
-                }
-            }
-        }
-    });
-
-    // Some message was sent to adapter instance over message box. Used by email, pushover, text2speech, ...
-    adapter.on("message", function (obj) {
-        if (typeof obj === "object" && obj.message) {
-            if (obj.command === "send") {
-                // e.g. send email or pushover or whatever
-                console.log("send command");
-
-                // Send response in callback if required
-                if (obj.callback) adapter.sendTo(obj.from, obj.command, "Message received", obj.callback);
-            }
-        }
-    });
-
-    adapter.on("ready", function () {
-        main();
-    });
-
-    function updateOptions(token, haId, url) {
-        const pre = adapter.name + "." + adapter.instance;
-        adapter.getStates(pre + "." + haId + ".programs.*", (err, states) => {
-            const allIds = Object.keys(states);
-            let searchString = "selected.options.";
-            if (url.indexOf("/active") !== -1) {
-                searchString = "active.options.";
-                adapter.log.debug(searchString);
-                //delete only for active options
-                adapter.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options");
-                adapter.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
-                adapter.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
-                allIds.forEach(function (keyName) {
-                    if (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) {
-                        adapter.delObject(keyName.split(".").slice(2).join("."));
-                    }
-                });
-            }
-            setTimeout(() => getAPIValues(token, haId, url + "/options"), 0);
-        });
-    }
-
-    function parseHomeappliances(appliancesArray) {
-        appliancesArray.data.homeappliances.forEach((element) => {
-            const haId = element.haId;
-            adapter.log.info("Found Device: " + haId);
-            adapter.extendObject(haId, {
-                type: "device",
-                common: {
-                    name: element.name,
-                    type: "object",
-                    role: "indicator",
-                    write: false,
-                    read: true,
-                },
-                native: {},
-            });
-            for (const key in element) {
-                adapter
-                    .setObjectNotExistsAsync(haId + ".general." + key, {
-                        type: "state",
-                        common: {
-                            name: key,
-                            type: typeof element[key],
-                            role: "indicator",
-                            write: false,
-                            read: true,
-                        },
-                        native: {},
-                    })
-                    .then(() => {
-                        adapter.setState(haId + ".general." + key, element[key], true);
-                    })
-                    .catch(() => {
-                        adapter.log.error("failed set state");
-                    });
-            }
-            adapter.extendObject(haId + ".commands.BSH_Common_Command_StopProgram", {
-                type: "state",
-                common: {
-                    name: "Stop Program",
-                    type: "boolean",
-                    role: "button",
-                    write: true,
-                    read: true,
-                },
-                native: {},
-            });
-            adapter.extendObject(haId + ".commands.BSH_Common_Command_PauseProgram", {
-                type: "state",
-                common: {
-                    name: "Pause Program",
-                    type: "boolean",
-                    role: "button",
-                    write: true,
-                    read: true,
-                },
-                native: {},
-            });
-            adapter.extendObject(haId + ".commands.BSH_Common_Command_ResumeProgram", {
-                type: "state",
-                common: {
-                    name: "Resume Program",
-                    type: "boolean",
-                    role: "button",
-                    write: true,
-                    read: true,
-                },
-                native: {},
-            });
-            const tokenID = adapter.namespace + ".dev.token";
-            stateGet(tokenID)
-                .then(
-                    (value) => {
-                        const token = value;
-                        if (element.connected) {
-                            adapter.fetchedDevice[haId] = true;
-                            getAPIValues(token, haId, "/status");
-                            // getAPIValues(token, haId, "/settings");
-                            // getAPIValues(token, haId, "/programs");
-                            // getAPIValues(token, haId, "/programs/active");
-                            // getAPIValues(token, haId, "/programs/selected");
-                            // updateOptions(token, haId, "/programs/active");
-                            // updateOptions(token, haId, "/programs/selected");
-                        }
-                    },
-                    (err) => {
-                        adapter.log.error("FEHLER: " + err);
-                    }
-                )
-                .catch(() => {
-                    adapter.log.debug("No token found");
-                });
-        });
-        //Delete old states
-        adapter.getStates("*", (err, states) => {
-            const allIds = Object.keys(states);
-            allIds.forEach(function (keyName) {
-                if (
-                    keyName.indexOf(".Event.") !== -1 ||
-                    keyName.indexOf(".General.") !== -1 ||
-                    keyName.indexOf(".Option.") !== -1 ||
-                    keyName.indexOf(".Root.") !== -1 ||
-                    keyName.indexOf(".Setting.") !== -1 ||
-                    keyName.indexOf(".Status.") !== -1
-                ) {
-                    adapter.delObject(keyName.split(".").slice(2).join("."));
-                }
-            });
-        });
-    }
-
-    function putAPIValues(token, haId, url, data) {
-        return /** @type {Promise<void>} */ (
-            new Promise((resolve, reject) => {
-                adapter.log.debug(haId + url);
-                adapter.log.debug(JSON.stringify(data));
-                sendRequest(token, haId, url, "PUT", JSON.stringify(data))
-                    .then(
-                        ([statusCode, returnValue]) => {
-                            adapter.log.debug(statusCode + " " + returnValue);
-                            adapter.log.debug(JSON.stringify(returnValue));
-                            resolve();
-                        },
-                        ([statusCode, description]) => {
-                            if (statusCode === 403) {
-                                adapter.log.info("Homeconnect API has not the rights for this command and device");
-                            }
-                            adapter.log.info(statusCode + ": " + description);
-                            reject();
-                        }
-                    )
-                    .catch(() => {
-                        adapter.log.debug("request not successful found");
-                    });
-            })
-        );
-    }
-
-    function deleteAPIValues(token, haId, url) {
-        sendRequest(token, haId, url, "DELETE")
-            .then(
-                ([statusCode, returnValue]) => {
-                    adapter.log.debug(url);
-                    adapter.log.debug(JSON.stringify(returnValue));
-                },
-                ([statusCode, description]) => {
-                    if (statusCode === 403) {
-                        adapter.log.info("Homeconnect API has not the rights for this command and device");
-                    }
-                    adapter.log.info(statusCode + ": " + description);
-                }
-            )
-            .catch(() => {
-                adapter.log.debug("delete not successful");
-            });
-    }
-
-    function getAPIValues(token, haId, url) {
-        sendRequest(token, haId, url)
-            .then(
-                ([statusCode, returnValue]) => {
-                    try {
-                        adapter.log.debug(url);
-                        adapter.log.debug(JSON.stringify(returnValue));
-                        if (url.indexOf("/settings/") !== -1) {
-                            let type = "string";
-                            if (returnValue.data.type === "Int" || returnValue.data.type === "Double") {
-                                type = "number";
-                            }
-                            if (returnValue.data.type === "Boolean") {
-                                type = "boolean";
-                            }
-                            const common = {
-                                name: returnValue.data.name,
-                                type: type,
-                                role: "indicator",
-                                write: true,
-                                read: true,
-                            };
-                            if (returnValue.data.constraints && returnValue.data.constraints.allowedvalues) {
-                                const states = {};
-                                returnValue.data.constraints.allowedvalues.forEach((element, index) => {
-                                    states[element] = returnValue.data.constraints.displayvalues[index];
-                                });
-                                common.states = states;
-                            }
-                            const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
-                            adapter.log.silly("Extend Settings: " + haId + folder);
-                            adapter.extendObject(haId + folder, {
-                                type: "state",
-                                common: common,
-                                native: {},
-                            });
-                            return;
-                        }
-
-                        if (url.indexOf("/programs/available/") !== -1) {
-                            if (returnValue.data.options) {
-                                availableProgramOptions[returnValue.data.key] = availableProgramOptions[returnValue.data.key] || [];
-                                returnValue.data.options.forEach(async (option) => {
-                                    availableProgramOptions[returnValue.data.key].push(option.key);
-                                    let type = "string";
-                                    if (option.type === "Int" || option.type === "Double") {
-                                        type = "number";
-                                    }
-                                    if (option.type === "Boolean") {
-                                        type = "boolean";
-                                    }
-                                    const common = {
-                                        name: option.name,
-                                        type: type,
-                                        role: "indicator",
-                                        unit: option.unit || "",
-                                        write: true,
-                                        read: true,
-                                    };
-                                    if (option.constraints.min) {
-                                        common.min = option.constraints.min;
-                                    }
-                                    if (option.constraints.max) {
-                                        common.max = option.constraints.max;
-                                    }
-
-                                    if (option.constraints.allowedvalues) {
-                                        common.states = {};
-                                        option.constraints.allowedvalues.forEach((element, index) => {
-                                            common.states[element] = option.constraints.displayvalues[index];
-                                        });
-                                    }
-                                    let folder = ".programs.available.options." + option.key.replace(/\./g, "_");
-                                    adapter.log.silly("Extend Options: " + haId + folder);
-                                    await adapter
-                                        .setObjectNotExistsAsync(haId + folder, {
-                                            type: "state",
-                                            common: common,
-                                            native: {},
-                                        })
-                                        .catch(() => {
-                                            adapter.log.error("failed set state");
-                                        });
-
-                                    adapter.extendObject(haId + folder, {
-                                        type: "state",
-                                        common: common,
-                                        native: {},
-                                    });
-                                    adapter.setState(haId + folder, option.constraints.default, true);
-                                    const key = returnValue.data.key.split(".").pop();
-                                    adapter
-                                        .setObjectNotExistsAsync(haId + ".programs.selected.options." + key, {
-                                            type: "state",
-                                            common: { name: returnValue.data.name, type: "mixed", role: "indicator", write: true, read: true },
-                                            native: {},
-                                        })
-                                        .then(() => {
-                                            folder = ".programs.selected.options." + key + "." + option.key.replace(/\./g, "_");
-                                            adapter.extendObject(haId + folder, {
-                                                type: "state",
-                                                common: common,
-                                                native: {},
-                                            });
-                                        })
-                                        .catch(() => {
-                                            adapter.log.error("failed set state");
-                                        });
-                                });
-                            }
-                            return;
-                        }
-
-                        if ("key" in returnValue.data) {
-                            returnValue.data = {
-                                items: [returnValue.data],
-                            };
-                        }
-                        for (const item in returnValue.data) {
-                            returnValue.data[item].forEach(async (subElement) => {
-                                let folder = url.replace(/\//g, ".");
-                                if (url === "/programs/active") {
-                                    subElement.value = subElement.key;
-                                    subElement.key = "BSH_Common_Root_ActiveProgram";
-                                    subElement.name = "BSH_Common_Root_ActiveProgram";
-                                }
-                                if (url === "/programs/selected") {
-                                    if (subElement.key) {
-                                        subElement.value = subElement.key;
-                                        currentSelected[haId] = { key: subElement.value, name: subElement.name };
-                                        subElement.key = "BSH_Common_Root_SelectedProgram";
-                                        subElement.name = "BSH_Common_Root_SelectedProgram";
-                                    } else {
-                                        adapter.log.warn("Empty sublement: " + JSON.stringify(subElement));
-                                    }
-                                }
-                                if (url === "/programs") {
-                                    adapter.log.debug(haId + " available: " + JSON.stringify(subElement));
-                                    if (availablePrograms[haId]) {
-                                        availablePrograms[haId].push({
-                                            key: subElement.key,
-                                            name: subElement.name,
-                                        });
-                                    } else {
-                                        availablePrograms[haId] = [
-                                            {
-                                                key: subElement.key,
-                                                name: subElement.name,
-                                            },
-                                        ];
-                                    }
-                                    getAPIValues(token, haId, "/programs/available/" + subElement.key);
-                                    folder += ".available";
-                                }
-                                if (url === "/settings") {
-                                    getAPIValues(token, haId, "/settings/" + subElement.key);
-                                }
-
-                                if (url.indexOf("/programs/selected/") !== -1) {
-                                    if (!currentSelected[haId]) {
-                                        return;
-                                    }
-                                    if (!currentSelected[haId].key) {
-                                        adapter.log.warn(JSON.stringify(currentSelected[haId]) + " is selected but has no key selected ");
-                                        return;
-                                    }
-                                    const key = currentSelected[haId].key.split(".").pop();
-                                    folder += "." + key;
-
-                                    await adapter
-                                        .setObjectNotExistsAsync(haId + folder, {
-                                            type: "state",
-                                            common: { name: currentSelected[haId].name, type: "mixed", role: "indicator", write: true, read: true },
-                                            native: {},
-                                        })
-                                        .catch(() => {
-                                            adapter.log.error("failed set state");
-                                        });
-                                }
-                                adapter.log.debug("Create State: " + haId + folder + "." + subElement.key.replace(/\./g, "_"));
-                                let type = "mixed";
-                                if (typeof subElement.value === "boolean") {
-                                    type = "boolean";
-                                }
-                                if (typeof subElement.value === "number") {
-                                    type = "number";
-                                }
-                                const common = {
-                                    name: subElement.name,
-                                    type: type,
-                                    role: "indicator",
-                                    write: true,
-                                    read: true,
-                                    unit: subElement.unit || "",
-                                };
-
-                                if (subElement.constraints && subElement.constraints.min) {
-                                    common.min = subElement.constraints.min;
-                                }
-                                if (subElement.constraints && subElement.constraints.max) {
-                                    common.max = subElement.constraints.max;
-                                }
-                                adapter
-                                    .setObjectNotExistsAsync(haId + folder + "." + subElement.key.replace(/\./g, "_"), {
-                                        type: "state",
-                                        common: common,
-                                        native: {},
-                                    })
                                     .then(() => {
-                                        if (subElement.value !== undefined) {
-                                            adapter.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
-                                        }
-                                    })
-                                    .catch(() => {
-                                        adapter.log.error("failed set state");
-                                    });
-                            });
-                        }
-                        if (url === "/programs") {
-                            const rootItems = [
-                                {
-                                    key: "BSH_Common_Root_ActiveProgram",
-                                    folder: ".programs.active",
-                                },
-                                {
-                                    key: "BSH_Common_Root_SelectedProgram",
-                                    folder: ".programs.selected",
-                                },
-                            ];
-                            if (!availablePrograms[haId]) {
-                                adapter.log.info("No available programs found for: " + haId);
-                                return;
-                            }
-                            rootItems.forEach((rootItem) => {
-                                const common = {
-                                    name: rootItem.key,
-                                    type: "string",
-                                    role: "indicator",
-                                    write: true,
-                                    read: true,
-                                    states: {},
-                                };
-                                availablePrograms[haId].forEach((program) => {
-                                    common.states[program.key] = program.name;
-                                });
-                                adapter
-                                    .setObjectNotExistsAsync(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
-                                        type: "state",
-                                        common: common,
-                                        native: {},
-                                    })
-                                    .then(() => {
-                                        adapter.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
-                                            type: "state",
+                                        this.extendObject(id, {
                                             common: common,
-                                            native: {},
                                         });
                                     })
                                     .catch(() => {
-                                        adapter.log.error("failed set state");
+                                        this.log.error("failed set state");
                                     });
-                            });
-                        }
-                    } catch (error) {
-                        adapter.log.error(error);
-                        adapter.log.error(error.stack);
-                        adapter.log.error(url);
-                        adapter.log.error(JSON.stringify(returnValue));
-                    }
-                },
-                ([statusCode, description]) => {
-                    // adapter.log.info("Error getting API Values Error: " + statusGet);
-                    adapter.log.info(haId + ": " + description);
-                }
-            )
-            .catch(() => {
-                adapter.log.debug("request not succesfull");
-            });
-    }
-
-    function sendRequest(token, haId, url, method, data) {
-        method = method || "GET";
-
-        const param = {
-            Authorization: "Bearer " + token,
-            Accept: "application/vnd.bsh.sdk.v1+json, application/vnd.bsh.sdk.v2+json, application/json, application/vnd.bsh.hca.v2+json, application/vnd.bsh.sdk.v1+json, application/vnd",
-            "Accept-Language": "de-DE",
-        };
-        if (method === "PUT" || method === "DELETE") {
-            param["Content-Type"] = "application/vnd.bsh.sdk.v1+json";
-        }
-        return new Promise((resolve, reject) => {
-            const now = Date.now();
-            let timeout = 0;
-
-            let i = 0;
-            while (i < rateCalculation.length) {
-                if (now - rateCalculation[i] < 60000) {
-                    break;
-                }
-                i++;
-            }
-            if (i) {
-                if (i < rateCalculation.length) {
-                    rateCalculation.splice(0, i);
-                } else {
-                    rateCalculation = [];
-                }
-            }
-
-            if (rateCalculation.length > 2) {
-                timeout = rateCalculation.length * 1500;
-            }
-
-            adapter.log.debug("Rate per min: " + rateCalculation.length);
-            rateCalculation.push(now);
-            rateLimitTimeout = setTimeout(() => {
-                request(
-                    {
-                        method: method,
-                        url: "https://api.home-connect.com/api/homeappliances/" + haId + url,
-                        headers: param,
-                        body: data,
-                    },
-
-                    function (error, response, body) {
-                        const responseCode = response ? response.statusCode : null;
-                        if (error) {
-                            reject([responseCode, error]);
-                            return;
-                        }
-                        if (!error && responseCode >= 300) {
-                            try {
-                                const errorString = JSON.parse(body);
-                                const description = errorString.error.description;
-                                reject([responseCode, description]);
-                            } catch (error) {
-                                const description = body;
-                                reject([responseCode, description]);
                             }
-                        } else {
-                            try {
-                                const parsedResponse = JSON.parse(body);
-                                resolve([responseCode, parsedResponse]);
-                            } catch (error) {
-                                resolve([responseCode, body]);
-                            }
-                        }
-                    }
-                );
-            }, timeout);
-        });
-    }
-
-    async function main() {
-        if (!adapter.config.clientID) {
-            adapter.log.error("Client ID not specified!");
-        }
-
-        if (adapter.config.resetAccess) {
-            adapter.log.info("Reset access");
-            adapter.setState("dev.authUriComplete", "", true);
-            adapter.setState("dev.devCode", "", true);
-            adapter.setState("dev.access", false, true);
-            adapter.setState("dev.token", "", true);
-            adapter.setState("dev.refreshToken", "", true);
-            adapter.setState("dev.expires", "", true);
-            adapter.setState("dev.tokenScope", "", true);
-            const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
-            adapter.getForeignObject(adapterConfig, (error, obj) => {
-                if (obj) {
-                    obj.native.authUri = "";
-                    obj.native.clientID = "";
-                    obj.native.resetAccess = false;
-                    adapter.setForeignObject(adapterConfig, obj);
-                } else {
-                    adapter.log.error("No reset possible no Adapterconfig found");
-                }
-            });
-            return;
-        }
-
-        if (!adapter.config.updateCleanup) {
-            const pre = adapter.name + "." + adapter.instance;
-            adapter.getStates(pre + ".*", (err, states) => {
-                const allIds = Object.keys(states);
-                const searchString = "selected.options.";
-                allIds.forEach(function (keyName) {
-                    if (keyName.indexOf(searchString) !== -1) {
-                        adapter.delObject(keyName.split(".").slice(2).join("."));
-                    }
-                });
-                const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
-                adapter.getForeignObject(adapterConfig, (error, obj) => {
-                    if (obj) {
-                        obj.native.updateCleanup = true;
-                    }
-                    //  adapter.setForeignObject(adapterConfig, obj);
-                });
-            });
-        }
-        //OAuth2 Deviceflow
-        //Get Authorization-URI to grant access ===> User interaction
-
-        const scope = adapter.config.scope;
-        const clientID = adapter.config.clientID;
-
-        stateGet(adapter.namespace + ".dev.devCode")
-            .then((value) => {
-                if (value == false) {
-                    auth.authUriGet(scope, clientID)
-                        .then(
-                            ([authUri, devCode, pollInterval]) => {
-                                adapter.setState("dev.authUriComplete", authUri, true);
-                                adapter.setState("dev.devCode", devCode, true);
-                                adapter.setState("dev.pollInterval", pollInterval, true);
-                                const adapterConfig = "system.adapter." + adapter.name + "." + adapter.instance;
-                                adapter.getForeignObject(adapterConfig, (error, obj) => {
-                                    if (!obj.native.authUri) {
-                                        obj.native.authUri = authUri;
-                                        adapter.setForeignObject(adapterConfig, obj);
-                                    }
-                                });
-                            },
-                            (statusPost) => {
-                                adapter.log.error("Error AuthUriGet: " + statusPost);
-                            }
-                        )
-                        .catch(() => {
-                            adapter.log.debug("auth uri not successfull");
                         });
-                } else {
-                    stateGet(adapter.namespace + ".dev.token")
-                        .then(
-                            (value) => {
-                                if (!value) {
-                                    getTokenInterval = setInterval(getToken, 10000);
-                                } else {
-                                    const token = value;
-                                    auth.getAppliances(token)
-                                        .then(
-                                            (appliances) => {
-                                                parseHomeappliances(appliances);
-                                                startEventStream(token);
-                                            },
-
-                                            ([statusCode, description]) => {
-                                                let desc = description.replace(" seconds", "");
-
-                                                // sec to hhmmss
-                                                const descInd = desc.indexOf("of");
-                                                const delTime = desc.substring(descInd + 3);
-                                                const hhmmss = secondstotime(delTime);
-
-                                                desc = desc.replace(delTime, "");
-                                                description = `${desc} ${hhmmss}`;
-
-                                                adapter.log.error(`Error getting Aplliances with existing Token: ${statusCode}  ${description} `);
-                                                adapter.log.warn("Restart the Adapter to get all devices correctly.");
-
-                                                if (statusCode === 401) {
-                                                    if (description && description.indexOf("malformed") !== -1) {
-                                                        adapter.log.warn(
-                                                            "The Homeconnect API is not reachable, the adapter will restart until the API is reachable. Please do not reset the Token while the Homeconnect API is not reachable."
-                                                        );
-                                                    } else {
-                                                        adapter.log.warn("If Restart is not working please reset the Token in the settings.");
-                                                    }
-                                                }
-                                                if (statusCode === 503) {
-                                                    adapter.log.warn("Homeconnect is not reachable please wait until the service is up again.");
-                                                }
-                                                restartTimeout = setTimeout(() => adapter.restart(), 2000);
-                                            }
-                                        )
-                                        .catch(() => {
-                                            adapter.log.debug("No appliance found");
-                                        });
-                                    stateGet(adapter.namespace + ".dev.refreshToken")
-                                        .then((refreshToken) => {
-                                            getRefreshToken(true);
-                                            getTokenRefreshInterval = setInterval(getRefreshToken(), 20 * 60 * 60 * 1000); //every 20h
-
-                                            reconnectEventStreamIntervalWorkaround = setInterval(startEventStream(token), 30 * 60 * 1000); //every 30min
-                                        })
-                                        .catch(() => {
-                                            adapter.log.debug("Not able to get refresh token");
-                                        });
-                                }
-                            },
-                            (err) => {
-                                adapter.log.error("FEHLER: " + err);
-                            }
-                        )
-                        .catch(() => {
-                            adapter.log.debug("No token found");
-                        });
+                    }
                 }
-            })
-            .catch(() => {
-                adapter.log.debug("No token found");
-            });
-
-        await adapter.setObjectNotExistsAsync("dev.authUriComplete", {
-            type: "state",
-            common: {
-                name: "AuthorizationURI",
-                type: "mixed",
-                role: "indicator",
-                write: false,
-                read: true,
-            },
-            native: {},
-        });
-
-        await adapter.setObjectNotExistsAsync("dev.devCode", {
-            type: "state",
-            common: {
-                name: "DeviceCode",
-                type: "mixed",
-                role: "indicator",
-                write: false,
-                read: true,
-            },
-            native: {},
-        });
-
-        await adapter.setObjectNotExistsAsync("dev.pollInterval", {
-            type: "state",
-            common: {
-                name: "Poll-Interval in sec.",
-                type: "mixed",
-                role: "indicator",
-                write: false,
-                read: true,
-            },
-            native: {},
-        });
-
-        await adapter.setObjectNotExistsAsync("dev.token", {
-            type: "state",
-            common: {
-                name: "Access-Token",
-                type: "mixed",
-                role: "indicator",
-                write: false,
-                read: true,
-            },
-            native: {},
-        });
-
-        await adapter.setObjectNotExistsAsync("dev.refreshToken", {
-            type: "state",
-            common: {
-                name: "Refresh-Token",
-                type: "mixed",
-                role: "indicator",
-                write: false,
-                read: true,
-            },
-            native: {},
-        });
-
-        await adapter.setObjectNotExistsAsync("dev.access", {
-            type: "state",
-            common: {
-                name: "access",
-                type: "boolean",
-                role: "indicator",
-                write: true,
-                read: true,
-            },
-            native: {},
-        });
-
-        await adapter.setObjectNotExistsAsync("dev.expires", {
-            type: "state",
-            common: {
-                name: "Token expires in sec",
-                type: "number",
-                role: "indicator",
-                write: false,
-                read: true,
-            },
-            native: {},
-        });
-
-        await adapter.setObjectNotExistsAsync("dev.tokenScope", {
-            type: "state",
-            common: {
-                name: "Scope",
-                type: "mixed",
-                role: "indicator",
-                write: false,
-                read: true,
-            },
-            native: {},
-        });
-
-        await adapter.setObjectNotExistsAsync("dev.eventStreamJSON", {
-            type: "state",
-            common: {
-                name: "Eventstream_JSON",
-                type: "object",
-                role: "indicator",
-                write: false,
-                read: true,
-            },
-            native: {},
-        });
-
-        adapter.subscribeStates("*");
+            }
+        }
     }
-    function secondstotime(totalSeconds) {
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
-        let seconds = totalSeconds - hours * 3600 - minutes * 60;
-
-        // round seconds
-        seconds = Math.round(seconds * 100) / 100;
-
-        let result = hours < 10 ? "0" + hours : hours;
-        result += ":" + (minutes < 10 ? "0" + minutes : minutes);
-        result += ":" + (seconds < 10 ? "0" + seconds : seconds);
-
-        return result;
-    }
-    return adapter;
 }
-// If started as allInOne/compact mode => return function to create instance
-if (module && module.parent) {
-    module.exports = startAdapter;
+
+if (require.main !== module) {
+    // Export the constructor in compact mode
+    /**
+     * @param {Partial<utils.AdapterOptions>} [options={}]
+     */
+    module.exports = (options) => new Homeconnect(options);
 } else {
-    // or start the instance directly
-    startAdapter();
+    // otherwise start the instance directly
+    new Homeconnect();
 }

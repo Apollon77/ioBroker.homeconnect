@@ -1,0 +1,49 @@
+{
+    "cli": true,
+    "target": "directory",
+    "adapterName": "homeconnect",
+    "title": "Homeconnect",
+    "description": "Adapter for Homeconnect devices",
+    "keywords": [
+        "homeconnect",
+        "BSH",
+        "bosch",
+        "siemens",
+        "neff"
+    ],
+    "contributors": [
+        "TA2k",
+        "dna909"
+    ],
+    "expert": "yes",
+    "features": [
+        "adapter"
+    ],
+    "adminFeatures": [],
+    "type": "household",
+    "startMode": "daemon",
+    "connectionType": "cloud",
+    "dataSource": "poll",
+    "connectionIndicator": "yes",
+    "language": "JavaScript",
+    "adminReact": "no",
+    "tools": [
+        "ESLint",
+        "type checking"
+    ],
+    "i18n": "JSON",
+    "releaseScript": "no",
+    "devServer": "no",
+    "indentation": "Space (4)",
+    "quotes": "double",
+    "es6class": "yes",
+    "authorName": "TA2k",
+    "authorGithub": "iobroker-community-adapters",
+    "authorEmail": "tombox2020@gmail.com",
+    "gitRemoteProtocol": "HTTPS",
+    "gitCommit": "no",
+    "defaultBranch": "master",
+    "license": "MIT License",
+    "dependabot": "no",
+    "creatorVersion": "2.1.1"
+}
