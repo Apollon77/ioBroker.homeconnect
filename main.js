@@ -44,10 +44,24 @@ class Homeconnect extends utils.Adapter {
     async onReady() {
         // Reset the connection indicator during startup
         this.setState("info.connection", false, true);
+        if (this.config.resetAccess) {
+            this.log.info("Reset access");
+            this.setState("auth.session", "", true);
+            this.setState("dev.refreshToken", "", true);
+            const adapterConfig = "system.adapter." + this.name + "." + this.instance;
+            this.getForeignObject(adapterConfig, (error, obj) => {
+                if (obj) {
+                    obj.native.resetAccess = false;
+                    this.setForeignObject(adapterConfig, obj);
+                } else {
+                    this.log.error("No reset possible no Adapterconfig found");
+                }
+            });
+            return;
+        }
 
         this.userAgent = "ioBroker v1.0.0";
-        const axiosClient = axios.create();
-        this.requestClient = rateLimit(axiosClient, { maxRequests: 50, perMilliseconds: 60000 });
+        this.requestClient = rateLimit(axios.create(), { maxRequests: 45, perMilliseconds: 60000 });
 
         this.reLoginTimeout = null;
         this.refreshTokenTimeout = null;
@@ -81,9 +95,13 @@ class Homeconnect extends utils.Adapter {
             this.headers.authorization = "Bearer " + this.session.access_token;
             await this.getDeviceList();
             await this.startEventStream();
-
-            this.refreshTokenInterval = setInterval(() => {
-                this.refreshToken();
+            //Workaround because no connect event for offline events
+            this.reconnectInterval = setInterval(async () => {
+                this.startEventStream();
+            }, 20 * 60 * 1000); //every 20 minutes
+            this.refreshTokenInterval = setInterval(async () => {
+                await this.refreshToken();
+                this.startEventStream();
             }, (this.session.expires_in - 200) * 1000);
         }
     }
@@ -113,7 +131,7 @@ class Homeconnect extends utils.Adapter {
 
         const formData = await this.requestClient({
             method: "post",
-            url: deviceAuth.verification_uri_complete,
+            url: "https://api.home-connect.com/security/oauth/device_login",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
@@ -133,6 +151,7 @@ class Homeconnect extends utils.Adapter {
                 return this.extractHidden(res.data);
             })
             .catch((error) => {
+                this.log.error("Please check username and password or manually visiting: " + deviceAuth.verification_uri_complete);
                 this.log.error(error);
                 if (error.response) {
                     this.log.error(JSON.stringify(error.response.data));
@@ -176,8 +195,10 @@ class Homeconnect extends utils.Adapter {
                 this.log.debug(JSON.stringify(res.data));
                 this.session = res.data;
                 this.setState("info.connection", true, true);
+                this.setState("auth.session", JSON.stringify(this.session), true);
             })
             .catch((error) => {
+                this.log.error("Please check username and password check manually here: " + deviceAuth.verification_uri_complete);
                 this.log.error(error);
                 if (error.response) {
                     this.log.error(JSON.stringify(error.response.data));
@@ -277,20 +298,22 @@ class Homeconnect extends utils.Adapter {
         }
     }
     async getAPIValues(haId, url) {
+        await this.sleep(1000);
         const returnValue = await this.requestClient({
             method: "get",
             url: "https://api.home-connect.com/api/homeappliances/" + haId + url,
             headers: this.headers,
         })
             .then((res) => {
-                this.log.info(JSON.stringify(res.data));
-
+                this.log.debug(JSON.stringify(res.data));
                 return res.data;
             })
             .catch((error) => {
-                this.log.error(error);
+                this.log.info(haId + ": " + url);
                 if (error.response) {
-                    this.log.error(JSON.stringify(error.response.data));
+                    this.log.info(JSON.stringify(error.response.data));
+                } else {
+                    this.log.info(error);
                 }
                 return;
             });
@@ -586,7 +609,7 @@ class Homeconnect extends utils.Adapter {
             data: data,
         })
             .then((res) => {
-                this.log.info(JSON.stringify(res.data));
+                this.log.debug(JSON.stringify(res.data));
                 return res.data;
             })
             .catch((error) => {
@@ -607,7 +630,7 @@ class Homeconnect extends utils.Adapter {
             headers: this.headers,
         })
             .then((res) => {
-                this.log.info(JSON.stringify(res.data));
+                this.log.debug(JSON.stringify(res.data));
                 return res.data;
             })
             .catch((error) => {
@@ -621,7 +644,7 @@ class Homeconnect extends utils.Adapter {
             });
     }
     async startEventStream() {
-        this.log.info("Start EventStream");
+        this.log.debug("Start EventStream");
         const baseUrl = "https://api.home-connect.com/api/homeappliances/events";
         const header = {
             headers: {
@@ -781,6 +804,7 @@ class Homeconnect extends utils.Adapter {
                 this.session = res.data;
                 this.headers.authorization = "Bearer " + this.session.access_token;
                 this.setState("info.connection", true, true);
+                this.setState("auth.session", JSON.stringify(this.session), true);
             })
             .catch((error) => {
                 this.log.error("refresh token failed");
@@ -828,7 +852,7 @@ class Homeconnect extends utils.Adapter {
             this.refreshTimeout && clearTimeout(this.refreshTimeout);
             this.reLoginTimeout && clearTimeout(this.reLoginTimeout);
             this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
-            this.updateInterval && clearInterval(this.updateInterval);
+            this.reconnectInterval && clearInterval(this.updateInterval);
             this.refreshTokenInterval && clearInterval(this.refreshTokenInterval);
 
             if (this.eventSourceState) {
