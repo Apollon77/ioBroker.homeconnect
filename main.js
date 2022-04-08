@@ -215,6 +215,7 @@ class Homeconnect extends utils.Adapter {
         })
             .then(async (res) => {
                 this.log.debug(JSON.stringify(res.data));
+                this.log.info(`Found ${res.data.data.homeappliances.length} devices`);
                 for (const device of res.data.data.homeappliances) {
                     const haID = device.haId;
                     this.deviceArray.push(haID);
