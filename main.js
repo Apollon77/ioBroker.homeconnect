@@ -400,7 +400,7 @@ class Homeconnect extends utils.Adapter {
                             this.log.error("failed set state");
                         });
 
-                        this.extendObject(haId + folder, {
+                        await this.extendObjectAsync(haId + folder, {
                             type: "state",
                             common: common,
                             native: {},
