@@ -1046,7 +1046,9 @@ class Homeconnect extends utils.Adapter {
                                 })
                                     .then(() => {
                                         this.extendObject(id, {
+                                            type: "state",
                                             common: common,
+                                            native: {},
                                         });
                                     })
                                     .catch(() => {
