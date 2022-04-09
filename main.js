@@ -312,7 +312,7 @@ class Homeconnect extends utils.Adapter {
             .catch((error) => {
                 if (error.response) {
                     if (error.response.status === 404) {
-                        this.log.info(`Cannot receive programs from ${haId} maybe device is in use or offline`);
+                        this.log.info(`Cannot receive programs from ${haId} maybe device is in use or no program selected`);
                     } else {
                         this.log.info(haId + ": " + url);
                         this.log.info(JSON.stringify(error.response.data));
