@@ -299,7 +299,7 @@ class Homeconnect extends utils.Adapter {
         }
     }
     async getAPIValues(haId, url) {
-        await this.sleep(1500);
+        await this.sleep(Math.floor(Math.random() * 1500));
         const returnValue = await this.requestClient({
             method: "get",
             url: "https://api.home-connect.com/api/homeappliances/" + haId + url,
