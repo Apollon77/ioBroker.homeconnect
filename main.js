@@ -95,10 +95,10 @@ class Homeconnect extends utils.Adapter {
             this.headers.authorization = "Bearer " + this.session.access_token;
             await this.getDeviceList();
             await this.startEventStream();
-            //Workaround because no connect event for offline events
+            //Workaround because sometimes no connect event for offline events
             this.reconnectInterval = setInterval(async () => {
                 this.startEventStream();
-            }, 20 * 60 * 1000); //every 20 minutes
+            }, 60 * 60 * 1000); //every 60 minutes
             this.refreshTokenInterval = setInterval(async () => {
                 await this.refreshToken();
                 this.startEventStream();
@@ -218,6 +218,10 @@ class Homeconnect extends utils.Adapter {
                 this.log.info(`Found ${res.data.data.homeappliances.length} devices`);
                 for (const device of res.data.data.homeappliances) {
                     const haID = device.haId;
+                    if (!haID) {
+                        this.log.info("Invalid device " + JSON.stringify(device));
+                        continue;
+                    }
                     this.deviceArray.push(haID);
                     const name = device.name;
 
@@ -312,7 +316,7 @@ class Homeconnect extends utils.Adapter {
             .catch((error) => {
                 if (error.response) {
                     const description = error.response.data.error ? error.response.data.error.description : "";
-                    this.log.info(`${haId}${url}: ${description}. Maybe device is in use`);
+                    this.log.info(`${haId}${url}: ${description}.`);
                     this.log.debug(JSON.stringify(error.response.data));
                 } else {
                     this.log.info(error);
@@ -523,6 +527,7 @@ class Homeconnect extends utils.Adapter {
                     })
                         .then(() => {
                             if (subElement.value !== undefined) {
+                                this.log.debug("Set api value");
                                 this.setState(haId + folder + "." + subElement.key.replace(/\./g, "_"), subElement.value, true);
                             }
                         })
@@ -744,7 +749,7 @@ class Homeconnect extends utils.Adapter {
             const parseMsg = msg.data;
 
             const parseMessage = JSON.parse(parseMsg);
-            parseMessage.items.forEach((element) => {
+            parseMessage.items.forEach(async (element) => {
                 let haId = parseMessage.haId;
                 haId = haId.replace(/\.?\-001*$/, "");
                 let folder;
@@ -761,7 +766,7 @@ class Homeconnect extends utils.Adapter {
                     key = element.key.replace(/\./g, "_");
                 }
                 this.log.debug(haId + "." + folder + "." + key + ":" + element.value);
-                this.setObjectNotExistsAsync(haId + "." + folder + "." + key, {
+                await this.setObjectNotExistsAsync(haId + "." + folder + "." + key, {
                     type: "state",
                     common: {
                         name: key,
@@ -773,12 +778,14 @@ class Homeconnect extends utils.Adapter {
                     },
                     native: {},
                 })
-                    .then(() => {
-                        this.setState(haId + "." + folder + "." + key, element.value, true);
-                    })
+                    .then(() => {})
                     .catch(() => {
                         this.log.error("failed set state");
                     });
+                if (element.value !== undefined) {
+                    this.log.debug("Set event state ");
+                    this.setState(haId + "." + folder + "." + key, element.value, true);
+                }
             });
         } catch (error) {
             this.log.error("Parsemessage: " + error);
