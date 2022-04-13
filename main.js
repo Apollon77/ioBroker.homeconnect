@@ -681,13 +681,13 @@ class Homeconnect extends utils.Adapter {
                 this.log.debug("Undefined Error from Homeconnect this happens sometimes.");
             }
             if (err.status !== undefined) {
-                this.log.error("Error: " + JSON.stringify(err));
+                this.log.error("Start Event Stream Error: " + JSON.stringify(err));
                 if (err.status === 401) {
                     this.refreshToken();
                     // Most likely the token has expired, try to refresh the token
                     this.log.info("Token abgelaufen");
                 } else if (err.status === 429) {
-                    this.log.warn("Too many requests. Adapter sends too many requests per minute. Please wait 1min before restart the instance.");
+                    this.log.info("Too many requests. Please wait 24h.");
                 } else {
                     this.log.error("Error: " + err.status);
                     this.log.error("Error: " + JSON.stringify(err));
