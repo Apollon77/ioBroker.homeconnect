@@ -311,13 +311,9 @@ class Homeconnect extends utils.Adapter {
             })
             .catch((error) => {
                 if (error.response) {
-                    if (error.response.status === 404) {
-                        const description = error.response.data.error ? error.response.data.error.description : "";
-                        this.log.info(`${haId}${url}: ${description}. Maybe device is in use or no program selected`);
-                    } else {
-                        this.log.info(haId + ": " + url);
-                        this.log.info(JSON.stringify(error.response.data));
-                    }
+                    const description = error.response.data.error ? error.response.data.error.description : "";
+                    this.log.info(`${haId}${url}: ${description}. Maybe device is in use`);
+                    this.log.debug(JSON.stringify(error.response.data));
                 } else {
                     this.log.info(error);
                 }
