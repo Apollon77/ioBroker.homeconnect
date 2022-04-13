@@ -253,7 +253,7 @@ class Homeconnect extends utils.Adapter {
                         { command: "BSH_Common_Command_StopProgram", name: "True = Stop" },
                     ];
                     remoteArray.forEach((remote) => {
-                        this.setObjectNotExists(device.vin + ".commands." + remote.command, {
+                        this.setObjectNotExists(haID + ".commands." + remote.command, {
                             type: "state",
                             common: {
                                 name: remote.name || "",
