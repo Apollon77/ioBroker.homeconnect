@@ -298,8 +298,8 @@ class Homeconnect extends utils.Adapter {
         if (!this.fetchedDevice[haId]) {
             this.fetchedDevice[haId] = true;
             this.getAPIValues(haId, "/programs");
-            this.updateOptions(haId, "/programs/active");
-            this.updateOptions(haId, "/programs/selected");
+            this.updateOptions(haId, "/programs/active", true);
+            this.updateOptions(haId, "/programs/selected", true);
         }
     }
     async getAPIValues(haId, url) {
@@ -586,7 +586,7 @@ class Homeconnect extends utils.Adapter {
             this.log.error(JSON.stringify(returnValue));
         }
     }
-    async updateOptions(haId, url) {
+    async updateOptions(haId, url, forceDeletion) {
         const pre = this.name + "." + this.instance;
         const states = await this.getStatesAsync(pre + "." + haId + ".programs.*");
         const allIds = Object.keys(states);
@@ -598,13 +598,11 @@ class Homeconnect extends utils.Adapter {
             this.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options");
 
             for (const keyName of allIds) {
-                if (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) {
+                if ((keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) || forceDeletion) {
                     this.delObject(keyName.split(".").slice(2).join("."));
-                }
-                if (keyName.indexOf("BSH_Common_Option_ProgramProgress") !== -1) {
+                } else if (keyName.indexOf("BSH_Common_Option_ProgramProgress") !== -1) {
                     this.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
-                }
-                if (keyName.indexOf("BSH_Common_Option_RemainingProgramTime") !== -1) {
+                } else if (keyName.indexOf("BSH_Common_Option_RemainingProgramTime") !== -1) {
                     this.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
                 }
             }
