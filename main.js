@@ -596,12 +596,16 @@ class Homeconnect extends utils.Adapter {
             this.log.debug(searchString);
             //delete only for active options
             this.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options");
-            this.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
-            this.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
 
             for (const keyName of allIds) {
                 if (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) {
                     this.delObject(keyName.split(".").slice(2).join("."));
+                }
+                if (keyName.indexOf("BSH_Common_Option_ProgramProgress") !== -1) {
+                    this.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
+                }
+                if (keyName.indexOf("BSH_Common_Option_RemainingProgramTime") !== -1) {
+                    this.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
                 }
             }
         }
