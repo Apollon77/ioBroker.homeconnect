@@ -298,8 +298,8 @@ class Homeconnect extends utils.Adapter {
         if (!this.fetchedDevice[haId]) {
             this.fetchedDevice[haId] = true;
             this.getAPIValues(haId, "/programs");
-            this.updateOptions(haId, "/programs/active", true);
-            this.updateOptions(haId, "/programs/selected", true);
+            this.updateOptions(haId, "/programs/active");
+            this.updateOptions(haId, "/programs/selected");
         }
     }
     async getAPIValues(haId, url) {
