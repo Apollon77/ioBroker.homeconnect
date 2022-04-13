@@ -312,7 +312,7 @@ class Homeconnect extends utils.Adapter {
             .catch((error) => {
                 if (error.response) {
                     if (error.response.status === 404) {
-                        this.log.info(`Cannot receive programs from ${haId} maybe device is in use or no program selected`);
+                        this.log.info(`${haId}${url}: ${error.response.description}. Maybe device is in use or no program selected`);
                     } else {
                         this.log.info(haId + ": " + url);
                         this.log.info(JSON.stringify(error.response.data));
@@ -352,8 +352,8 @@ class Homeconnect extends utils.Adapter {
                     common.states = states;
                 }
                 const folder = ".settings." + returnValue.data.key.replace(/\./g, "_");
-                this.log.silly("Extend Settings: " + haId + folder);
-                this.extendObject(haId + folder, {
+                this.log.debug("Extend Settings: " + haId + folder);
+                await this.extendObjectAsync(haId + folder, {
                     type: "state",
                     common: common,
                     native: {},
@@ -395,7 +395,7 @@ class Homeconnect extends utils.Adapter {
                             });
                         }
                         let folder = ".programs.available.options." + option.key.replace(/\./g, "_");
-                        this.log.silly("Extend Options: " + haId + folder);
+                        this.log.debug("Extend Options: " + haId + folder);
                         await this.setObjectNotExistsAsync(haId + folder, {
                             type: "state",
                             common: common,
@@ -409,24 +409,24 @@ class Homeconnect extends utils.Adapter {
                             common: common,
                             native: {},
                         });
+                        this.log.debug("Set default value");
                         this.setState(haId + folder, option.constraints.default, true);
                         const key = returnValue.data.key.split(".").pop();
-                        this.setObjectNotExistsAsync(haId + ".programs.selected.options." + key, {
+                        await this.setObjectNotExistsAsync(haId + ".programs.selected.options." + key, {
                             type: "state",
                             common: { name: returnValue.data.name, type: "mixed", role: "indicator", write: true, read: true },
                             native: {},
                         })
-                            .then(() => {
-                                folder = ".programs.selected.options." + key + "." + option.key.replace(/\./g, "_");
-                                this.extendObject(haId + folder, {
-                                    type: "state",
-                                    common: common,
-                                    native: {},
-                                });
-                            })
+                            .then(() => {})
                             .catch(() => {
                                 this.log.error("failed set state");
                             });
+                        folder = ".programs.selected.options." + key + "." + option.key.replace(/\./g, "_");
+                        await this.extendObjectAsync(haId + folder, {
+                            type: "state",
+                            common: common,
+                            native: {},
+                        });
                     });
                 }
                 return;
@@ -549,7 +549,7 @@ class Homeconnect extends utils.Adapter {
                     this.log.info("No available programs found for: " + haId);
                     return;
                 }
-                rootItems.forEach((rootItem) => {
+                rootItems.forEach(async (rootItem) => {
                     const common = {
                         name: rootItem.key,
                         type: "string",
@@ -561,21 +561,20 @@ class Homeconnect extends utils.Adapter {
                     this.availablePrograms[haId].forEach((program) => {
                         common.states[program.key] = program.name;
                     });
-                    this.setObjectNotExistsAsync(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+                    await this.setObjectNotExistsAsync(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
                         type: "state",
                         common: common,
                         native: {},
                     })
-                        .then(() => {
-                            this.extendObject(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
-                                type: "state",
-                                common: common,
-                                native: {},
-                            });
-                        })
+                        .then(() => {})
                         .catch(() => {
                             this.log.error("failed set state");
                         });
+                    await this.extendObjectAsync(haId + rootItem.folder + "." + rootItem.key.replace(/\./g, "_"), {
+                        type: "state",
+                        common: common,
+                        native: {},
+                    });
                 });
             }
         } catch (error) {
@@ -1036,28 +1035,27 @@ class Homeconnect extends utils.Adapter {
 
                 if (id.indexOf(".options.") !== -1 || id.indexOf(".events.") !== -1 || id.indexOf(".status.") !== -1) {
                     if (id.indexOf("BSH_Common_Option") === -1 && state && state.val && state.val.indexOf && state.val.indexOf(".") !== -1) {
-                        this.getObject(id, (err, obj) => {
+                        this.getObject(id, async (err, obj) => {
                             if (obj) {
                                 const common = obj.common;
                                 const valArray = state.val.split(".");
                                 common.states = {};
                                 common.states[state.val] = valArray[valArray.length - 1];
-                                this.log.silly("Extend common option: " + id);
-                                this.setObjectNotExistsAsync(id, {
+                                this.log.debug("Extend common option: " + id);
+                                await this.setObjectNotExistsAsync(id, {
                                     type: "state",
                                     common: common,
                                     native: {},
                                 })
-                                    .then(() => {
-                                        this.extendObject(id, {
-                                            type: "state",
-                                            common: common,
-                                            native: {},
-                                        });
-                                    })
+                                    .then(() => {})
                                     .catch(() => {
                                         this.log.error("failed set state");
                                     });
+                                await this.extendObjectAsync(id, {
+                                    type: "state",
+                                    common: common,
+                                    native: {},
+                                });
                             }
                         });
                     }
