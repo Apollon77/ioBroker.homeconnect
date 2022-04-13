@@ -598,7 +598,7 @@ class Homeconnect extends utils.Adapter {
             this.log.debug("Delete: " + haId + url.replace(/\//g, ".") + ".options");
 
             for (const keyName of allIds) {
-                if ((keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) || forceDeletion) {
+                if ((keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) || (forceDeletion && keyName.indexOf("BSH_Common_Option_RemainingProgramTime") === -1)) {
                     this.delObject(keyName.split(".").slice(2).join("."));
                 } else if (keyName.indexOf("BSH_Common_Option_ProgramProgress") !== -1) {
                     this.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
