@@ -96,6 +96,12 @@ class Homeconnect extends utils.Adapter {
             await this.getDeviceList();
             await this.startEventStream();
             //Workaround because sometimes no connect event for offline events
+            this.refreshStatusInterval = setInterval(async () => {
+                for (const haId of this.deviceArray) {
+                    this.log.debug("Update status for " + haId);
+                    this.getAPIValues(haId, "/status");
+                }
+            }, 10 * 60 * 1000); //every 60 minutes
             this.reconnectInterval = setInterval(async () => {
                 this.startEventStream();
             }, 60 * 60 * 1000); //every 60 minutes
@@ -860,6 +866,7 @@ class Homeconnect extends utils.Adapter {
         try {
             this.setState("info.connection", false, true);
             this.refreshTimeout && clearTimeout(this.refreshTimeout);
+            this.refreshStatusInterval && clearTimeout(this.refreshStatusInterval);
             this.reLoginTimeout && clearTimeout(this.reLoginTimeout);
             this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
             this.reconnectInterval && clearInterval(this.updateInterval);
