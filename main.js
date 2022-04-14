@@ -417,7 +417,9 @@ class Homeconnect extends utils.Adapter {
                             native: {},
                         });
                         this.log.debug("Set default value");
-                        await this.setStateAsync(haId + folder, option.constraints.default, true);
+                        if (option.constraints.default) {
+                            await this.setStateAsync(haId + folder, option.constraints.default, true);
+                        }
                         const key = returnValue.data.key.split(".").pop();
                         await this.setObjectNotExistsAsync(haId + ".programs.selected.options." + key, {
                             type: "state",
@@ -1053,7 +1055,14 @@ class Homeconnect extends utils.Adapter {
                         this.updateOptions(haId, "/programs/selected");
                     }
                 }
-
+                if (id.indexOf("BSH_Common_Status_OperationState") !== -1) {
+                    if (state.val && (state.val.indexOf(".Finished") !== -1 || state.val.indexOf(".Aborting") !== -1)) {
+                        this.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
+                        if (await this.getStateAsync(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress")) {
+                            this.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
+                        }
+                    }
+                }
                 if (id.indexOf(".options.") !== -1 || id.indexOf(".events.") !== -1 || id.indexOf(".status.") !== -1) {
                     if (id.indexOf("BSH_Common_Option") === -1 && state && state.val && state.val.indexOf && state.val.indexOf(".") !== -1) {
                         this.getObject(id, async (err, obj) => {
