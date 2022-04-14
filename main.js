@@ -101,7 +101,7 @@ class Homeconnect extends utils.Adapter {
                     this.log.debug("Update status for " + haId);
                     this.getAPIValues(haId, "/status");
                 }
-            }, 10 * 60 * 1000); //every 60 minutes
+            }, 10 * 60 * 1000); //every 10 minutes
             this.reconnectInterval = setInterval(async () => {
                 this.startEventStream();
             }, 60 * 60 * 1000); //every 60 minutes
@@ -130,7 +130,7 @@ class Homeconnect extends utils.Adapter {
                     this.log.error(JSON.stringify(error.response.data));
                 }
             });
-        if (!deviceAuth.verification_uri_complete) {
+        if (!deviceAuth || !deviceAuth.verification_uri_complete) {
             this.log.error("No verification_uri_complete in device_authorization");
             return;
         }
@@ -595,6 +595,10 @@ class Homeconnect extends utils.Adapter {
     async updateOptions(haId, url, forceDeletion) {
         const pre = this.name + "." + this.instance;
         const states = await this.getStatesAsync(pre + "." + haId + ".programs.*");
+        if (!states) {
+            this.log.warn("No states found for: " + pre + "." + haId + ".programs.*");
+            return;
+        }
         const allIds = Object.keys(states);
         let searchString = "selected.options.";
         if (url.indexOf("/active") !== -1) {
@@ -955,6 +959,10 @@ class Homeconnect extends utils.Adapter {
                     const pre = this.name + "." + this.instance;
                     if (!state.val) {
                         this.log.warn("No state val: " + JSON.stringify(state));
+                        return;
+                    }
+                    if (!state.val.split) {
+                        this.log.warn("No valid state val: " + JSON.stringify(state));
                         return;
                     }
                     const key = state.val.split(".").pop();
