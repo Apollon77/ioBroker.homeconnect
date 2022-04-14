@@ -417,7 +417,7 @@ class Homeconnect extends utils.Adapter {
                             native: {},
                         });
                         this.log.debug("Set default value");
-                        this.setState(haId + folder, option.constraints.default, true);
+                        await this.setStateAsync(haId + folder, option.constraints.default, true);
                         const key = returnValue.data.key.split(".").pop();
                         await this.setObjectNotExistsAsync(haId + ".programs.selected.options." + key, {
                             type: "state",
