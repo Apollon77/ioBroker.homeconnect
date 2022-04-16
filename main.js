@@ -372,7 +372,7 @@ class Homeconnect extends utils.Adapter {
             if (url.indexOf("/programs/available/") !== -1) {
                 if (returnValue.data.options) {
                     this.availableProgramOptions[returnValue.data.key] = this.availableProgramOptions[returnValue.data.key] || [];
-                    returnValue.data.options.forEach(async (option) => {
+                    for (const option of returnValue.data.options) {
                         this.availableProgramOptions[returnValue.data.key].push(option.key);
                         let type = "string";
                         if (option.type === "Int" || option.type === "Double") {
@@ -398,9 +398,9 @@ class Homeconnect extends utils.Adapter {
 
                         if (option.constraints.allowedvalues) {
                             common.states = {};
-                            option.constraints.allowedvalues.forEach((element, index) => {
-                                common.states[element] = option.constraints.displayvalues[index];
-                            });
+                            for (const element of option.constraints.allowedvalues) {
+                                common.states[element] = option.constraints.displayvalues[option.constraints.allowedvalues.indexOf(element)];
+                            }
                         }
                         let folder = ".programs.available.options." + option.key.replace(/\./g, "_");
                         this.log.debug("Extend Options: " + haId + folder);
@@ -419,7 +419,11 @@ class Homeconnect extends utils.Adapter {
                         });
                         this.log.debug("Set default value");
                         if (option.constraints.default) {
-                            await this.setStateAsync(haId + folder, option.constraints.default, true);
+                            let value = option.constraints.default;
+                            if (option.constraints.default > option.constraints.max) {
+                                value = option.constraints.max;
+                            }
+                            await this.setStateAsync(haId + folder, value, true);
                         }
                         const key = returnValue.data.key.split(".").pop();
                         await this.setObjectNotExistsAsync(haId + ".programs.selected.options." + key, {
@@ -437,7 +441,7 @@ class Homeconnect extends utils.Adapter {
                             common: common,
                             native: {},
                         });
-                    });
+                    }
                 }
                 return;
             }
@@ -749,6 +753,7 @@ class Homeconnect extends utils.Adapter {
             if (stream.type == "DISCONNECTED") {
                 this.log.info("DISCONNECTED: " + lastEventId);
                 this.setState(lastEventId + ".general.connected", false, true);
+                this.updateOptions(lastEventId, "/programs/active");
                 return;
             }
             if (stream.type == "CONNECTED" || stream.type == "PAIRED") {
