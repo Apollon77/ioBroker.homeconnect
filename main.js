@@ -422,6 +422,7 @@ class Homeconnect extends utils.Adapter {
                             let value = option.constraints.default;
                             if (option.constraints.default > option.constraints.max) {
                                 value = option.constraints.max;
+                                this.log.debug(`Default value ${option.constraints.default} is greater than max ${option.constraints.max}. Set to max.`);
                             }
                             await this.setStateAsync(haId + folder, value, true);
                         }
