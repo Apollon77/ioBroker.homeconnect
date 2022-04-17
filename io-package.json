@@ -1,19 +1,19 @@
 {
     "common": {
         "name": "homeconnect",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "news": {
-            "1.0.0": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "Начальная версия",
-                "pt": "lançamento inicial",
-                "nl": "Eerste uitgave",
-                "fr": "Première version",
-                "it": "Versione iniziale",
-                "es": "Versión inicial",
-                "pl": "Pierwsze wydanie",
-                "zh-cn": "首次出版"
+            "1.0.1": {
+                "en": "Adapter complete rewriten. Includes a lot of Bugfixes",
+                "de": "Adapter komplett neu geschrieben. Enthält viele Bugfixes",
+                "ru": "Адаптер полностью переписан. Включает множество исправлений",
+                "pt": "Adaptador completamente reescrito. Inclui muitas correções de bugs",
+                "nl": "Adapter compleet herschreven. Bevat veel bugfixes",
+                "fr": "Adaptateur entièrement réécrit. Inclut de nombreuses corrections de bugs",
+                "it": "Adattatore completo riscritto. Include molte correzioni di bug",
+                "es": "Adaptador completo reescrito. Incluye muchas correcciones de errores.",
+                "pl": "Adapter całkowicie przepisany. Zawiera wiele poprawek",
+                "zh-cn": "适配器完全重写。包括许多错误修正"
             }
         },
         "title": "Homeconnect",
