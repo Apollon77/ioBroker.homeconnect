@@ -840,9 +840,11 @@ class Homeconnect extends utils.Adapter {
                 this.log.error(error);
                 error.response && this.log.error(JSON.stringify(error.response.data));
                 this.log.error("Start relogin in 10min");
+                this.reconnectTimeout && clearInterval(this.reconnectTimeout)
                 this.reLoginTimeout && clearTimeout(this.reLoginTimeout);
-                this.reLoginTimeout = setTimeout(() => {
-                    this.login();
+                this.reLoginTimeout = setTimeout(async () => {
+                    await this.login();
+                    this.startEventStream()
                 }, 1000 * 60 * 10);
             });
     }
