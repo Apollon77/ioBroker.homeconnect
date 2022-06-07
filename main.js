@@ -619,9 +619,13 @@ class Homeconnect extends utils.Adapter {
                 if ((keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) || (forceDeletion && keyName.indexOf("BSH_Common_Option_RemainingProgramTime") === -1)) {
                     this.delObject(keyName.split(".").slice(2).join("."));
                 } else if (keyName.indexOf("BSH_Common_Option_ProgramProgress") !== -1) {
-                    this.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
+                    if (await this.getStateAsync(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress")) {
+                        this.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
+                    }
                 } else if (keyName.indexOf("BSH_Common_Option_RemainingProgramTime") !== -1) {
-                    this.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
+                    if (await this.getStateAsync(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime")) {
+                        this.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
+                    }
                 }
             }
         }
