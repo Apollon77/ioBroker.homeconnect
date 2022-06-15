@@ -42,11 +42,13 @@ Then go to **Applications** and then to **Register Application**.
 
 ![Screenshot](img/application2.JPG)
 
-Bei **Application ID** einen Namen für die Application eintragen, z.B. ioBroker. Bei **OAuth Flow** Device Flow selektieren das
-letzte Feld kann leer bleiben. Dann Speichern und dann hat man die benötigte ClientID.
+Bei **Application ID** einen Namen für die Application eintragen, z.B. ioBroker. Bei **OAuth Flow** Device Flow selektieren. 
+**Home Connect User Account for Testing** kann leer bleiben. Bei **Success Redirect** eine URI eintragen, z.B. https://example.com.
+Dann Speichern und dann hat man die benötigte ClientID.
 
-For **Application ID** enter a name for the application, e.g. ioBroker. With **OAuth Flow** Device Flow select the
-The last field can remain empty. Then save and you have the required ClientID.
+For **Application ID** enter a name for the application, e.g. ioBroker. With **OAuth Flow** Device Flow select.
+**Home Connect User Account for Testing** can remain empty. For **Success Redirect** enter a URI, e.g. https://example.com.
+Then save and you have the required ClientID.
 
 ## Konfiguration
 
