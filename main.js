@@ -620,16 +620,16 @@ class Homeconnect extends utils.Adapter {
           (keyName.indexOf(searchString) !== -1 && keyName.indexOf("BSH_Common_Option") === -1) ||
           (forceDeletion && keyName.indexOf("BSH_Common_Option_RemainingProgramTime") === -1)
         ) {
-          this.delObject(keyName.split(".").slice(2).join("."));
+          await this.delObjectAsync(keyName.split(".").slice(2).join("."));
         } else if (keyName.indexOf("BSH_Common_Option_ProgramProgress") !== -1) {
           const programProgess = await this.getStateAsync(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress");
           if (programProgess && programProgess.val !== 100) {
-            this.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
+            await this.setStateAsync(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
           }
         } else if (keyName.indexOf("BSH_Common_Option_RemainingProgramTime") !== -1) {
           const remainTime = await this.getStateAsync(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime");
           if (remainTime && remainTime.val !== 0) {
-            this.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
+            await this.setStateAsync(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
           }
         }
       }
@@ -814,7 +814,7 @@ class Homeconnect extends utils.Adapter {
           });
         if (element.value !== undefined) {
           this.log.debug("Set event state ");
-          this.setState(haId + "." + folder + "." + key, element.value, true);
+          await this.setStateAsync(haId + "." + folder + "." + key, element.value, true);
         }
       });
     } catch (error) {
@@ -1077,11 +1077,11 @@ class Homeconnect extends utils.Adapter {
           if (state.val && (state.val.indexOf(".Finished") !== -1 || state.val.indexOf(".Aborting") !== -1)) {
             const remainTime = await this.getStateAsync(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime");
             if (remainTime && remainTime.val !== 0) {
-              this.setState(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
+              await this.setStateAsync(haId + ".programs.active.options.BSH_Common_Option_RemainingProgramTime", 0, true);
             }
             const programProgess = await this.getStateAsync(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress");
             if (programProgess && programProgess.val !== 100) {
-              this.setState(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
+              await this.setStateAsync(haId + ".programs.active.options.BSH_Common_Option_ProgramProgress", 100, true);
             }
           }
         }
