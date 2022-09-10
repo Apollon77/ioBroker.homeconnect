@@ -1,141 +1,132 @@
 {
-    "common": {
-        "name": "homeconnect",
-        "version": "1.0.1",
-        "news": {
-            "1.0.1": {
-                "en": "Adapter complete rewriten. Includes a lot of Bugfixes",
-                "de": "Adapter komplett neu geschrieben. Enthält viele Bugfixes",
-                "ru": "Адаптер полностью переписан. Включает множество исправлений",
-                "pt": "Adaptador completamente reescrito. Inclui muitas correções de bugs",
-                "nl": "Adapter compleet herschreven. Bevat veel bugfixes",
-                "fr": "Adaptateur entièrement réécrit. Inclut de nombreuses corrections de bugs",
-                "it": "Adattatore completo riscritto. Include molte correzioni di bug",
-                "es": "Adaptador completo reescrito. Incluye muchas correcciones de errores.",
-                "pl": "Adapter całkowicie przepisany. Zawiera wiele poprawek",
-                "zh-cn": "适配器完全重写。包括许多错误修正"
-            }
-        },
-        "title": "Homeconnect",
-        "titleLang": {
-            "en": "Homeconnect",
-            "de": "Homeconnect",
-            "ru": "Домашнее подключение",
-            "pt": "Homeconnect",
-            "nl": "Homeconnect",
-            "fr": "Homeconnect",
-            "it": "Connessione domestica",
-            "es": "Conectar a casa",
-            "pl": "Homeconnect",
-            "zh-cn": "家庭连接"
-        },
-        "desc": {
-            "en": "Adapter for Homeconnect devices",
-            "de": "Adapter für Homeconnect-Geräte",
-            "ru": "Адаптер для устройств Homeconnect",
-            "pt": "Adaptador para dispositivos Homeconnect",
-            "nl": "Adapter voor Homeconnect-apparaten",
-            "fr": "Adaptateur pour appareils Homeconnect",
-            "it": "Adattatore per dispositivi Homeconnect",
-            "es": "Adaptador para dispositivos Homeconnect",
-            "pl": "Adapter do urządzeń Homeconnect",
-            "zh-cn": "Homeconnect 设备的适配器"
-        },
-        "authors": [
-            "TA2k <tombox2020@gmail.com>"
-        ],
-        "keywords": [
-            "homeconnect",
-            "BSH",
-            "bosch",
-            "siemens",
-            "neff"
-        ],
-        "license": "MIT",
-        "platform": "Javascript/Node.js",
-        "main": "main.js",
-        "icon": "homeconnect.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.homeconnect/master/admin/homeconnect.png",
-        "readme": "https://github.com/iobroker-community-adapters/ioBroker.homeconnect/blob/master/README.md",
-        "loglevel": "info",
-        "mode": "daemon",
-        "type": "household",
-        "compact": true,
-        "connectionType": "cloud",
-        "dataSource": "push",
-        "materialize": true,
-        "plugins": {
-            "sentry": {
-                "dsn": "https://0d0cad2f2cc44d5e889a2bd7ee0fcc42@sentry.iobroker.net/65"
-            }
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=3.2.0"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=4.0.9"
-            }
-        ]
+  "common": {
+    "name": "homeconnect",
+    "version": "1.0.2",
+    "news": {
+      "1.0.2": {
+        "en": "Bugfixes"
+      },
+      "1.0.1": {
+        "en": "Adapter complete rewriten. Includes a lot of Bugfixes",
+        "de": "Adapter komplett neu geschrieben. Enthält viele Bugfixes",
+        "ru": "Адаптер полностью переписан. Включает множество исправлений",
+        "pt": "Adaptador completamente reescrito. Inclui muitas correções de bugs",
+        "nl": "Adapter compleet herschreven. Bevat veel bugfixes",
+        "fr": "Adaptateur entièrement réécrit. Inclut de nombreuses corrections de bugs",
+        "it": "Adattatore completo riscritto. Include molte correzioni di bug",
+        "es": "Adaptador completo reescrito. Incluye muchas correcciones de errores.",
+        "pl": "Adapter całkowicie przepisany. Zawiera wiele poprawek",
+        "zh-cn": "适配器完全重写。包括许多错误修正"
+      }
     },
-    "encryptedNative": [
-        "password"
-    ],
-    "protectedNative": [
-        "password"
-    ],
-    "native": {
-        "clientID": "",
-        "username": "",
-        "password": "",
-        "resetAccess": false,
-        "disableFetchConnect": false
+    "title": "Homeconnect",
+    "titleLang": {
+      "en": "Homeconnect",
+      "de": "Homeconnect",
+      "ru": "Домашнее подключение",
+      "pt": "Homeconnect",
+      "nl": "Homeconnect",
+      "fr": "Homeconnect",
+      "it": "Connessione domestica",
+      "es": "Conectar a casa",
+      "pl": "Homeconnect",
+      "zh-cn": "家庭连接"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "auth",
-            "type": "channel",
-            "common": {
-                "name": "Auth Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "auth.session",
-            "type": "state",
-            "common": {
-                "role": "json",
-                "name": "Session state",
-                "type": "string",
-                "read": true,
-                "write": false
-            },
-            "native": {}
-        },
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Device or service connected",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
+    "desc": {
+      "en": "Adapter for Homeconnect devices",
+      "de": "Adapter für Homeconnect-Geräte",
+      "ru": "Адаптер для устройств Homeconnect",
+      "pt": "Adaptador para dispositivos Homeconnect",
+      "nl": "Adapter voor Homeconnect-apparaten",
+      "fr": "Adaptateur pour appareils Homeconnect",
+      "it": "Adattatore per dispositivi Homeconnect",
+      "es": "Adaptador para dispositivos Homeconnect",
+      "pl": "Adapter do urządzeń Homeconnect",
+      "zh-cn": "Homeconnect 设备的适配器"
+    },
+    "authors": ["TA2k <tombox2020@gmail.com>"],
+    "keywords": ["homeconnect", "BSH", "bosch", "siemens", "neff"],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "main": "main.js",
+    "icon": "homeconnect.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.homeconnect/master/admin/homeconnect.png",
+    "readme": "https://github.com/iobroker-community-adapters/ioBroker.homeconnect/blob/master/README.md",
+    "loglevel": "info",
+    "mode": "daemon",
+    "type": "household",
+    "compact": true,
+    "connectionType": "cloud",
+    "dataSource": "push",
+    "materialize": true,
+    "plugins": {
+      "sentry": {
+        "dsn": "https://0d0cad2f2cc44d5e889a2bd7ee0fcc42@sentry.iobroker.net/65"
+      }
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=3.2.0"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=4.0.9"
+      }
     ]
+  },
+  "encryptedNative": ["password"],
+  "protectedNative": ["password"],
+  "native": {
+    "clientID": "",
+    "username": "",
+    "password": "",
+    "resetAccess": false,
+    "disableFetchConnect": false
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "auth",
+      "type": "channel",
+      "common": {
+        "name": "Auth Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "auth.session",
+      "type": "state",
+      "common": {
+        "role": "json",
+        "name": "Session state",
+        "type": "string",
+        "read": true,
+        "write": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Device or service connected",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }
