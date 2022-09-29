@@ -161,6 +161,7 @@ class Homeconnect extends utils.Adapter {
         this.log.debug(JSON.stringify(res.data));
         if (res.data.match('data-error-data="" >(.*)<')) {
           this.log.error("Login failed: " + res.data.match('data-error-data="" >(.*)<')[1]);
+          this.log.info("If you using the new SingleKey Login please visit the link manually");
           return;
         }
         this.log.info("Login details submitted");
