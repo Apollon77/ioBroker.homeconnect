@@ -113,6 +113,7 @@ class Homeconnect extends utils.Adapter {
     }
   }
   async login() {
+    const tokenRequestSuccesful = false;
     const deviceAuth = await this.requestClient({
       method: "post",
       url: "https://api.home-connect.com/security/oauth/device_authorization",
@@ -158,10 +159,15 @@ class Homeconnect extends utils.Adapter {
     })
       .then((res) => {
         this.log.debug(JSON.stringify(res.data));
+        if (res.data.match('data-error-data="" >(.*)<')) {
+          this.log.error("Login failed: " + res.data.match('data-error-data="" >(.*)<')[1]);
+          return;
+        }
+        this.log.info("Login details submitted");
         return this.extractHidden(res.data);
       })
       .catch((error) => {
-        this.log.error("Please check username and password or manually visiting: " + deviceAuth.verification_uri_complete);
+        this.log.error("Please check username and password");
         this.log.error(error);
         if (error.response) {
           this.log.error(JSON.stringify(error.response.data));
@@ -187,33 +193,44 @@ class Homeconnect extends utils.Adapter {
           this.log.error(JSON.stringify(error.response.data));
         }
       });
-    await this.sleep(6000);
-    await this.requestClient({
-      method: "post",
-      url: "https://api.home-connect.com/security/oauth/token",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
 
-      data: qs.stringify({
-        grant_type: "device_code",
-        device_code: deviceAuth.device_code,
-        client_id: this.config.clientID,
-      }),
-    })
-      .then((res) => {
-        this.log.debug(JSON.stringify(res.data));
-        this.session = res.data;
-        this.setState("info.connection", true, true);
-        this.setState("auth.session", JSON.stringify(this.session), true);
+    await this.sleep(6000);
+
+    while (!tokenRequestSuccesful) {
+      await this.requestClient({
+        method: "post",
+        url: "https://api.home-connect.com/security/oauth/token",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+
+        data: qs.stringify({
+          grant_type: "device_code",
+          device_code: deviceAuth.device_code,
+          client_id: this.config.clientID,
+        }),
       })
-      .catch((error) => {
-        this.log.error("Please check username and password check manually here: " + deviceAuth.verification_uri_complete);
-        this.log.error(error);
-        if (error.response) {
-          this.log.error(JSON.stringify(error.response.data));
-        }
-      });
+        .then((res) => {
+          this.log.debug(JSON.stringify(res.data));
+          this.session = res.data;
+          this.setState("info.connection", true, true);
+          this.setState("auth.session", JSON.stringify(this.session), true);
+          tokenRequestSuccesful = true;
+        })
+        .catch(async (error) => {
+          this.log.error("Please check username and password or visit this site for manually login: ");
+          this.log.error("Bitte überprüfe Benutzername und Passwort oder besuche diese Seite für manuelle Anmeldung: ");
+          this.log.error(deviceAuth.verification_uri_complete);
+          //   this.log.error(error);
+          if (error.response) {
+            this.log.error(JSON.stringify(error.response.data));
+          }
+
+          this.log.info("Wait 10 seconds to retry");
+
+          await this.sleep(10000);
+        });
+    }
   }
   async getDeviceList() {
     this.deviceArray = [];
