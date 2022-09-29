@@ -95,6 +95,10 @@ Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to s
 
 ## Changelog
 
+### 1.0.3
+
+- Add manually login for SingleKey User
+  
 ### 1.0.2
 
 - Adapter complete rewriten. Includes a lot of Bugfixes
