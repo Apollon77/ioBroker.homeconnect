@@ -129,6 +129,9 @@ class Homeconnect extends utils.Adapter {
         this.log.error(error);
         if (error.response) {
           this.log.error(JSON.stringify(error.response.data));
+          if (error.response.data.error === "unauthorized_client") {
+            this.log.error("Please check your clientID or wait 5 minutes until it is active");
+          }
         }
       });
     if (!deviceAuth || !deviceAuth.verification_uri_complete) {
