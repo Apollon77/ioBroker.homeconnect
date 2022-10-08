@@ -1,8 +1,11 @@
 {
   "common": {
     "name": "homeconnect",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "news": {
+      "1.1.0": {
+        "en": "Add auto login for SingleKey User"
+      },
       "1.0.3": {
         "en": "Add manually login for SingleKey User"
       },
