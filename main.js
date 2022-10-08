@@ -11,6 +11,8 @@ const axios = require("axios");
 const rateLimit = require("axios-rate-limit");
 const qs = require("qs");
 const EventSource = require("eventsource");
+const tough = require("tough-cookie");
+const { HttpsCookieAgent } = require("http-cookie-agent/http");
 class Homeconnect extends utils.Adapter {
   /**
    * @param {Partial<utils.AdapterOptions>} [options={}]
@@ -61,7 +63,19 @@ class Homeconnect extends utils.Adapter {
     }
 
     this.userAgent = "ioBroker v1.0.0";
-    this.requestClient = rateLimit(axios.create(), { maxRequests: 45, perMilliseconds: 60000 });
+
+    this.cookieJar = new tough.CookieJar();
+    this.requestClient = rateLimit(
+      axios.create({
+        withCredentials: true,
+        httpsAgent: new HttpsCookieAgent({
+          cookies: {
+            jar: this.cookieJar,
+          },
+        }),
+      }),
+      { maxRequests: 45, perMilliseconds: 60000 }
+    );
 
     this.reLoginTimeout = null;
     this.refreshTokenTimeout = null;
@@ -113,7 +127,7 @@ class Homeconnect extends utils.Adapter {
     }
   }
   async login() {
-    const tokenRequestSuccesful = false;
+    let tokenRequestSuccesful = false;
     const deviceAuth = await this.requestClient({
       method: "post",
       url: "https://api.home-connect.com/security/oauth/device_authorization",
@@ -157,11 +171,80 @@ class Homeconnect extends utils.Adapter {
         password: this.config.password,
       }),
     })
-      .then((res) => {
+      .then(async (res) => {
         this.log.debug(JSON.stringify(res.data));
         if (res.data.match('data-error-data="" >(.*)<')) {
-          this.log.error("Login failed: " + res.data.match('data-error-data="" >(.*)<')[1]);
-          this.log.info("If you using the new SingleKey Login please visit the link manually");
+          this.log.info("Normal Login response " + res.data.match('data-error-data="" >(.*)<')[1]);
+          this.log.info("Try new SingleKey Login");
+
+          await this.requestClient({
+            method: "get",
+            url: deviceAuth.verification_uri_complete,
+            headers: {
+              Accept: "*/*",
+            },
+          })
+            .then((res) => {
+              this.log.debug(JSON.stringify(res.data));
+            })
+            .catch((error) => {
+              this.log.error(error);
+              if (error.response) {
+                this.log.error(JSON.stringify(error.response.data));
+              }
+            });
+
+          const response = await this.requestClient({
+            method: "post",
+            url: "https://singlekey-id.com/auth/api/v1/authentication/login",
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              "Content-Type": "application/json",
+              RequestVerificationToken: this.cookieJar.store.idx["singlekey-id.com"]["/auth/"]["X-CSRF-FORM-TOKEN"].value,
+            },
+
+            data: JSON.stringify({
+              username: this.config.username,
+              password: this.config.password,
+              keepMeSignedIn: true,
+              returnUrl:
+                "/auth/connect/authorize/callback?client_id=11F75C04-21C2-4DA9-A623-228B54E9A256&redirect_uri=https%3A%2F%2Fapi.home-connect.com%2Fsecurity%2Foauth%2Fredirect_target&response_type=code&scope=openid%20email%20profile%20offline_access%20homeconnect.general&prompt=login&style_id=bsh_hc_01&state=%7B%22user_code%22%3A%22" +
+                deviceAuth.user_code +
+                "%22%7D&suppressed_prompt=login",
+            }),
+          })
+            .then((res) => {
+              this.log.debug(JSON.stringify(res.data));
+              return res.data;
+            })
+            .catch((error) => {
+              this.log.error("Please check username and password");
+              this.log.error(error);
+              if (error.response) {
+                this.log.error(JSON.stringify(error.response.data));
+              }
+            });
+          if (response && response.returnUrl) {
+            return await this.requestClient({
+              method: "get",
+              url: "https://singlekey-id.com" + response.returnUrl,
+              headers: {
+                Accept:
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+              },
+            })
+              .then((res) => {
+                this.log.debug(JSON.stringify(res.data));
+                this.log.info("SingleKey details submitted");
+                return this.extractHidden(res.data);
+              })
+              .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                  this.log.error(JSON.stringify(error.response.data));
+                }
+              });
+          }
           return;
         }
         this.log.info("Login details submitted");
@@ -211,14 +294,16 @@ class Homeconnect extends utils.Adapter {
           client_id: this.config.clientID,
         }),
       })
-        .then((res) => {
+        .then(async (res) => {
           this.log.debug(JSON.stringify(res.data));
           this.session = res.data;
-          this.setState("info.connection", true, true);
-          this.setState("auth.session", JSON.stringify(this.session), true);
+          this.log.info("Token received succesfully");
+          await this.setStateAsync("info.connection", true, true);
+          await this.setStateAsync("auth.session", JSON.stringify(this.session), true);
           tokenRequestSuccesful = true;
         })
         .catch(async (error) => {
+          this.log.error(error);
           this.log.error("Please check username and password or visit this site for manually login: ");
           this.log.error("Bitte überprüfe Benutzername und Passwort oder besuche diese Seite für manuelle Anmeldung: ");
           this.log.error(deviceAuth.verification_uri_complete);
