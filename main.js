@@ -461,7 +461,7 @@ class Homeconnect extends utils.Adapter {
         if (returnValue.data.constraints && returnValue.data.constraints.allowedvalues) {
           const states = {};
           returnValue.data.constraints.allowedvalues.forEach((element, index) => {
-            states[element] = returnValue.data.constraints.displayvalues[index];
+            states[element] = returnValue.data.constraints.displayvalues[index] || element;
           });
           common.states = states;
         }
@@ -581,13 +581,13 @@ class Homeconnect extends utils.Adapter {
             if (this.availablePrograms[haId]) {
               this.availablePrograms[haId].push({
                 key: subElement.key,
-                name: subElement.name,
+                name: subElement.name || subElement.key,
               });
             } else {
               this.availablePrograms[haId] = [
                 {
                   key: subElement.key,
-                  name: subElement.name,
+                  name: subElement.name || subElement.key,
                 },
               ];
             }
