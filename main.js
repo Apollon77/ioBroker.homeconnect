@@ -145,7 +145,7 @@ class Homeconnect extends utils.Adapter {
         if (error.response) {
           this.log.error(JSON.stringify(error.response.data));
           if (error.response.data.error === "unauthorized_client") {
-            this.log.error("Please check your clientID or wait 5 minutes until it is active");
+            this.log.error("Please check your clientID or wait 15 minutes until it is active");
           }
         }
       });
@@ -167,6 +167,7 @@ class Homeconnect extends utils.Adapter {
         accept_language: "de",
         region: "EU",
         environment: "PRD",
+        lookup: "true",
         email: this.config.username,
         password: this.config.password,
       }),
@@ -178,11 +179,21 @@ class Homeconnect extends utils.Adapter {
           this.log.info("Try new SingleKey Login");
 
           await this.requestClient({
-            method: "get",
-            url: deviceAuth.verification_uri_complete,
+            method: "post",
+            url: "https://api.home-connect.com/security/oauth/device_login",
             headers: {
-              Accept: "*/*",
+              "Content-Type": "application/x-www-form-urlencoded",
             },
+
+            data: qs.stringify({
+              user_code: deviceAuth.user_code,
+              client_id: this.config.clientID,
+              accept_language: "de",
+              region: "EU",
+              environment: "PRD",
+              lookup: "true",
+              email: this.config.username,
+            }),
           })
             .then((res) => {
               this.log.debug(JSON.stringify(res.data));
