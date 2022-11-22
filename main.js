@@ -946,6 +946,7 @@ class Homeconnect extends utils.Adapter {
       await this.login();
       return;
     }
+    this.log.debug("Refresh Token");
     await this.requestClient({
       method: "post",
       url: "https://api.home-connect.com/security/oauth/token",
