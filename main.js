@@ -966,13 +966,12 @@ class Homeconnect extends utils.Adapter {
         this.log.error("refresh token failed");
         this.log.error(error);
         error.response && this.log.error(JSON.stringify(error.response.data));
-        this.log.error("Start relogin in 10min");
+        this.log.error("Restart adapter in 20min");
         this.reconnectTimeout && clearInterval(this.reconnectTimeout);
         this.reLoginTimeout && clearTimeout(this.reLoginTimeout);
         this.reLoginTimeout = setTimeout(async () => {
-          await this.login();
-          this.startEventStream();
-        }, 1000 * 60 * 10);
+          this.restart();
+        }, 1000 * 60 * 20);
       });
   }
   extractHidden(body) {
