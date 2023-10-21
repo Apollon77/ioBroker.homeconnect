@@ -103,12 +103,16 @@ Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to s
 ### **WORK IN PROGRESS**
 -   (mcm1957) changed: Testing has been changed to support node 16, 18 and 20
 -   (mcm1957) changed: Dependencies have been updated
--   /TA2k) restart adapter instead of relogin
+-   (ta2k) restart adapter instead of relogin
 
-### 1.1.1 (somewhere 2022)
+### 1.1.1 
 
-- for changes see io-package.json
-  
+- Fix auto login for SingleKey User
+
+### 1.1.0
+
+- Add auto login for SingleKey User
+
 ### 1.0.3
 
 - Add manually login for SingleKey User
@@ -116,6 +120,7 @@ Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to s
 ### 1.0.2
 
 - Adapter complete rewriten. Includes a lot of Bugfixes
+
 ### 0.0.36
 
 - fix for js.controller 3.3. Please delete the device in Objects manually
