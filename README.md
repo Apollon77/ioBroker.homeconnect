@@ -104,6 +104,10 @@ Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to s
 -   (mcm1957) changed: Testing has been changed to support node 16, 18 and 20
 -   (mcm1957) changed: Dependencies have been updated
 
+### 1.1.1 (somewhere 2022)
+
+- for changes see io-package.json
+  
 ### 1.0.3
 
 - Add manually login for SingleKey User
