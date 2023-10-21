@@ -103,6 +103,7 @@ Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to s
 ### **WORK IN PROGRESS**
 -   (mcm1957) changed: Testing has been changed to support node 16, 18 and 20
 -   (mcm1957) changed: Dependencies have been updated
+-   /TA2k) restart adapter instead of relogin
 
 ### 1.1.1 (somewhere 2022)
 
