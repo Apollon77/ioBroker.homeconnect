@@ -574,6 +574,8 @@ class Homeconnect extends utils.Adapter {
         };
       }
       for (const item in returnValue.data) {
+        //check if iterable
+        if (Array.isArray(returnValue.data[item])) {
         for (const subElement of returnValue.data[item]) {
           let folder = url.replace(/\//g, '.');
           if (url === '/programs/active') {
@@ -676,6 +678,8 @@ class Homeconnect extends utils.Adapter {
               this.log.error('failed set state');
             });
         }
+      } else {
+        this.log.info('No array found for: ' + item);
       }
       if (url === '/programs') {
         const rootItems = [
