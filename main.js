@@ -574,112 +574,112 @@ class Homeconnect extends utils.Adapter {
         };
       }
       for (const item in returnValue.data) {
-        //check if iterable
         if (Array.isArray(returnValue.data[item])) {
-        for (const subElement of returnValue.data[item]) {
-          let folder = url.replace(/\//g, '.');
-          if (url === '/programs/active') {
-            subElement.value = subElement.key;
-            subElement.key = 'BSH_Common_Root_ActiveProgram';
-            subElement.name = 'BSH_Common_Root_ActiveProgram';
-          }
-          if (url === '/programs/selected') {
-            if (subElement.key) {
+          for (const subElement of returnValue.data[item]) {
+            let folder = url.replace(/\//g, '.');
+            if (url === '/programs/active') {
               subElement.value = subElement.key;
-              this.currentSelected[haId] = { key: subElement.value, name: subElement.name };
-              subElement.key = 'BSH_Common_Root_SelectedProgram';
-              subElement.name = 'BSH_Common_Root_SelectedProgram';
-            } else {
-              this.log.warn('Empty sublement: ' + JSON.stringify(subElement));
+              subElement.key = 'BSH_Common_Root_ActiveProgram';
+              subElement.name = 'BSH_Common_Root_ActiveProgram';
             }
-          }
-          if (url === '/programs') {
-            this.log.debug(haId + ' available: ' + JSON.stringify(subElement));
-            if (this.availablePrograms[haId]) {
-              this.availablePrograms[haId].push({
-                key: subElement.key,
-                name: subElement.name || subElement.key,
-              });
-            } else {
-              this.availablePrograms[haId] = [
-                {
+            if (url === '/programs/selected') {
+              if (subElement.key) {
+                subElement.value = subElement.key;
+                this.currentSelected[haId] = { key: subElement.value, name: subElement.name };
+                subElement.key = 'BSH_Common_Root_SelectedProgram';
+                subElement.name = 'BSH_Common_Root_SelectedProgram';
+              } else {
+                this.log.warn('Empty sublement: ' + JSON.stringify(subElement));
+              }
+            }
+            if (url === '/programs') {
+              this.log.debug(haId + ' available: ' + JSON.stringify(subElement));
+              if (this.availablePrograms[haId]) {
+                this.availablePrograms[haId].push({
                   key: subElement.key,
                   name: subElement.name || subElement.key,
-                },
-              ];
-            }
-            this.getAPIValues(haId, '/programs/available/' + subElement.key);
-            folder += '.available';
-          }
-          if (url === '/settings') {
-            this.getAPIValues(haId, '/settings/' + subElement.key);
-          }
-
-          if (url.indexOf('/programs/selected/') !== -1) {
-            if (!this.currentSelected[haId]) {
-              return;
-            }
-            if (!this.currentSelected[haId].key) {
-              this.log.warn(JSON.stringify(this.currentSelected[haId]) + ' is selected but has no key selected ');
-              return;
-            }
-            const key = this.currentSelected[haId].key.split('.').pop();
-            folder += '.' + key;
-
-            await this.setObjectNotExistsAsync(haId + folder, {
-              type: 'state',
-              common: {
-                name: this.currentSelected[haId].name,
-                type: 'mixed',
-                role: 'indicator',
-                write: true,
-                read: true,
-              },
-              native: {},
-            }).catch(() => {
-              this.log.error('failed set state');
-            });
-          }
-          this.log.debug('Create State: ' + haId + folder + '.' + subElement.key.replace(/\./g, '_'));
-          let type = 'mixed';
-          if (typeof subElement.value === 'boolean') {
-            type = 'boolean';
-          }
-          if (typeof subElement.value === 'number') {
-            type = 'number';
-          }
-          const common = {
-            name: subElement.name,
-            type: type,
-            role: 'indicator',
-            write: true,
-            read: true,
-            unit: subElement.unit || '',
-          };
-
-          if (subElement.constraints && subElement.constraints.min) {
-            common.min = subElement.constraints.min;
-          }
-          if (subElement.constraints && subElement.constraints.max) {
-            common.max = subElement.constraints.max;
-          }
-          this.setObjectNotExistsAsync(haId + folder + '.' + subElement.key.replace(/\./g, '_'), {
-            type: 'state',
-            common: common,
-            native: {},
-          })
-            .then(() => {
-              if (subElement.value !== undefined) {
-                this.log.debug('Set api value');
-                this.setState(haId + folder + '.' + subElement.key.replace(/\./g, '_'), subElement.value, true);
+                });
+              } else {
+                this.availablePrograms[haId] = [
+                  {
+                    key: subElement.key,
+                    name: subElement.name || subElement.key,
+                  },
+                ];
               }
+              this.getAPIValues(haId, '/programs/available/' + subElement.key);
+              folder += '.available';
+            }
+            if (url === '/settings') {
+              this.getAPIValues(haId, '/settings/' + subElement.key);
+            }
+
+            if (url.indexOf('/programs/selected/') !== -1) {
+              if (!this.currentSelected[haId]) {
+                return;
+              }
+              if (!this.currentSelected[haId].key) {
+                this.log.warn(JSON.stringify(this.currentSelected[haId]) + ' is selected but has no key selected ');
+                return;
+              }
+              const key = this.currentSelected[haId].key.split('.').pop();
+              folder += '.' + key;
+
+              await this.setObjectNotExistsAsync(haId + folder, {
+                type: 'state',
+                common: {
+                  name: this.currentSelected[haId].name,
+                  type: 'mixed',
+                  role: 'indicator',
+                  write: true,
+                  read: true,
+                },
+                native: {},
+              }).catch(() => {
+                this.log.error('failed set state');
+              });
+            }
+            this.log.debug('Create State: ' + haId + folder + '.' + subElement.key.replace(/\./g, '_'));
+            let type = 'mixed';
+            if (typeof subElement.value === 'boolean') {
+              type = 'boolean';
+            }
+            if (typeof subElement.value === 'number') {
+              type = 'number';
+            }
+            const common = {
+              name: subElement.name,
+              type: type,
+              role: 'indicator',
+              write: true,
+              read: true,
+              unit: subElement.unit || '',
+            };
+
+            if (subElement.constraints && subElement.constraints.min) {
+              common.min = subElement.constraints.min;
+            }
+            if (subElement.constraints && subElement.constraints.max) {
+              common.max = subElement.constraints.max;
+            }
+            this.setObjectNotExistsAsync(haId + folder + '.' + subElement.key.replace(/\./g, '_'), {
+              type: 'state',
+              common: common,
+              native: {},
             })
-            .catch(() => {
-              this.log.error('failed set state');
-            });
+              .then(() => {
+                if (subElement.value !== undefined) {
+                  this.log.debug('Set api value');
+                  this.setState(haId + folder + '.' + subElement.key.replace(/\./g, '_'), subElement.value, true);
+                }
+              })
+              .catch(() => {
+                this.log.error('failed set state');
+              });
+          }
+        } else {
+          this.log.info('No array: ' + item);
         }
-      } else {
-        this.log.info('No array found for: ' + item);
       }
       if (url === '/programs') {
         const rootItems = [
