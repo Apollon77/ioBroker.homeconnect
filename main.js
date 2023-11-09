@@ -574,7 +574,7 @@ class Homeconnect extends utils.Adapter {
         };
       }
       for (const item in returnValue.data) {
-        returnValue.data[item].forEach(async (subElement) => {
+        for (const subElement of returnValue.data[item]) {
           let folder = url.replace(/\//g, '.');
           if (url === '/programs/active') {
             subElement.value = subElement.key;
@@ -675,7 +675,7 @@ class Homeconnect extends utils.Adapter {
             .catch(() => {
               this.log.error('failed set state');
             });
-        });
+        }
       }
       if (url === '/programs') {
         const rootItems = [
