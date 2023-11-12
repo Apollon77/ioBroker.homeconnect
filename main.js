@@ -74,7 +74,7 @@ class Homeconnect extends utils.Adapter {
           },
         }),
       }),
-      { maxRequests: 45, perMilliseconds: 60000 },
+      { maxRequests: 45, perMilliseconds: 60000 }
     );
 
     this.reLoginTimeout = null;
@@ -211,8 +211,7 @@ class Homeconnect extends utils.Adapter {
             headers: {
               Accept: 'application/json, text/plain, */*',
               'Content-Type': 'application/json',
-              RequestVerificationToken:
-                this.cookieJar.store.idx['singlekey-id.com']['/auth/']['X-CSRF-FORM-TOKEN'].value,
+              RequestVerificationToken: this.cookieJar.store.idx['singlekey-id.com']['/auth/']['X-CSRF-FORM-TOKEN'].value,
             },
 
             data: JSON.stringify({
@@ -517,8 +516,7 @@ class Homeconnect extends utils.Adapter {
             if (option.constraints.allowedvalues) {
               common.states = {};
               for (const element of option.constraints.allowedvalues) {
-                common.states[element] =
-                  option.constraints.displayvalues[option.constraints.allowedvalues.indexOf(element)];
+                common.states[element] = option.constraints.displayvalues[option.constraints.allowedvalues.indexOf(element)];
               }
             }
             let folder = '.programs.available.options.' + option.key.replace(/\./g, '_');
@@ -541,9 +539,7 @@ class Homeconnect extends utils.Adapter {
               let value = option.constraints.default;
               if (option.constraints.default > option.constraints.max) {
                 value = option.constraints.max;
-                this.log.debug(
-                  `Default value ${option.constraints.default} is greater than max ${option.constraints.max}. Set to max.`,
-                );
+                this.log.debug(`Default value ${option.constraints.default} is greater than max ${option.constraints.max}. Set to max.`);
               }
               await this.setStateAsync(haId + folder, value, true);
             }
@@ -753,16 +749,12 @@ class Homeconnect extends utils.Adapter {
         ) {
           await this.delObjectAsync(keyName.split('.').slice(2).join('.'));
         } else if (keyName.indexOf('BSH_Common_Option_ProgramProgress') !== -1) {
-          const programProgess = await this.getStateAsync(
-            haId + '.programs.active.options.BSH_Common_Option_ProgramProgress',
-          );
+          const programProgess = await this.getStateAsync(haId + '.programs.active.options.BSH_Common_Option_ProgramProgress');
           if (programProgess && programProgess.val !== 100) {
             await this.setStateAsync(haId + '.programs.active.options.BSH_Common_Option_ProgramProgress', 100, true);
           }
         } else if (keyName.indexOf('BSH_Common_Option_RemainingProgramTime') !== -1) {
-          const remainTime = await this.getStateAsync(
-            haId + '.programs.active.options.BSH_Common_Option_RemainingProgramTime',
-          );
+          const remainTime = await this.getStateAsync(haId + '.programs.active.options.BSH_Common_Option_RemainingProgramTime');
           if (remainTime && remainTime.val !== 0) {
             await this.setStateAsync(haId + '.programs.active.options.BSH_Common_Option_RemainingProgramTime', 0, true);
           }
@@ -873,7 +865,7 @@ class Homeconnect extends utils.Adapter {
       (e) => {
         this.resetReconnectTimeout();
       },
-      false,
+      false
     );
 
     this.resetReconnectTimeout();
@@ -1108,6 +1100,9 @@ class Homeconnect extends utils.Adapter {
             idArray.pop();
           }
           const folder = idArray.slice(3, idArray.length).join('/');
+          if (data.data.key === 'BSH.Common.Option.StartInRelative' || data.data.key === 'BSH.Common.Option.FinishInRelative') {
+            this.log.warn('Relative time cannot be changed here. Please use the specific program options.');
+          }
 
           this.putAPIValues(haId, '/' + folder + '/' + command, data);
         }
@@ -1126,20 +1121,16 @@ class Homeconnect extends utils.Adapter {
             const allIds = Object.keys(states);
             const options = [];
             allIds.forEach((keyName) => {
-              if (
-                keyName.indexOf('BSH_Common_Option_ProgramProgress') === -1 &&
-                keyName.indexOf('BSH_Common_Option_RemainingProgramTime') === -1
-              ) {
+              if (keyName.indexOf('BSH_Common_Option_ProgramProgress') === -1 && keyName.indexOf('BSH_Common_Option_RemainingProgramTime') === -1) {
                 const idArray = keyName.split('.');
                 const commandOption = idArray.pop().replace(/_/g, '.');
                 if (
-                  ((this.availableProgramOptions[state.val] &&
-                    this.availableProgramOptions[state.val].includes(commandOption)) ||
+                  ((this.availableProgramOptions[state.val] && this.availableProgramOptions[state.val].includes(commandOption)) ||
                     commandOption === 'BSH.Common.Option.StartInRelative') &&
                   states[keyName] !== null
                 ) {
                   if (
-                    commandOption === 'BSH.Common.Option.StartInRelative' &&
+                    (commandOption === 'BSH.Common.Option.StartInRelative' || commandOption === 'BSH.Common.Option.FinishInRelative') &&
                     command === 'BSH.Common.Root.SelectedProgram'
                   ) {
                   } else {
@@ -1190,7 +1181,7 @@ class Homeconnect extends utils.Adapter {
                     },
                     () => {
                       this.log.warn('Setting selected program was not succesful');
-                    },
+                    }
                   )
                   .catch(() => {
                     this.log.debug('No program selected found');
@@ -1221,32 +1212,18 @@ class Homeconnect extends utils.Adapter {
         }
         if (id.indexOf('BSH_Common_Status_OperationState') !== -1) {
           if (state.val && (state.val.indexOf('.Finished') !== -1 || state.val.indexOf('.Aborting') !== -1)) {
-            const remainTime = await this.getStateAsync(
-              haId + '.programs.active.options.BSH_Common_Option_RemainingProgramTime',
-            );
+            const remainTime = await this.getStateAsync(haId + '.programs.active.options.BSH_Common_Option_RemainingProgramTime');
             if (remainTime && remainTime.val !== 0) {
-              await this.setStateAsync(
-                haId + '.programs.active.options.BSH_Common_Option_RemainingProgramTime',
-                0,
-                true,
-              );
+              await this.setStateAsync(haId + '.programs.active.options.BSH_Common_Option_RemainingProgramTime', 0, true);
             }
-            const programProgess = await this.getStateAsync(
-              haId + '.programs.active.options.BSH_Common_Option_ProgramProgress',
-            );
+            const programProgess = await this.getStateAsync(haId + '.programs.active.options.BSH_Common_Option_ProgramProgress');
             if (programProgess && programProgess.val !== 100) {
               await this.setStateAsync(haId + '.programs.active.options.BSH_Common_Option_ProgramProgress', 100, true);
             }
           }
         }
         if (id.indexOf('.options.') !== -1 || id.indexOf('.events.') !== -1 || id.indexOf('.status.') !== -1) {
-          if (
-            id.indexOf('BSH_Common_Option') === -1 &&
-            state &&
-            state.val &&
-            state.val.indexOf &&
-            state.val.indexOf('.') !== -1
-          ) {
+          if (id.indexOf('BSH_Common_Option') === -1 && state && state.val && state.val.indexOf && state.val.indexOf('.') !== -1) {
             this.getObject(id, async (err, obj) => {
               if (obj) {
                 const common = obj.common;
