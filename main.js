@@ -772,6 +772,7 @@ class Homeconnect extends utils.Adapter {
     setTimeout(() => this.getAPIValues(haId, url + '/options'), 0);
   }
   async putAPIValues(haId, url, data) {
+    this.log.debug(`Put ${JSON.stringify(data)} to ${url} for ${haId}`);
     await this.requestClient({
       method: 'PUT',
       url: 'https://api.home-connect.com/api/homeappliances/' + haId + url,
@@ -1147,6 +1148,9 @@ class Homeconnect extends utils.Adapter {
                       value: states[keyName].val,
                     });
                   }
+                } else {
+                  this.log.debug(`Option ${commandOption} is not available for ${state.val}`);
+                  this.log.debug(`Available options: ${JSON.stringify(this.availableProgramOptions[state.val])}`);
                 }
               }
             });
