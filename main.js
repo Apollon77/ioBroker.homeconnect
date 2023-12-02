@@ -178,7 +178,7 @@ class Homeconnect extends utils.Adapter {
           this.log.info('Normal Login response ' + res.data.match('data-error-data="" >(.*)<')[1]);
           this.log.info('Try new SingleKey Login');
 
-          await this.requestClient({
+          const loginForm = await this.requestClient({
             method: 'post',
             url: 'https://api.home-connect.com/security/oauth/device_login',
             headers: {
@@ -197,6 +197,7 @@ class Homeconnect extends utils.Adapter {
           })
             .then((res) => {
               this.log.debug(JSON.stringify(res.data));
+              return this.extractHidden(res.data);
             })
             .catch((error) => {
               this.log.error(error);
@@ -211,7 +212,7 @@ class Homeconnect extends utils.Adapter {
             headers: {
               Accept: 'application/json, text/plain, */*',
               'Content-Type': 'application/json',
-              RequestVerificationToken: this.cookieJar.store.idx['singlekey-id.com']['/auth/']['X-CSRF-FORM-TOKEN'].value,
+              RequestVerificationToken: loginForm['undefined'],
             },
 
             data: JSON.stringify({
