@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "homeconnect",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "news": {
+      "1.2.2": {
+        "en": "fix login",
+        "de": "Login gefixt",
+        "ru": "bump версия",
+        "pt": "versão de choque",
+        "nl": "♪",
+        "fr": "boss version",
+        "it": "versione urto",
+        "es": "versión del parachoques",
+        "pl": "wersja guzowa",
+        "uk": "версія bump",
+        "zh-cn": "b 倾销版本"
+      },
       "1.2.1": {
         "de": "Fix auto login für SingleKey Benutzer",
         "en": "Fix auto login for SingleKey User"
