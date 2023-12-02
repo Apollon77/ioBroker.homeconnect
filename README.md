@@ -100,8 +100,7 @@ Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to s
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.2.0 (2023-12-02)
 
 - fix login flow
 - (mcm1957) changed: Testing has been changed to support node 16, 18 and 20
