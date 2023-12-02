@@ -259,7 +259,7 @@ Change the value of programs.selected.BSH_Common_Root_SelectedProgram leads to s
 
 The MIT License (MIT)
 
-Copyright (c) 2020 dna909 <dna909@googlemail.com>, TA2k
+Copyright (c) 2023 dna909 <dna909@googlemail.com>, TA2k
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
