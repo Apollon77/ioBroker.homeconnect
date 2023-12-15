@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "homeconnect",
-    "version": "1.2.2",
+    "version": "1.3.0",
     "news": {
+      "1.3.0": {
+        "en": "fix login",
+        "de": "zurück zur übersicht",
+        "ru": "исправить логин",
+        "pt": "corrigir login",
+        "nl": "vertaling:",
+        "fr": "login",
+        "it": "fix login",
+        "es": "corrección de inicio",
+        "pl": "naprawić loginę",
+        "uk": "увійти",
+        "zh-cn": "fix 伐木"
+      },
       "1.2.2": {
         "en": "fix login",
         "de": "Login gefixt",
@@ -67,8 +80,16 @@
       "pl": "Adapter do urządzeń Homeconnect",
       "zh-cn": "Homeconnect 设备的适配器"
     },
-    "authors": ["TA2k <tombox2020@gmail.com>"],
-    "keywords": ["homeconnect", "BSH", "bosch", "siemens", "neff"],
+    "authors": [
+      "TA2k <tombox2020@gmail.com>"
+    ],
+    "keywords": [
+      "homeconnect",
+      "BSH",
+      "bosch",
+      "siemens",
+      "neff"
+    ],
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "main": "main.js",
@@ -99,8 +120,12 @@
       }
     ]
   },
-  "encryptedNative": ["password"],
-  "protectedNative": ["password"],
+  "encryptedNative": [
+    "password"
+  ],
+  "protectedNative": [
+    "password"
+  ],
   "native": {
     "clientID": "",
     "username": "",
