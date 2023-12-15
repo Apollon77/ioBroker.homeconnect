@@ -127,6 +127,7 @@ class Homeconnect extends utils.Adapter {
     }
   }
   async login() {
+    let loginUrl = '';
     let tokenRequestSuccesful = false;
     const deviceAuth = await this.requestClient({
       method: 'post',
@@ -154,7 +155,7 @@ class Homeconnect extends utils.Adapter {
       return;
     }
 
-    const formData = await this.requestClient({
+    const loginResponse = await this.requestClient({
       method: 'post',
       url: 'https://api.home-connect.com/security/oauth/device_login',
       headers: {
@@ -178,7 +179,7 @@ class Homeconnect extends utils.Adapter {
           this.log.info('Normal Login response ' + res.data.match('data-error-data="" >(.*)<')[1]);
           this.log.info('Try new SingleKey Login');
 
-          const loginForm = await this.requestClient({
+          const formData = await this.requestClient({
             method: 'post',
             url: 'https://api.home-connect.com/security/oauth/device_login',
             headers: {
@@ -197,6 +198,8 @@ class Homeconnect extends utils.Adapter {
           })
             .then((res) => {
               this.log.debug(JSON.stringify(res.data));
+
+              loginUrl = res.request.path;
               return this.extractHidden(res.data);
             })
             .catch((error) => {
@@ -205,59 +208,48 @@ class Homeconnect extends utils.Adapter {
                 this.log.error(JSON.stringify(error.response.data));
               }
             });
+          const loginParams = qs.parse(loginUrl.split('?')[1]);
+          const returnUrl = loginParams.returnUrl || loginParams.ReturnUrl;
 
-          const response = await this.requestClient({
+          await this.requestClient({
             method: 'post',
-            url: 'https://singlekey-id.com/auth/api/v1/authentication/login',
+            maxBodyLength: Infinity,
+            url: 'https://singlekey-id.com/auth/de-de/login/password',
             headers: {
-              Accept: 'application/json, text/plain, */*',
-              'Content-Type': 'application/json',
-              RequestVerificationToken: loginForm['undefined'],
+              'content-type': 'application/x-www-form-urlencoded',
+              accept: '*/*',
+              'hx-request': 'true',
+              'sec-fetch-site': 'same-origin',
+              'hx-boosted': 'true',
+              'accept-language': 'de-DE,de;q=0.9',
+              'sec-fetch-mode': 'cors',
+              origin: 'https://singlekey-id.com',
+              'user-agent':
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 16_7_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+              'sec-fetch-dest': 'empty',
             },
-
-            data: JSON.stringify({
-              username: this.config.username,
-              password: this.config.password,
-              keepMeSignedIn: true,
-              returnUrl:
-                '/auth/connect/authorize/callback?client_id=11F75C04-21C2-4DA9-A623-228B54E9A256&redirect_uri=https%3A%2F%2Fapi.home-connect.com%2Fsecurity%2Foauth%2Fredirect_target&response_type=code&scope=openid%20email%20profile%20offline_access%20homeconnect.general&prompt=login&style_id=bsh_hc_01&state=%7B%22user_code%22%3A%22' +
-                deviceAuth.user_code +
-                '%22%7D&suppressed_prompt=login',
-            }),
+            params: loginParams,
+            data: {
+              Password: this.config.password,
+              RememberMe: 'true',
+              __RequestVerificationToken: formData['undefined'],
+            },
+          }).catch((error) => {
+            this.log.error(error);
+            error.response && this.log.error(JSON.stringify(error.response.data));
+          });
+          return await this.requestClient({
+            method: 'get',
+            url: 'https://singlekey-id.com' + returnUrl,
           })
             .then((res) => {
               this.log.debug(JSON.stringify(res.data));
               return res.data;
             })
             .catch((error) => {
-              this.log.error('Please check username and password');
               this.log.error(error);
-              if (error.response) {
-                this.log.error(JSON.stringify(error.response.data));
-              }
+              error.response && this.log.error(JSON.stringify(error.response.data));
             });
-          if (response && response.returnUrl) {
-            return await this.requestClient({
-              method: 'get',
-              url: 'https://singlekey-id.com' + response.returnUrl,
-              headers: {
-                Accept:
-                  'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-              },
-            })
-              .then((res) => {
-                this.log.debug(JSON.stringify(res.data));
-                this.log.info('SingleKey details submitted');
-                return this.extractHidden(res.data);
-              })
-              .catch((error) => {
-                this.log.error(error);
-                if (error.response) {
-                  this.log.error(JSON.stringify(error.response.data));
-                }
-              });
-          }
-          return;
         }
         this.log.info('Login details submitted');
         return this.extractHidden(res.data);
@@ -269,7 +261,7 @@ class Homeconnect extends utils.Adapter {
           this.log.error(JSON.stringify(error.response.data));
         }
       });
-
+    const grantData = this.extractHidden(loginResponse);
     await this.requestClient({
       method: 'post',
       url: 'https://api.home-connect.com/security/oauth/device_grant',
@@ -277,7 +269,7 @@ class Homeconnect extends utils.Adapter {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
 
-      data: qs.stringify(formData),
+      data: grantData,
     })
       .then((res) => {
         this.log.debug(JSON.stringify(res.data));
