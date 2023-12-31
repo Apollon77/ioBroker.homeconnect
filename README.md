@@ -28,13 +28,13 @@ For more details and for information how to disable the error reporting see [Sen
 
 ## Voraussetzungen vor der Installation
 
-Es muß mindestens Node.js Version 8 installiert sein!!
+Es muß mindestens Node.js Version 16 installiert sein!!
 
 Für den Adapter wird eine ClientID benötigt. Nutze die Einstellungen um jeden Schritt der Registrierung zu erreichen.
 
 ## Requirements before installation
 
-At least Node.js version 8 must be installed!
+At least Node.js version 16 must be installed!
 
 A ClientID is required for the adapter. Use the settings for each step to register.
 
