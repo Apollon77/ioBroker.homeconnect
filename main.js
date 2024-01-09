@@ -499,10 +499,10 @@ class Homeconnect extends utils.Adapter {
               write: true,
               read: true,
             };
-            if (option.constraints.min && option.constraints.min != null) {
+            if (option.constraints && option.constraints.min && option.constraints.min != null) {
               common.min = option.constraints.min;
             }
-            if (option.constraints.max && option.constraints.max != null) {
+            if (option.constraints && option.constraints.max && option.constraints.max != null) {
               common.max = option.constraints.max;
             }
 
