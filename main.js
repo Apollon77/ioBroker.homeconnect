@@ -506,7 +506,7 @@ class Homeconnect extends utils.Adapter {
               common.max = option.constraints.max;
             }
 
-            if (option.constraints.allowedvalues) {
+            if (option.constraints && option.constraints.allowedvalues) {
               common.states = {};
               for (const element of option.constraints.allowedvalues) {
                 common.states[element] =
