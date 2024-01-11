@@ -529,7 +529,7 @@ class Homeconnect extends utils.Adapter {
               native: {},
             });
             this.log.debug('Set default value');
-            if (option.constraints.default) {
+            if (option.constraints && option.constraints.default) {
               let value = option.constraints.default;
               if (option.constraints.default > option.constraints.max) {
                 value = option.constraints.max;
